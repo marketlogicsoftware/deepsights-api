@@ -1,55 +1,62 @@
 from typing import Optional, List
 from datetime import datetime
-from pydantic import BaseModel, Field, AliasChoices
+from pydantic import Field
+from deepsights.utils import DeepSightsIdModel, DeepSightsIdTitleModel
 
 
-class BaseAnswer(BaseModel):
+#################################################
+class BaseAnswer(DeepSightsIdTitleModel):
     """
     Represents a base answer object.
 
     Attributes:
-        id (str): The ID of the answer.
         artifact_id (str): The ID of the artifact.
         artifact_type (str): The type of the artifact.
-        title (str, optional): The title of the answer. Defaults to None.
         summary (str): The summary of the answer.
         timestamp (datetime, optional): The publication date of the answer. Defaults to None.
     """
 
-    id: str
-    artifact_id: str
-    artifact_type: str
-    title: Optional[str] = Field(
-        validation_alias=AliasChoices("ai_generated_title", "title")
+    artifact_id: str = Field(
+        description="The ID of the artifact from which the answer is derived."
     )
-    summary: str
-    timestamp: Optional[datetime] = Field(alias="publication_date", default=None)
+    artifact_type: str = Field(
+        description="The type of the artifact from which the answer is derived."
+    )
+    answer: str = Field(alias="summary", description="The answer from the artifact.")
+    timestamp: Optional[datetime] = Field(
+        alias="publication_date",
+        default=None,
+        description="The publication date of the artifact from which the answer is derived.",
+    )
 
 
-class DocumentAnswerPageReference(BaseModel):
+#################################################
+class DocumentAnswerPageReference(DeepSightsIdModel):
     """
     Represents a reference to a specific page in a document with a corresponding score.
     """
 
-    page_id: str = Field(alias="id")
-    page_number: int = Field(alias="number")
-    score: float
-
-    def __repr__(self) -> str:
-        return f"DocumentAnswerPageReference@{self.page_id} - {self.score}"
+    page_number: int = Field(
+        alias="number", description="The page number in the document."
+    )
+    score: float = Field(description="The score of the page in the document.")
 
 
+#################################################
 class DocumentAnswer(BaseAnswer):
     """
     Represents an answer that is a document.
 
-    Attributes:
+    Attributes
         artifact_type (str): The type of the artifact, which is set to "DOCUMENT".
         pages (Optional[int]): The total number of pages in the document.
     """
 
-    artifact_type: str = "DOCUMENT"
-    pages: List[DocumentAnswerPageReference] = Field(alias="page_references")
-
-    def __repr__(self) -> str:
-        return f"DocumentAnswer@{self.id} - {self.title}"
+    artifact_type: str = Field(
+        default="DOCUMENT",
+        description="The type of the artifact from which the answer is derived.",
+    )
+    pages: List[DocumentAnswerPageReference] = Field(
+        alias="page_references",
+        description="The references to the pages in the document.",
+    )

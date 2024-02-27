@@ -2,3 +2,4 @@ cachetools>=5.3.1
 pydantic>=2.6.1
 requests>=2.31.0
 tenacity>=8.2.3
+ratelimit>=2.2.1

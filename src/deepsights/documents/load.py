@@ -15,9 +15,7 @@ from deepsights.documents._model import Document, DocumentPage
 from deepsights.documents._segmenter import segment_landscape_page
 
 
-##################################################
-# PAGES
-##################################################
+#################################################
 def document_pages_load(api: DeepSights, page_ids: List[str]):
     """
     Load document pages from the cache or fetch them from the API if not cached.
@@ -66,9 +64,7 @@ def document_pages_load(api: DeepSights, page_ids: List[str]):
     return [get_document_page(page_id) for page_id in page_ids]
 
 
-##################################################
-# DOCUMENTS
-##################################################
+#################################################
 def documents_load(
     api: DeepSights,
     document_ids: List[str],

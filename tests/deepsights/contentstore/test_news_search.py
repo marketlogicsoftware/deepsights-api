@@ -20,6 +20,7 @@ def test_news_text_search():
     assert len(results) == 5
     for ix, result in enumerate(results):
         assert result.id is not None
+        assert result.source is not None
 
         if ix > 0:
             assert result.rank > results[ix - 1].rank

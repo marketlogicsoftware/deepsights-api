@@ -5,6 +5,7 @@ from deepsights import DeepSights
 from deepsights.documents.load import documents_load
 
 
+#################################################
 def document_upload(api: DeepSights, document_filename: str):
     """
     Upload a document to the DeepSights API.
@@ -62,15 +63,24 @@ def document_upload(api: DeepSights, document_filename: str):
     return response["id"]
 
 
-def document_wait_for_processing(api: DeepSights, document_id: str):
+#################################################
+def document_wait_for_processing(api: DeepSights, document_id: str, timeout: int = 300):
     """
     Wait for the document to be processed and completed.
 
     Args:
+        api (DeepSights): An instance of the DeepSights API client.
         document_id (str): The ID of the document to wait for.
+        timeout (int, optional): The maximum time to wait for the document to be processed, in seconds. Defaults to 300.
+
+    Raises:
+        ValueError: If the document fails to process.
+        TimeoutError: If the document fails to process within the specified timeout.
+
     """
     # wait for completion
-    while True:
+    start = time.time()
+    while time.time() - start < timeout:
         response = api.get(f"/artifact-service/artifacts/{document_id}")
         if response["status"] == "COMPLETED":
             break
@@ -80,6 +90,12 @@ def document_wait_for_processing(api: DeepSights, document_id: str):
             )
         else:
             time.sleep(2)
+
+    # timeout?
+    if time.time() - start >= timeout:
+        raise TimeoutError(
+            f"Document {document_id} failed to process in {timeout} seconds."
+        )
 
     # now load into cache
     documents_load(api, [document_id])

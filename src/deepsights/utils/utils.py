@@ -1,7 +1,7 @@
 import concurrent.futures
 
 
-##############################################
+#################################################
 def run_in_parallel(fun, args, max_workers=5):
     """
     Executes the given function in parallel using multiple threads.
@@ -17,8 +17,9 @@ def run_in_parallel(fun, args, max_workers=5):
     results = []
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-        future_to_arg = {executor.submit(fun, arg): arg for arg in args}
-        for future in concurrent.futures.as_completed(future_to_arg):
-            results.append(future.result())
+        futures = [executor.submit(fun, arg) for arg in args]
+        results = [
+            future.result() for future in concurrent.futures.as_completed(futures)
+        ]
 
     return results

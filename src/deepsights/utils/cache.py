@@ -1,9 +1,7 @@
 from cachetools import LRUCache
 
 
-##################################################
-# DOCUMENT CACHE
-##################################################
+#################################################
 def create_global_lru_cache(maxsize):
     """
     Create a global LRU cache with the specified maximum size.
@@ -12,10 +10,12 @@ def create_global_lru_cache(maxsize):
         maxsize (int): The maximum number of items that can be stored in the cache.
 
     Returns:
-        tuple: A tuple containing three functions: _setter, _tester, and _getter.
+        tuple: A tuple containing five functions: _setter, _tester, _getter, _remover, and _size.
             - _setter: A function that sets a key-value pair in the cache.
             - _tester: A function that checks if a key exists in the cache.
             - _getter: A function that retrieves the value associated with a key from the cache.
+            - _remover: A function that removes a key-value pair from the cache.
+            - _size: A function that returns the maximum size of the cache.
     """
     cache = LRUCache(maxsize=maxsize)
 
@@ -31,7 +31,7 @@ def create_global_lru_cache(maxsize):
 
     def _tester(key):
         return key in cache
-    
+
     def _remover(key):
         if key in cache:
             del cache[key]

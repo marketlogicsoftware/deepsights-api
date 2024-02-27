@@ -9,13 +9,16 @@ from tenacity import (
 )
 from requests import Session
 from requests.exceptions import Timeout
+from ratelimit import limits, sleep_and_retry
 
 
+#################################################
 class API:
     """
     Represents an API client for interacting with the DeepSights APIs.
     """
 
+    #######################################
     def __init__(
         self, endpoint_base: str, api_key: str, api_key_env_var: str = None
     ) -> None:
@@ -30,7 +33,6 @@ class API:
 
         Raises:
             AssertionError: If neither API key nor environment variable is provided.
-
         """
 
         # fall back to environment variable
@@ -49,6 +51,7 @@ class API:
         self.session = Session()
         self.session.headers.update({"X-Api-Key": self.api_key})
 
+    #######################################
     def _endpoint(self, path: str) -> str:
         """
         Constructs the full endpoint URL by appending the given path to the base endpoint.
@@ -61,11 +64,14 @@ class API:
         """
         return self.endpoint_base + path
 
+    #######################################
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_random_exponential(max=5),
         retry=retry_if_exception_type(Timeout),
     )
+    @sleep_and_retry
+    @limits(calls=1000, period=60)
     def get(self, path: str, params: Dict = None, timeout=15) -> Dict:
         """
         Sends a GET request to the specified path with optional parameters.
@@ -91,11 +97,14 @@ class API:
 
         return response.json()
 
+    #######################################
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_random_exponential(max=5),
         retry=retry_if_exception_type(Timeout),
     )
+    @sleep_and_retry
+    @limits(calls=100, period=60)
     def post(self, path: str, body: Dict, params: Dict = None, timeout=15) -> Dict:
         """
         Sends a POST request to the specified path with optional parameters.
@@ -122,11 +131,14 @@ class API:
 
         return response.json()
 
+    #######################################
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_random_exponential(max=5),
         retry=retry_if_exception_type(Timeout),
     )
+    @sleep_and_retry
+    @limits(calls=1000, period=60)
     def delete(self, path: str, timeout=5):
         """
         Sends a DELETE request to the specified path.
@@ -150,11 +162,13 @@ class API:
             response.raise_for_status()
 
 
+#################################################
 class ContentStore(API):
     """
     This class provides methods to interact with the ContentStore API.
     """
 
+    #######################################
     def __init__(self, api_key: str = None) -> None:
         """
         Initializes the API client.
@@ -172,11 +186,13 @@ class ContentStore(API):
         )
 
 
+#################################################
 class DeepSights(API):
     """
     This class provides methods to interact with the DeepSights API.
     """
 
+    #######################################
     def __init__(self, api_key: str = None) -> None:
         """
         Initializes the API client.

@@ -4,10 +4,10 @@ from datetime import datetime, timezone
 from typing import List, Callable
 
 
-##############################################
+#################################################
 def rrf_merge_single(items: List, ranks: Callable, weights: List) -> List:
     """
-    Merges the given items from a single list but with different ranks using the Rank Reciprocal Fusion (RRF) method.
+    Merges the given items from a single list but with different ranks using Rank Reciprocal Fusion (RRF).
 
     Args:
         items (List): The items to be merged.
@@ -15,7 +15,7 @@ def rrf_merge_single(items: List, ranks: Callable, weights: List) -> List:
         weights (List): The weights to be used for the items.
 
     Returns:
-        List: A list of merged items.
+        List: A list of merged, re-ranked items.
     """
     l = len(items)
 
@@ -32,17 +32,18 @@ def rrf_merge_single(items: List, ranks: Callable, weights: List) -> List:
     return [items[ix] for ix, _ in sorted_rank]
 
 
-##############################################
+#################################################
 def rrf_merge_multi(items: List[List], weights: List) -> List:
     """
-    Merges the given items from multiple lists using the Rank Reciprocal Fusion (RRF) method.
+    Merges the given items from multiple lists using Rank Reciprocal Fusion (RRF).
+    Assumes the items in each list have an "id" attribute.
 
     Args:
         items (List[List]): The lists of items to be merged.
         weights (List): The weights to be used for each item list.
 
     Returns:
-        List: A list of merged items.
+        List: A list of merged, re-ranked items.
     """
     rank_score = {}
     item_by_id = {}
@@ -64,19 +65,20 @@ def rrf_merge_multi(items: List[List], weights: List) -> List:
     return [item_by_id[item_id] for item_id, _ in sorted_rank]
 
 
-##############################################
+#################################################
 def promote_exact_matches(query: str, results: List) -> List:
     """
-    Promotes exact and partial matches in the search results based on the query.
+    Promotes exact and partial matches in the results based on the query.
+    Assumes the items in the results have an "id" and "title" attribute.
 
     Args:
-        query (str): The search query.
-        results (List[BaseModel]): The list of search results.
+        query (str): The query.
+        results (List[BaseModel]): The list of results.
 
     Returns:
         List: The search results with exact and partial matches promoted.
     """
-    # apply exact match promotion
+    # determine terms in the query
     terms = shlex.split(query)
 
     # find documents with exact title matches, using regex
@@ -121,13 +123,14 @@ def promote_exact_matches(query: str, results: List) -> List:
     return results
 
 
-##############################################
+#################################################
 def rerank_by_recency(
     results: List,
     recency_weight: float = None,
 ) -> List:
     """
-    Reranks the search results based on recency weight.
+    Reranks the search results based on recency weight. If recency weight is None, the results are not reranked.
+    Assumes the items in the results have a "timestamp" attribute. Sets the "score_rank", "age_rank", and "rank" attributes.s
 
     Args:
         results (List): The list of search results to be reranked.

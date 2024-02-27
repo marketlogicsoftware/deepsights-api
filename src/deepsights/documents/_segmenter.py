@@ -2,6 +2,7 @@ import re
 from typing import List, Dict
 
 
+#############################################
 def _parse_page(content):
     """
     Construct segments as semantic units from the given page structure, guessing from font sizes.
@@ -57,6 +58,7 @@ def _parse_page(content):
     return segments
 
 
+#############################################
 def segment_landscape_page(page_structure: Dict) -> List[Dict]:
     """Segmentation strategy that follows pages
 

@@ -9,6 +9,7 @@ from deepsights.contentstore._search import (
 )
 
 
+#################################################
 def news_vector_search(
     api: ContentStore,
     query_embedding: List,
@@ -33,7 +34,9 @@ def news_vector_search(
     return contentstore_vector_search(
         api,
         item_type="NEWS",
-        search_result=lambda i: NewsSearchResult(**i),
+        search_result=lambda i: NewsSearchResult(
+            **dict(source_name=i["source"]["display_name"], **i)
+        ),
         query_embedding=query_embedding,
         min_score=min_score,
         max_results=max_results,
@@ -41,6 +44,7 @@ def news_vector_search(
     )
 
 
+#################################################
 def news_text_search(
     api: ContentStore,
     query: str,
@@ -62,13 +66,16 @@ def news_text_search(
     return contentstore_text_search(
         api,
         item_type="NEWS",
-        search_result=lambda i: NewsSearchResult(**i),
+        search_result=lambda i: NewsSearchResult(
+            **dict(source_name=i["source"]["display_name"], **i)
+        ),
         query=query,
         max_results=max_results,
         recency_weight=recency_weight,
     )
 
 
+#################################################
 def news_search(
     api: ContentStore,
     query: str = None,
@@ -96,7 +103,9 @@ def news_search(
     return contentstore_search(
         api,
         item_type="NEWS",
-        search_result=lambda i: NewsSearchResult(**i),
+        search_result=lambda i: NewsSearchResult(
+            **dict(source_name=i["source"]["display_name"], **i)
+        ),
         query=query,
         query_embedding=query_embedding,
         max_results=max_results,

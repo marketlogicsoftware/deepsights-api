@@ -6,9 +6,7 @@ from deepsights.documents._model import DocumentPageSearchResult, DocumentSearch
 from deepsights.documents.load import documents_load, document_pages_load
 
 
-##################################################
-# PAGE SEARCH
-##################################################
+#################################################
 def document_pages_search(
     api: DeepSights,
     query_embedding: List,
@@ -47,7 +45,7 @@ def document_pages_search(
     # parse
     results = [
         DocumentPageSearchResult(
-            document_id=d["artifact_id"], page_id=p["part_id"], score=p["score"]
+            document_id=d["artifact_id"], id=p["part_id"], score=p["score"]
         )
         for d in response["results"]
         for p in d["result_parts"]
@@ -59,18 +57,16 @@ def document_pages_search(
     # load pages if requested
     if load_pages:
         # make sure pages are loaded
-        document_pages_load(api, page_ids=[r.page_id for r in results])
+        document_pages_load(api, page_ids=[r.id for r in results])
 
         # reference the pages
         for r in results:
-            r.page = get_document_page(r.page_id)
+            r.page = get_document_page(r.id)
 
     return results
 
 
-##################################################
-# DOCUMENT SEARCH
-##################################################
+#################################################
 def documents_search(
     api: DeepSights,
     query: str = None,
@@ -134,7 +130,7 @@ def documents_search(
     # now construct the document matches in rank order
     results = [
         DocumentSearchResult(
-            document_id=document_id,
+            id=document_id,
             score_rank=rank + 1,
             pages=[p for p in page_matches if p.document_id == document_id],
         )
@@ -144,11 +140,11 @@ def documents_search(
     # load documents if requested
     if load_documents or recency_weight:
         # make sure the documents are loaded
-        documents_load(api, document_ids=[r.document_id for r in results])
+        documents_load(api, document_ids=[r.id for r in results])
 
         # reference the documents & set timestamp
         for r in results:
-            r.document = get_document(r.document_id)
+            r.document = get_document(r.id)
             r.timestamp = r.document.timestamp
 
         # apply recency weight

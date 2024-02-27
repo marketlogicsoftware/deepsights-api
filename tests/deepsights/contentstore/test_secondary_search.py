@@ -11,7 +11,6 @@ with open("tests/data/test_data.json", "rt", encoding="utf-8") as f:
     test_query = data["question"]
 
 
-def test_secondary_text_search():
     results = secondary_text_search(
         deepsights.ContentStore(),
         query=test_query,
@@ -21,6 +20,7 @@ def test_secondary_text_search():
     assert len(results) == 5
     for ix, result in enumerate(results):
         assert result.id is not None
+        assert result.source is not None
 
         if ix > 0:
             assert result.rank > results[ix - 1].rank

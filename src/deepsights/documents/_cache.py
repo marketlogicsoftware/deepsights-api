@@ -1,9 +1,7 @@
 from deepsights.utils import create_global_lru_cache
 
-##################################################
-# DOCUMENT CACHE
-##################################################
-# Create a global static LRU cache for 1k docs
+#############################################
+# a global static LRU cache for 1k docs
 (
     set_document,
     has_document,
@@ -12,7 +10,8 @@ from deepsights.utils import create_global_lru_cache
     get_document_cache_size,
 ) = create_global_lru_cache(1000)
 
-# Create a global static LRU cache for 100k pages
+#############################################
+# a global static LRU cache for 100k pages
 (
     set_document_page,
     has_document_page,

@@ -15,7 +15,7 @@ def test_document_pages_search_plain():
     assert len(results) > 0
     for ix, result in enumerate(results):
         assert result.document_id is not None
-        assert result.page_id is not None
+        assert result.id is not None
         assert result.score > 0
 
         if ix > 0:
@@ -41,7 +41,7 @@ def test_document_pages_search_with_loading():
     assert len(results) == 10
     for ix, result in enumerate(results):
         assert result.document_id is not None
-        assert result.page_id is not None
+        assert result.id is not None
         assert result.score > 0
         assert result.page is not None
 
@@ -57,12 +57,12 @@ def test_documents_search_plain():
 
     assert len(results) > 0
     for ix, result in enumerate(results):
-        assert result.document_id is not None
+        assert result.id is not None
         assert result.document is None
         assert result.pages is not None
         assert len(result.pages) > 0
         for page in result.pages:
-            assert page.page_id is not None
+            assert page.id is not None
         assert result.score_rank == ix + 1
         assert result.age_rank is None
         assert result.rank == result.score_rank
@@ -78,12 +78,12 @@ def test_documents_search_with_recency_low():
 
     assert len(results) > 0
     for ix, result in enumerate(results):
-        assert result.document_id is not None
+        assert result.id is not None
         assert result.document is not None
         assert result.pages is not None
         assert len(result.pages) > 0
         for page in result.pages:
-            assert page.page_id is not None
+            assert page.id is not None
         assert result.rank == ix + 1
         assert result.score_rank == result.rank
         assert result.age_rank is not None
@@ -99,12 +99,12 @@ def test_documents_search_with_recency_high():
 
     assert len(results) > 0
     for ix, result in enumerate(results):
-        assert result.document_id is not None
+        assert result.id is not None
         assert result.document is not None
         assert result.pages is not None
         assert len(result.pages) > 0
         for page in result.pages:
-            assert page.page_id is not None
+            assert page.id is not None
         assert result.rank == ix + 1
         assert result.score_rank is not None
         assert result.age_rank == result.rank
@@ -120,12 +120,12 @@ def test_documents_search_with_loading():
 
     assert len(results) > 0
     for ix, result in enumerate(results):
-        assert result.document_id is not None
+        assert result.id is not None
         assert result.document is not None
         assert result.pages is not None
         assert len(result.pages) > 0
         for page in result.pages:
-            assert page.page_id is not None
+            assert page.id is not None
             assert page.page is not None
         assert result.score_rank == ix + 1
         assert result.age_rank is None

@@ -1,15 +1,15 @@
 from typing import Optional
 from datetime import datetime
-from pydantic import BaseModel, Field
+from pydantic import Field
+from deepsights.utils import DeepSightsIdTitleModel
 
 
-class ContentStoreSearchResult(BaseModel):
+#################################################
+class ContentStoreSearchResult(DeepSightsIdTitleModel):
     """
     Represents a search result from the content store.
 
     Attributes:
-        id (str): The ID of the item.
-        title (str): The title of the item.
         description (str): The description of the item.
         image_url (str): The URL of the item's image.
         url (str): The URL of the item.
@@ -17,39 +17,38 @@ class ContentStoreSearchResult(BaseModel):
         source (Optional[str], optional): The source of the item. Defaults to None.
     """
 
-    id: str
-    title: str
-    description: str
-    image_url: str
-    url: str
-    timestamp: Optional[datetime] = Field(alias="published_at", default=None)
-    source: dict
+    description: str = Field(description="The description of the item.")
+    image_url: str = Field(description="The URL of the item's thumbnail image.")
+    url: str = Field(description="The URL of the item.")
+    timestamp: Optional[datetime] = Field(
+        alias="published_at",
+        default=None,
+        description="The timestamp of the item's publication; may be None.",
+    )
+    source: Optional[str] = Field(
+        alias="source_name",
+        description="The name of the item's source; may be None.", default=None
+    )
+    rank: Optional[int] = Field(
+        default=None, description="The final rank of the item in the search results."
+    )
+    score_rank: Optional[int] = Field(
+        default=None, description="The rank of the item based on its score."
+    )
+    age_rank: Optional[int] = Field(
+        default=None, description="The rank of the item based on its age; may be None."
+    )
 
-    rank: Optional[int] = None
-    score_rank: Optional[int] = None
-    age_rank: Optional[int] = None
 
-    @property
-    def source_name(self) -> str:
-        return self.source.get("display_name")
-
-    def __repr__(self) -> str:
-        return f"ContentStoreSearchResult@{self.id} - {self.title}"
-
-
+#################################################
 class NewsSearchResult(ContentStoreSearchResult):
     """
     Represents a search result of a news article in the content store.
     """
 
-    def __repr__(self) -> str:
-        return f"NewsSearchResult@{self.id} - {self.title}"
 
-
+#################################################
 class SecondarySearchResult(ContentStoreSearchResult):
     """
     Represents a search result of a secondary report in the DeepSights API.
     """
-
-    def __repr__(self) -> str:
-        return f"SecondarySearchResult@{self.id} - {self.title}"

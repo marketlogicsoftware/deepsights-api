@@ -9,6 +9,7 @@ from deepsights.utils import (
 )
 
 
+#################################################
 def contentstore_vector_search(
     api: ContentStore,
     query_embedding: List,
@@ -58,6 +59,7 @@ def contentstore_vector_search(
     return rerank_by_recency(results, recency_weight=recency_weight)
 
 
+#################################################
 def contentstore_text_search(
     api: ContentStore,
     query: str,
@@ -104,6 +106,7 @@ def contentstore_text_search(
     return rerank_by_recency(results, recency_weight=recency_weight)
 
 
+#################################################
 def contentstore_search(
     api: ContentStore,
     item_type: str,

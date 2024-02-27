@@ -15,12 +15,12 @@ def test_answers():
         assert answer.id is not None
         assert answer.artifact_id is not None
         assert answer.artifact_type == "DOCUMENT"
-        assert answer.summary is not None
+        assert answer.answer is not None
         assert answer.timestamp is not None
         assert answer.pages is not None
         assert len(answer.pages) > 0
         for page in answer.pages:
-            assert page.page_id is not None
+            assert page.id is not None
             assert page.page_number is not None
             assert page.score is not None
             assert page.score >= 0.0
