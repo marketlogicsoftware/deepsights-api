@@ -43,7 +43,8 @@ def test_document_pages_search_with_loading():
         assert result.document_id is not None
         assert result.id is not None
         assert result.score > 0
-        assert result.page is not None
+        assert result.text is not None
+        assert result.page_number is not None
 
         if ix > 0:
             assert result.score <= results[ix - 1].score
@@ -59,9 +60,9 @@ def test_documents_search_plain():
     for ix, result in enumerate(results):
         assert result.id is not None
         assert result.document is None
-        assert result.pages is not None
-        assert len(result.pages) > 0
-        for page in result.pages:
+        assert result.page_matches is not None
+        assert len(result.page_matches) > 0
+        for page in result.page_matches:
             assert page.id is not None
         assert result.score_rank == ix + 1
         assert result.age_rank is None
@@ -80,9 +81,9 @@ def test_documents_search_with_recency_low():
     for ix, result in enumerate(results):
         assert result.id is not None
         assert result.document is not None
-        assert result.pages is not None
-        assert len(result.pages) > 0
-        for page in result.pages:
+        assert result.page_matches is not None
+        assert len(result.page_matches) > 0
+        for page in result.page_matches:
             assert page.id is not None
         assert result.rank == ix + 1
         assert result.score_rank == result.rank
@@ -101,9 +102,9 @@ def test_documents_search_with_recency_high():
     for ix, result in enumerate(results):
         assert result.id is not None
         assert result.document is not None
-        assert result.pages is not None
-        assert len(result.pages) > 0
-        for page in result.pages:
+        assert result.page_matches is not None
+        assert len(result.page_matches) > 0
+        for page in result.page_matches:
             assert page.id is not None
         assert result.rank == ix + 1
         assert result.score_rank is not None
@@ -122,11 +123,11 @@ def test_documents_search_with_loading():
     for ix, result in enumerate(results):
         assert result.id is not None
         assert result.document is not None
-        assert result.pages is not None
-        assert len(result.pages) > 0
-        for page in result.pages:
+        assert result.page_matches is not None
+        assert len(result.page_matches) > 0
+        for page in result.page_matches:
             assert page.id is not None
-            assert page.page is not None
+            assert page.text is not None
         assert result.score_rank == ix + 1
         assert result.age_rank is None
         assert result.rank == result.score_rank

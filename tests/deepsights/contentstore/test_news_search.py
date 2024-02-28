@@ -1,7 +1,7 @@
 import json
 import pytest
 import deepsights
-from deepsights.contentstore.news import news_text_search, news_vector_search
+from deepsights.contentstore.news import _news_text_search, _news_vector_search
 
 # get the test data from JSON
 with open("tests/data/test_data.json", "rt", encoding="utf-8") as f:
@@ -11,7 +11,7 @@ with open("tests/data/test_data.json", "rt", encoding="utf-8") as f:
 
 
 def test_news_text_search():
-    results = news_text_search(
+    results = _news_text_search(
         deepsights.ContentStore(),
         query=test_query,
         max_results=5,
@@ -27,7 +27,7 @@ def test_news_text_search():
 
 
 def test_news_text_search_with_recency_low():
-    results = news_text_search(
+    results = _news_text_search(
         deepsights.ContentStore(),
         query=test_query,
         max_results=10,
@@ -43,7 +43,7 @@ def test_news_text_search_with_recency_low():
 
 
 def test_news_text_search_with_recency_high():
-    results = news_text_search(
+    results = _news_text_search(
         deepsights.ContentStore(),
         query=test_query,
         max_results=10,
@@ -59,7 +59,7 @@ def test_news_text_search_with_recency_high():
 
 
 def test_news_vector_search():
-    results = news_vector_search(
+    results = _news_vector_search(
         deepsights.ContentStore(),
         test_embedding,
         max_results=5,
@@ -74,7 +74,7 @@ def test_news_vector_search():
 
 
 def test_news_vector_search_with_recency_low():
-    results = news_vector_search(
+    results = _news_vector_search(
         deepsights.ContentStore(),
         test_embedding,
         max_results=10,
@@ -90,7 +90,7 @@ def test_news_vector_search_with_recency_low():
 
 
 def test_news_vector_search_with_recency_high():
-    results = news_vector_search(
+    results = _news_vector_search(
         deepsights.ContentStore(),
         test_embedding,
         max_results=10,
@@ -120,7 +120,7 @@ def test_news_hybrid_search_only_vector():
         max_results=5,
     )
 
-    vector_results = news_vector_search(
+    vector_results = _news_vector_search(
         deepsights.ContentStore(),
         test_embedding,
         max_results=5,
@@ -138,7 +138,7 @@ def test_news_hybrid_search_only_text():
         max_results=5,
     )
 
-    text_results = news_text_search(
+    text_results = _news_text_search(
         deepsights.ContentStore(),
         query=test_query,
         max_results=5,
@@ -157,13 +157,13 @@ def test_news_hybrid_search():
         max_results=10,
     )
 
-    vector_results = news_vector_search(
+    vector_results = _news_vector_search(
         deepsights.ContentStore(),
         query_embedding=test_embedding,
         max_results=10,
     )
 
-    text_results = news_text_search(
+    text_results = _news_text_search(
         deepsights.ContentStore(),
         query=test_query,
         max_results=10,
@@ -188,7 +188,7 @@ def test_news_hybrid_search_with_vector_high():
         vector_weight=0.99999,
     )
 
-    vector_results = news_vector_search(
+    vector_results = _news_vector_search(
         deepsights.ContentStore(),
         query_embedding=test_embedding,
         max_results=10,
@@ -208,7 +208,7 @@ def test_news_hybrid_search_with_vector_low():
         vector_weight=0.00001,
     )
 
-    text_results = news_text_search(
+    text_results = _news_text_search(
         deepsights.ContentStore(),
         query=test_query,
         max_results=10,

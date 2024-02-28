@@ -1,3 +1,21 @@
+# Copyright 2024 Market Logic Software AG. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""
+This module contains the base functions to interact with the DeepSights API.
+"""
+
 import os
 import logging
 from typing import Dict
@@ -26,12 +44,14 @@ class API:
         Initializes the API client.
 
         Args:
+
             endpoint_base (str): The base URL of the API endpoint.
             api_key (str): The API key to be used for authentication.
             api_key_env_var (str, optional): The name of the environment variable that contains the API key.
                 If not provided, the API key must be passed directly as an argument. Defaults to None.
 
         Raises:
+
             AssertionError: If neither API key nor environment variable is provided.
         """
 
@@ -41,15 +61,15 @@ class API:
         ), "Must provide either API key or environment variable"
         if not api_key:
             api_key = os.environ.get(api_key_env_var)
-        self.api_key = api_key
+        self._api_key = api_key
 
         # record endpoint base
-        self.endpoint_base = endpoint_base
-        if not self.endpoint_base.endswith("/"):
-            self.endpoint_base += "/"
+        self._endpoint_base = endpoint_base
+        if not self._endpoint_base.endswith("/"):
+            self._endpoint_base += "/"
         # prepare session
-        self.session = Session()
-        self.session.headers.update({"X-Api-Key": self.api_key})
+        self._session = Session()
+        self._session.headers.update({"X-Api-Key": self._api_key})
 
     #######################################
     def _endpoint(self, path: str) -> str:
@@ -57,12 +77,14 @@ class API:
         Constructs the full endpoint URL by appending the given path to the base endpoint.
 
         Args:
+
             path (str): The path to be appended to the base endpoint.
 
         Returns:
+
             str: The full endpoint URL.
         """
-        return self.endpoint_base + path
+        return self._endpoint_base + path
 
     #######################################
     @retry(
@@ -77,15 +99,17 @@ class API:
         Sends a GET request to the specified path with optional parameters.
 
         Args:
+
             path (str): The path to send the GET request to.
             params (Dict, optional): Optional parameters to include in the request. Defaults to None
             timeout (int, optional): The timeout in seconds for the request. Defaults to 15.
 
         Returns:
+
             The JSON body of the server's response to the request.
         """
 
-        response = self.session.get(
+        response = self._session.get(
             self._endpoint(path), params=params, timeout=timeout
         )
 
@@ -110,16 +134,18 @@ class API:
         Sends a POST request to the specified path with optional parameters.
 
         Args:
+
             path (str): The path to send the POST request to.
             body (Dict): The JSON body to include in the request.
             params (Dict, optional): Optional parameters to include in the request. Defaults to None.
             timeout (int, optional): The timeout in seconds for the request. Defaults to 15.
 
         Returns:
+
             Dict: The JSON body of the server's response to the request.
         """
 
-        response = self.session.post(
+        response = self._session.post(
             self._endpoint(path), params=params, json=body, timeout=timeout
         )
 
@@ -144,16 +170,15 @@ class API:
         Sends a DELETE request to the specified path.
 
         Args:
+
             path (str): The path to send the DELETE request to.
             timeout (int, optional): The timeout for the request in seconds. Defaults to 5.
 
         Raises:
-            HTTPError: If the DELETE request fails with a non-200 status code.
 
-        Returns:
-            None
+            HTTPError: If the DELETE request fails with a non-200 status code.
         """
-        response = self.session.delete(self._endpoint(path), timeout=timeout)
+        response = self._session.delete(self._endpoint(path), timeout=timeout)
 
         if response.status_code != 200:
             logging.error(
@@ -174,10 +199,8 @@ class ContentStore(API):
         Initializes the API client.
 
         Args:
-            api_key (str, optional): The API key to be used for authentication. If not provided, it will be fetched from the environment variable CONTENTSTORE_API_KEY.
 
-        Returns:
-            None
+            api_key (str, optional): The API key to be used for authentication. If not provided, it will be fetched from the environment variable CONTENTSTORE_API_KEY.
         """
         super().__init__(
             endpoint_base="https://apigee.mlsdevcloud.com/secondary-content/api/",
@@ -198,10 +221,8 @@ class DeepSights(API):
         Initializes the API client.
 
         Args:
+        
             api_key (str, optional): The API key to be used for authentication. If not provided, it will be fetched from the environment variable DEEPSIGHTS_API_KEY.
-
-        Returns:
-            None
         """
         super().__init__(
             endpoint_base="https://api.deepsights.ai/ds/v1/",

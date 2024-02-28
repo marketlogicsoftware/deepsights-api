@@ -1,3 +1,21 @@
+# Copyright 2024 Market Logic Software AG. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""
+This module contains the models for answers in the DeepSights API.
+"""
+
 from typing import Optional, List
 from datetime import datetime
 from pydantic import Field
@@ -10,6 +28,7 @@ class BaseAnswer(DeepSightsIdTitleModel):
     Represents a base answer object.
 
     Attributes:
+
         artifact_id (str): The ID of the artifact.
         artifact_type (str): The type of the artifact.
         summary (str): The summary of the answer.
@@ -34,6 +53,11 @@ class BaseAnswer(DeepSightsIdTitleModel):
 class DocumentAnswerPageReference(DeepSightsIdModel):
     """
     Represents a reference to a specific page in a document with a corresponding score.
+
+    Attributes:
+
+        page_number (int): The page number in the document.
+        score (float): The score of the page in the document.
     """
 
     page_number: int = Field(
@@ -47,7 +71,8 @@ class DocumentAnswer(BaseAnswer):
     """
     Represents an answer that is a document.
 
-    Attributes
+    Attributes:
+
         artifact_type (str): The type of the artifact, which is set to "DOCUMENT".
         pages (Optional[int]): The total number of pages in the document.
     """

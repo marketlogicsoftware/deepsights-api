@@ -1,7 +1,7 @@
 import json
 import pytest
 import deepsights
-from deepsights.contentstore.secondary import secondary_text_search, secondary_vector_search
+from deepsights.contentstore.secondary import _secondary_text_search, _secondary_vector_search
 
 
 # get the test data from JSON
@@ -11,7 +11,7 @@ with open("tests/data/test_data.json", "rt", encoding="utf-8") as f:
     test_query = data["question"]
 
 
-    results = secondary_text_search(
+    results = _secondary_text_search(
         deepsights.ContentStore(),
         query=test_query,
         max_results=5,
@@ -27,7 +27,7 @@ with open("tests/data/test_data.json", "rt", encoding="utf-8") as f:
 
 
 def test_secondary_text_search_with_recency_low():
-    results = secondary_text_search(
+    results = _secondary_text_search(
         deepsights.ContentStore(),
         query=test_query,
         max_results=10,
@@ -43,7 +43,7 @@ def test_secondary_text_search_with_recency_low():
 
 
 def test_secondary_text_search_with_recency_high():
-    results = secondary_text_search(
+    results = _secondary_text_search(
         deepsights.ContentStore(),
         query=test_query,
         max_results=10,
@@ -59,7 +59,7 @@ def test_secondary_text_search_with_recency_high():
 
 
 def test_secondary_vector_search():
-    results = secondary_vector_search(
+    results = _secondary_vector_search(
         deepsights.ContentStore(),
         test_embedding,
         max_results=5,
@@ -74,7 +74,7 @@ def test_secondary_vector_search():
 
 
 def test_secondary_vector_search_with_recency_low():
-    results = secondary_vector_search(
+    results = _secondary_vector_search(
         deepsights.ContentStore(),
         test_embedding,
         max_results=10,
@@ -90,7 +90,7 @@ def test_secondary_vector_search_with_recency_low():
 
 
 def test_secondary_vector_search_with_recency_high():
-    results = secondary_vector_search(
+    results = _secondary_vector_search(
         deepsights.ContentStore(),
         test_embedding,
         max_results=10,
@@ -120,7 +120,7 @@ def test_secondary_hybrid_search_only_vector():
         max_results=5,
     )
 
-    vector_results = secondary_vector_search(
+    vector_results = _secondary_vector_search(
         deepsights.ContentStore(),
         test_embedding,
         max_results=5,
@@ -138,7 +138,7 @@ def test_secondary_hybrid_search_only_text():
         max_results=5,
     )
 
-    text_results = secondary_text_search(
+    text_results = _secondary_text_search(
         deepsights.ContentStore(),
         query=test_query,
         max_results=5,
@@ -157,13 +157,13 @@ def test_secondary_hybrid_search():
         max_results=10,
     )
 
-    vector_results = secondary_vector_search(
+    vector_results = _secondary_vector_search(
         deepsights.ContentStore(),
         query_embedding=test_embedding,
         max_results=10,
     )
 
-    text_results = secondary_text_search(
+    text_results = _secondary_text_search(
         deepsights.ContentStore(),
         query=test_query,
         max_results=10,
@@ -188,7 +188,7 @@ def test_secondary_hybrid_search_with_vector_high():
         vector_weight=0.99999,
     )
 
-    vector_results = secondary_vector_search(
+    vector_results = _secondary_vector_search(
         deepsights.ContentStore(),
         query_embedding=test_embedding,
         max_results=10,
@@ -208,7 +208,7 @@ def test_secondary_hybrid_search_with_vector_low():
         vector_weight=0.00001,
     )
 
-    text_results = secondary_text_search(
+    text_results = _secondary_text_search(
         deepsights.ContentStore(),
         query=test_query,
         max_results=10,

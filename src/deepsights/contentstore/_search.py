@@ -1,3 +1,21 @@
+# Copyright 2024 Market Logic Software AG. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""
+This module contains the base functions to search the ContentStore.
+"""
+
 from typing import List
 from concurrent.futures import ThreadPoolExecutor
 from pydantic import BaseModel
@@ -23,6 +41,7 @@ def contentstore_vector_search(
     Perform a contentstore vector search using the provided query embedding.
 
     Args:
+
         api (DeepSights): The DeepSights API instance.
         query_embedding (List): The query embedding vector.
         item_type (str): The type of items to search for.
@@ -32,6 +51,7 @@ def contentstore_vector_search(
         recency_weight (float, optional): The weight to apply to recency in result ranking. Defaults to None.
 
     Returns:
+
         List[BaseModel]: The re-ranked search results.
     """
     assert query_embedding, "The 'query_embedding' argument is required."
@@ -72,6 +92,7 @@ def contentstore_text_search(
     Perform a contentstore text search using the specified query and item type.
 
     Args:
+
         api (DeepSights): The DeepSights API instance.
         query (str): The search query.
         item_type (str): The type of items to search for.
@@ -80,6 +101,7 @@ def contentstore_text_search(
         recency_weight (float, optional): The weight assigned to recency in result ranking. Defaults to None.
 
     Returns:
+
         List[BaseModel]: The re-ranked search results.
     """
     assert query is not None, "Query must be provided."
@@ -122,6 +144,7 @@ def contentstore_search(
     Perform a hybrid search combining text search and vector search.
 
     Args:
+
         api (ContentStore): The ContentStore API instance.
         item_type (str): The type of items to search for.
         search_result (BaseModel): The search result model.
@@ -133,6 +156,7 @@ def contentstore_search(
         promote_exact_match (bool, optional): Whether to promote exact matches to the top of the results. Defaults to False.
 
     Returns:
+
         List[BaseModel]: The list of search results.
     """
     assert query or not promote_exact_match, "Promoting exact matches requires a query."

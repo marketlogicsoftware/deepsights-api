@@ -1,8 +1,25 @@
+# Copyright 2024 Market Logic Software AG. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""
+This module contains the functions to search for documents and document pages based on their vector embeddings.
+"""
+
 from typing import List
 from deepsights.api import DeepSights
 from deepsights.utils import rerank_by_recency, promote_exact_matches
-from deepsights.documents._cache import get_document, get_document_page
-from deepsights.documents._model import DocumentPageSearchResult, DocumentSearchResult
+from deepsights.documents.model import DocumentPageSearchResult, DocumentSearchResult
 from deepsights.documents.load import documents_load, document_pages_load
 
 
@@ -18,6 +35,7 @@ def document_pages_search(
     Searches for document pages based on their vector embeddings.
 
     Args:
+
         api (ds.DeepSights): The DeepSights API instance.
         query_embedding (List): The query vector embedding.
         min_score (float, optional): The minimum score threshold for search results. Defaults to 0.7.
@@ -25,6 +43,7 @@ def document_pages_search(
         load_pages (bool, optional): Whether to load the pages associated with the search results. Defaults to False.
 
     Returns:
+
         List[DocumentPageSearchResult]: The list of DocumentPageSearchResult objects representing the search results.
     """
     assert query_embedding, "The 'query_embedding' argument is required."
@@ -59,10 +78,6 @@ def document_pages_search(
         # make sure pages are loaded
         document_pages_load(api, page_ids=[r.id for r in results])
 
-        # reference the pages
-        for r in results:
-            r.page = get_document_page(r.id)
-
     return results
 
 
@@ -81,6 +96,7 @@ def documents_search(
     Searches for document based on their vector embeddings.
 
     Args:
+
         api (ds.DeepSights): The DeepSights API instance.
         query (str): The search query; currently only used for promoting exact matches.
         query_embedding (List): The query vector embedding.
@@ -91,6 +107,7 @@ def documents_search(
         load_documents (bool, optional): Whether to load documents and matching pages associated with the search results. Defaults to False.
 
     Returns:
+
         List: The DocumentSearchResults.
     """
     assert query_embedding, "The 'query_embedding' argument is required."
@@ -132,7 +149,7 @@ def documents_search(
         DocumentSearchResult(
             id=document_id,
             score_rank=rank + 1,
-            pages=[p for p in page_matches if p.document_id == document_id],
+            page_matches=[p for p in page_matches if p.document_id == document_id],
         )
         for rank, document_id in enumerate(document_rank_score)
     ]
@@ -142,10 +159,14 @@ def documents_search(
         # make sure the documents are loaded
         documents_load(api, document_ids=[r.id for r in results])
 
-        # reference the documents & set timestamp
-        for r in results:
-            r.document = get_document(r.id)
-            r.timestamp = r.document.timestamp
+        # load pages if requested
+        if load_documents:
+            page_ids = [p.id for r in results for p in r.page_matches]
+            document_pages_load(api, page_ids=page_ids)
+
+            # order pages by their number
+            for r in results:
+                r.page_matches.sort(key=lambda x: x.page_number)
 
         # apply recency weight
         results = rerank_by_recency(results, recency_weight=recency_weight)

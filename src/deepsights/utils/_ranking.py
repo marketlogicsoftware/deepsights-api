@@ -1,3 +1,21 @@
+# Copyright 2024 Market Logic Software AG. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""
+This module contains utility functions for ranking search results.
+"""
+
 import re
 import shlex
 from datetime import datetime, timezone
@@ -10,11 +28,13 @@ def rrf_merge_single(items: List, ranks: Callable, weights: List) -> List:
     Merges the given items from a single list but with different ranks using Rank Reciprocal Fusion (RRF).
 
     Args:
+
         items (List): The items to be merged.
         ranks (function): The function to calculate the ranks of the items.
         weights (List): The weights to be used for the items.
 
     Returns:
+
         List: A list of merged, re-ranked items.
     """
     l = len(items)
@@ -39,10 +59,12 @@ def rrf_merge_multi(items: List[List], weights: List) -> List:
     Assumes the items in each list have an "id" attribute.
 
     Args:
+
         items (List[List]): The lists of items to be merged.
         weights (List): The weights to be used for each item list.
 
     Returns:
+
         List: A list of merged, re-ranked items.
     """
     rank_score = {}
@@ -72,10 +94,12 @@ def promote_exact_matches(query: str, results: List) -> List:
     Assumes the items in the results have an "id" and "title" attribute.
 
     Args:
+
         query (str): The query.
         results (List[BaseModel]): The list of results.
 
     Returns:
+
         List: The search results with exact and partial matches promoted.
     """
     # determine terms in the query
@@ -133,10 +157,12 @@ def rerank_by_recency(
     Assumes the items in the results have a "timestamp" attribute. Sets the "score_rank", "age_rank", and "rank" attributes.s
 
     Args:
+
         results (List): The list of search results to be reranked.
         recency_weight (float, optional): The weight assigned to recency in the reranking process.
 
     Returns:
+    
         List: The reranked search results.
     """
     # record score rank

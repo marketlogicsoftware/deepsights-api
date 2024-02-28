@@ -1,3 +1,21 @@
+# Copyright 2024 Market Logic Software AG. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""
+This module contains the functions to load documents from the DeepSights API.
+"""
+
 from typing import List
 from deepsights.api import DeepSights
 from deepsights.utils import run_in_parallel
@@ -11,7 +29,7 @@ from deepsights.documents._cache import (
     has_document_page,
     set_document_page,
 )
-from deepsights.documents._model import Document, DocumentPage
+from deepsights.documents.model import Document, DocumentPage
 from deepsights.documents._segmenter import segment_landscape_page
 
 
@@ -21,10 +39,12 @@ def document_pages_load(api: DeepSights, page_ids: List[str]):
     Load document pages from the cache or fetch them from the API if not cached.
 
     Args:
+
         api (DeepSights): The DeepSights API object.
         page_ids (List[str]): A list of page IDs to load.
 
     Returns:
+
         List[DocumentPage]: A list of loaded document pages.
     """
 
@@ -75,12 +95,14 @@ def documents_load(
     Load documents from the DeepSights API.
 
     Args:
+
         api (DeepSights): The DeepSights API object.
         document_ids (List[str]): A list of document IDs to load.
         force_load (bool, optional): Whether to force load the documents, even if in cache. Defaults to False.
         load_pages (bool, optional): Whether to load the pages of the documents. Defaults to False.
 
     Returns:
+
         List[Document]: A list of loaded documents.
     """
     assert (
