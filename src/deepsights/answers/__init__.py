@@ -17,4 +17,10 @@ This module contains the functions to retrieve answers from the DeepSights API.
 """
 
 from deepsights.answers.model import DocumentAnswer, DocumentAnswerPageReference
-from deepsights.answers.answer import answers_get
+from deepsights.answers.answer import (
+    answer_set_create,
+    answer_set_wait_for_completion,
+    answer_set_get,
+    answer_set_get_sync,
+)
+from deepsights.answers.answer_v1 import answers_get

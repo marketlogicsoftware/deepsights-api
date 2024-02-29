@@ -16,9 +16,9 @@
 This module contains the functions to retrieve reports from the DeepSights API.
 """
 
-import time
 from ratelimit import sleep_and_retry, limits
 from deepsights.api import DeepSights
+from deepsights.minions._minions import minion_wait_for_completion
 from deepsights.reports.model import Report
 
 
@@ -62,23 +62,7 @@ def report_wait_for_completion(api: DeepSights, report_id: str, timeout=600):
 
         ValueError: If the report fails to complete.
     """
-    # wait for completion
-    start = time.time()
-    while time.time() - start < timeout:
-        response = api.get(f"/minion-commander-service/desk-researches/{report_id}")[
-            "minion_job"
-        ]
-
-        if response["status"] in ("CREATED", "STARTED"):
-            time.sleep(2)
-        elif response["status"].startswith("FAILED"):
-            raise ValueError(
-                f"Report {report_id} failed to complete: {response['error_reason']}"
-            )
-        else:
-            return
-
-    raise ValueError(f"Report {report_id} failed to complete within {timeout} seconds.")
+    return minion_wait_for_completion(api, "desk-researches", report_id, timeout)
 
 
 #################################################

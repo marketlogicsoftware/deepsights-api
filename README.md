@@ -60,7 +60,7 @@ print(response.answer)
 print(response.schema_human())
 ```
 
-See [main.py](https://github.com/marketlogicsoftware/deepsights-api/blob/main/main.py) for more examples.
+See [main.py](https://github.com/marketlogicsoftware/deepsights-api/blob/main/main.py) for more examples. Note that all non-trivial return value from DeepSights API functions are [pydantic objects](https://docs.pydantic.dev/latest/).
 
 
 ## Documentation

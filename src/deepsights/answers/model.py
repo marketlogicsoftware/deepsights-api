@@ -18,7 +18,7 @@ This module contains the models for answers in the DeepSights API.
 
 from typing import Optional, List
 from datetime import datetime
-from pydantic import Field
+from pydantic import Field, BaseModel
 from deepsights.utils import DeepSightsIdModel, DeepSightsIdTitleModel
 
 
@@ -29,19 +29,24 @@ class BaseAnswer(DeepSightsIdTitleModel):
 
     Attributes:
 
+        answer (str): The summary of the answer.
         artifact_id (str): The ID of the artifact.
         artifact_type (str): The type of the artifact.
-        summary (str): The summary of the answer.
+        artifact_description (Optional[str]): The human-readable summary of the artifact.
         timestamp (datetime, optional): The publication date of the answer. Defaults to None.
     """
 
+    answer: str = Field(alias="summary", description="The answer from the artifact.")
     artifact_id: str = Field(
         description="The ID of the artifact from which the answer is derived."
     )
     artifact_type: str = Field(
         description="The type of the artifact from which the answer is derived."
     )
-    answer: str = Field(alias="summary", description="The answer from the artifact.")
+    artifact_description: Optional[str] = Field(
+        alias="artifact_summary",
+        description="The human-readable summary of the artifact.",
+    )
     timestamp: Optional[datetime] = Field(
         alias="publication_date",
         default=None,
@@ -52,18 +57,16 @@ class BaseAnswer(DeepSightsIdTitleModel):
 #################################################
 class DocumentAnswerPageReference(DeepSightsIdModel):
     """
-    Represents a reference to a specific page in a document with a corresponding score.
+    Represents a reference to a specific page in a document.
 
     Attributes:
 
         page_number (int): The page number in the document.
-        score (float): The score of the page in the document.
     """
 
     page_number: int = Field(
-        alias="number", description="The page number in the document."
+        alias="page_number", description="The page number in the document."
     )
-    score: float = Field(description="The score of the page in the document.")
 
 
 #################################################
@@ -84,4 +87,19 @@ class DocumentAnswer(BaseAnswer):
     pages: List[DocumentAnswerPageReference] = Field(
         alias="page_references",
         description="The references to the pages in the document.",
+    )
+
+
+#################################################
+class DocumentAnswerSet(BaseModel):
+    """
+    Represents an answer set that contains document answers.
+
+    Attributes:
+
+        answers (List[DocumentAnswer]): The list of document answers in the set.
+    """
+
+    answers: List[DocumentAnswer] = Field(
+        description="The list of document answers in the set."
     )

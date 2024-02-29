@@ -16,28 +16,91 @@
 This module contains the functions to retrieve answers from the DeepSights API.
 """
 
-from typing import List
 from deepsights.api import DeepSights
-from deepsights.answers.model import DocumentAnswer
+from deepsights.minions._minions import minion_wait_for_completion
+from deepsights.answers.model import DocumentAnswerSet, DocumentAnswer
 
 
 #################################################
-def answers_get(api: DeepSights, question: str, timeout=30) -> List[DocumentAnswer]:
+def answer_set_create(api: DeepSights, question: str) -> str:
     """
-    Retrieves answers for a given question.
+    Creates a new answer set by submitting a question to the DeepSights API.
 
     Args:
 
-        api (DeepSights): The DeepSights API client.
-        question (str): The question to retrieve answers for.
-        timeout (int, optional): The timeout for the request. Defaults to 30.
+        api (DeepSights): An instance of the DeepSights API client.
+        question (str): The question to be submitted for the answers.
 
     Returns:
 
-        List[DocumentAnswer]: The list of answers for the question.
+        str: The ID of the created answer's minion job.
     """
 
-    body = {"search_term": question}
-    response = api.post("/answer-service/answer-sets", body=body, timeout=timeout)
+    body = {"input": question}
+    response = api.post("/minion-commander-service/answer-sets", body=body, timeout=5)
 
-    return [DocumentAnswer.model_validate(answer) for answer in response["answers"]]
+    return response["minion_job"]["id"]
+
+
+#################################################
+def answer_set_wait_for_completion(api: DeepSights, answer_set_id: str, timeout=15):
+    """
+    Waits for the completion of an answer set.
+
+    Args:
+
+        api (DeepSights): The DeepSights API instance.
+        answer_set_id (str): The ID of the answer set.
+        timeout (int, optional): The maximum time to wait for the answer set to complete, in seconds.
+        Defaults to 15.
+
+    Raises:
+
+        ValueError: If the answer set fails to complete.
+    """
+    return minion_wait_for_completion(api, "answer-sets", answer_set_id, timeout)
+
+
+#################################################
+def answer_set_get(api: DeepSights, answer_set_id: str) -> DocumentAnswerSet:
+    """
+    Loads an answer set from the DeepSights API.
+
+    Args:
+
+        api (DeepSights): An instance of the DeepSights API client.
+        answer_set_id (str): The ID of the answer set to load.
+
+    Returns:
+
+        DocumentAnswerSet: The answer set.
+    """
+    response = api.get(f"/minion-commander-service/answer-sets/{answer_set_id}")
+
+    return DocumentAnswerSet(
+        answers=[
+            DocumentAnswer.model_validate(answer)
+            for answer in response["context"]["summarized_search_results"]
+        ]
+    )
+
+
+#################################################
+def answer_set_get_sync(api: DeepSights, question: str) -> DocumentAnswerSet:
+    """
+    Submits a question to the DeepSights API and waits for the answer set to complete.
+
+    Args:
+
+        api (DeepSights): An instance of the DeepSights API client.
+        question (str): The question to be submitted for the answers.
+
+    Returns:
+
+        DocumentAnswerSet: The answer set.
+    """
+    answer_set_id = answer_set_create(api, question)
+
+    answer_set_wait_for_completion(api, answer_set_id)
+
+    return answer_set_get(api, answer_set_id)

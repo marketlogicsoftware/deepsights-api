@@ -1,4 +1,4 @@
-name: deepsights-api-docs
+name: deepsights-generate-docs
 
 # build the documentation whenever there are new commits on main
 on:
