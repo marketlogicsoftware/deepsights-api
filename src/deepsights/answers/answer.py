@@ -43,7 +43,7 @@ def answer_set_create(api: DeepSights, question: str) -> str:
 
 
 #################################################
-def answer_set_wait_for_completion(api: DeepSights, answer_set_id: str, timeout=15):
+def answer_set_wait_for_completion(api: DeepSights, answer_set_id: str, timeout=30):
     """
     Waits for the completion of an answer set.
 
@@ -52,7 +52,7 @@ def answer_set_wait_for_completion(api: DeepSights, answer_set_id: str, timeout=
         api (DeepSights): The DeepSights API instance.
         answer_set_id (str): The ID of the answer set.
         timeout (int, optional): The maximum time to wait for the answer set to complete, in seconds.
-        Defaults to 15.
+        Defaults to 30.
 
     Raises:
 
