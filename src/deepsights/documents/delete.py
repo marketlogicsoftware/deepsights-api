@@ -67,6 +67,7 @@ def document_wait_for_deletion(api: DeepSights, document_id: str, timeout: int =
             response = api.get(f"/artifact-service/artifacts/{document_id}")
         except requests.exceptions.HTTPError as e:
             if e.response.status_code == 404:
+                remove_document(document_id)
                 return
             else:
                 raise e

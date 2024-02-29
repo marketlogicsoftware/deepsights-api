@@ -35,6 +35,7 @@ from deepsights.documents.model import (
     DocumentSearchResult,
 )
 from deepsights.documents.upload import document_upload, document_wait_for_processing
+from deepsights.documents.download import document_download
 from deepsights.documents.delete import documents_delete, document_wait_for_deletion
 from deepsights.documents.load import (
     documents_load,

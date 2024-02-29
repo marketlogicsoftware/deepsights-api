@@ -36,12 +36,19 @@ def document_upload(api: DeepSights, document_filename: str):
     if not os.path.exists(document_filename):
         raise FileNotFoundError(f"Document {document_filename} does not exist.")
 
+    # MIME map
+    mime_map = {
+        "pdf": "application/pdf",
+        "ppt": "application/vnd.ms-powerpoint",
+        "pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        "doc": "application/msword",
+        "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    }
+
     # check proper file extension: must be PDF, PPT, PPTX, DOC, DOCX
-    if not document_filename.lower().endswith(
-        (".pdf", ".ppt", ".pptx", ".doc", ".docx")
-    ):
+    if not any (document_filename.lower().endswith(extension) for extension in mime_map):
         raise ValueError(
-            f"Document {document_filename} is not a valid file type. Only supporting PDF, PPT, PPTX, DOC, DOCX."
+            f"Document {document_filename} is not a valid file type. Only supporting {', '.join(mime_map)}."
         )
 
     # get file basename
@@ -61,8 +68,8 @@ def document_upload(api: DeepSights, document_filename: str):
     # upload document
     with open(document_filename, "rb") as f:
         headers = {
-            "Content-Type": document_filename.split(".")[-1].upper(),
-            "x-goog-if-generation-match": 0,
+            "Content-Type": mime_map[document_filename.split(".")[-1].lower()],
+            "x-goog-if-generation-match": "0",
         }
         response = requests.put(upload_link, headers=headers, data=f, timeout=30)
 

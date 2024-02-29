@@ -7,6 +7,9 @@ with open("tests/data/test_data.json", "rt", encoding="utf-8") as f:
     test_embedding = data["embedding"]
     test_question = data["question"]
 
+#################################################
+# DEEPSIGHTS API
+
 # create a new instance of the DeepSights API, assuming api key is set in the environment as DEEPSIGHTS_API_KEY
 ds = deepsights.DeepSights()
 
@@ -42,6 +45,15 @@ print(top_document.title)
 
 # what fields are available?
 print(top_document.schema_human())
+
+# obtain an answer
+answer = deepsights.answers_get(
+    ds,
+    question=test_question,
+)
+
+#################################################
+# CONTENTSTORE API
 
 # create a new instance of the ContentStore API, assuming api key is set in the environment as CONTENTSTORE_API_KEY
 cs = deepsights.ContentStore()
@@ -82,10 +94,4 @@ hybrid_results_promote = deepsights.secondary_search(
     vector_weight=0.7,
     recency_weight=0.9,
     promote_exact_match=True,
-)
-
-# obtain an answer
-answer = deepsights.answers_get(
-    ds,
-    question=test_question,
 )

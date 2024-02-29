@@ -1,4 +1,24 @@
+# Copyright 2024 Market Logic Software AG. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""
+This module contains the tests for the DeepSights ContentStore news search functionality.
+"""
+
+import re
 import json
+import shlex
 import pytest
 import deepsights
 from deepsights.contentstore.news import _news_text_search, _news_vector_search
@@ -11,6 +31,16 @@ with open("tests/data/test_data.json", "rt", encoding="utf-8") as f:
 
 
 def test_news_text_search():
+    """
+    Test case for performing a text search on news content.
+
+    This function tests the `_news_text_search` method of the `ContentStore` class.
+    It verifies that the search results contain the expected number of items,
+    and that each result has a valid ID and source. It also checks that the rank
+    of each result is greater than the rank of the previous result.
+
+    Note: This test assumes the existence of a `test_query` variable.
+    """
     results = _news_text_search(
         deepsights.ContentStore(),
         query=test_query,
@@ -27,6 +57,17 @@ def test_news_text_search():
 
 
 def test_news_text_search_with_recency_low():
+    """
+    Test the news text search function with a low recency weight.
+
+    This test verifies that the news text search function returns results
+    when the recency weight is set to a low value. It checks that the
+    returned results have valid IDs, ranks, score ranks, and age ranks,
+    and that the final rank is identical to the score rank.
+
+    Note: This test assumes the existence of a `test_query` variable.
+    """
+
     results = _news_text_search(
         deepsights.ContentStore(),
         query=test_query,
@@ -43,6 +84,16 @@ def test_news_text_search_with_recency_low():
 
 
 def test_news_text_search_with_recency_high():
+    """
+    Test the news text search function with a high recency weight.
+
+    This test verifies that the news text search function returns results
+    when the recency weight is set to a high value. It checks that the
+    returned results have valid IDs, ranks, score ranks, and age ranks,
+    and that the final rank is identical to the age rank.
+
+    Note: This test assumes the existence of a `test_query` variable.
+    """
     results = _news_text_search(
         deepsights.ContentStore(),
         query=test_query,
@@ -59,6 +110,14 @@ def test_news_text_search_with_recency_high():
 
 
 def test_news_vector_search():
+    """
+    Test the news vector search function.
+
+    This function tests the _news_vector_search function by calling it with a test embedding
+    and asserting that the returned results have the expected length and properties.
+
+    Note: This test assumes the existence of a `test_embedding` variable.
+    """
     results = _news_vector_search(
         deepsights.ContentStore(),
         test_embedding,
@@ -74,6 +133,15 @@ def test_news_vector_search():
 
 
 def test_news_vector_search_with_recency_low():
+    """
+    Test the news vector search with a low recency weight.
+
+    This test function performs a news vector search using a low recency weight
+    and asserts that the results meet certain criteria especially
+    that the score rank is identical to the final rank.
+
+    Note: This test assumes the existence of a `test_embedding` variable.
+    """
     results = _news_vector_search(
         deepsights.ContentStore(),
         test_embedding,
@@ -90,6 +158,15 @@ def test_news_vector_search_with_recency_low():
 
 
 def test_news_vector_search_with_recency_high():
+    """
+    Test the news vector search with high recency weight.
+
+    This test function performs a news vector search using a high recency weight
+    and asserts that the returned results meet certain criteria, especially
+    that the age rank is identical to the final rank.
+
+    Note: This test assumes the existence of a `test_embedding` variable.
+    """
     results = _news_vector_search(
         deepsights.ContentStore(),
         test_embedding,
@@ -106,6 +183,13 @@ def test_news_vector_search_with_recency_high():
 
 
 def test_news_hybrid_search_fail():
+    """
+    Test case to verify that a ValueError is raised when performing a hybrid news search
+    with no query or query embedding.
+
+    Raises:
+        ValueError: If the `deepsights.news_search` function does not raise a ValueError.
+    """
     with pytest.raises(ValueError):
         deepsights.news_search(
             deepsights.ContentStore(),
@@ -114,6 +198,14 @@ def test_news_hybrid_search_fail():
 
 
 def test_news_hybrid_search_only_vector():
+    """
+    Test the hybrid news search function with only query vector input.
+
+    This test case verifies that the hybrid news search function returns the same results as the vector search function
+    when only the query vector is provided as input.
+
+    Note: This test assumes the existence of a `test_embedding` variable.
+    """
     hybrid_results = deepsights.news_search(
         deepsights.ContentStore(),
         query_embedding=test_embedding,
@@ -132,6 +224,15 @@ def test_news_hybrid_search_only_vector():
 
 
 def test_news_hybrid_search_only_text():
+    """
+    Test case for performing hybrid search with only text query.
+
+    This test case verifies that the hybrid search function returns the same results
+    when performing a search using only the text query parameter, as a plain
+    text query does.
+
+    Note: This test assumes the existence of a `test_query` variable.
+    """
     hybrid_results = deepsights.news_search(
         deepsights.ContentStore(),
         query=test_query,
@@ -150,6 +251,16 @@ def test_news_hybrid_search_only_text():
 
 
 def test_news_hybrid_search():
+    """
+    Test case for hybrid news search.
+
+    This function tests the hybrid news search functionality by performing a search using both
+    query embeddings and text queries. It compares the results from the hybrid search with the
+    results from vector search and text search, ensuring that all the results from the hybrid
+    search are present in the results from vector search and text search.
+
+    Note: This test assumes the existence of `test_embedding` and `test_query` variables.
+    """
     hybrid_results = deepsights.news_search(
         deepsights.ContentStore(),
         query_embedding=test_embedding,
@@ -180,6 +291,12 @@ def test_news_hybrid_search():
 
 
 def test_news_hybrid_search_with_vector_high():
+    """
+    Test case for performing hybrid search with a high vector weight, checking
+    that the final ranking is that same as the vector ranking.
+
+    Note: This test assumes the existence of `test_embedding` and `test_query` variables.
+    """
     hybrid_results = deepsights.news_search(
         deepsights.ContentStore(),
         query_embedding=test_embedding,
@@ -200,6 +317,12 @@ def test_news_hybrid_search_with_vector_high():
 
 
 def test_news_hybrid_search_with_vector_low():
+    """
+    Test case for performing hybrid search with a low vector weight, checking
+    that the final ranking is that same as the text ranking.
+
+    Note: This test assumes the existence of `test_embedding` and `test_query` variables.
+    """
     hybrid_results = deepsights.news_search(
         deepsights.ContentStore(),
         query_embedding=test_embedding,
@@ -220,26 +343,56 @@ def test_news_hybrid_search_with_vector_low():
 
 
 def test_news_text_search_with_title_promotion():
-    query = "gen x trends mintel"
+    """
+    Test case for performing a news text search with title promotion.
 
+    This test case verifies that the hybrid search function returns the expected results
+    when searching for news articles based on a query with title promotion enabled.
+    """
+    query = "gen x candy"
+
+    # first find top 10 results without title promotion and hard recency weight
     hybrid_results_no_promotion = deepsights.news_search(
         deepsights.ContentStore(),
         query=query,
-        max_results=10,
+        max_results=50,
         promote_exact_match=False,
-        recency_weight=0.9,
+        recency_weight=0.99,
     )
 
+    # helper to find a result that matches the query exactly
+    def matches(query, result):
+        return all(
+            [
+                re.search(
+                    rf"(?:\b|\s|^){re.escape(term)}(?:\b|\s|$|\W)",
+                    result.title,
+                    re.IGNORECASE,
+                )
+                for term in shlex.split(query)
+            ]
+        )
+
+    # must not match top result
+    assert not matches(query, hybrid_results_no_promotion[0])
+
+    # find first result with index > 1 with that matches the query exactly
+    ix = 0
+    for ix, result in enumerate(hybrid_results_no_promotion[1:], 1):
+        if matches(query, result):
+            break
+
+    assert ix > 0
+    assert ix < len(hybrid_results_no_promotion) - 1
+
+    # now retrieve with title promotion
     hybrid_results = deepsights.news_search(
         deepsights.ContentStore(),
         query=query,
-        max_results=10,
+        max_results=50,
         promote_exact_match=True,
-        recency_weight=0.9,
+        recency_weight=0.99,
     )
 
-    assert hybrid_results[0].id != hybrid_results_no_promotion[0].id
-    assert all([term in hybrid_results[0].title.lower() for term in query.split()])
-    assert not all(
-        [term in hybrid_results_no_promotion[0].title.lower() for term in query.split()]
-    )
+    assert hybrid_results[0].id == hybrid_results_no_promotion[ix].id
+    assert matches(query, hybrid_results[0])

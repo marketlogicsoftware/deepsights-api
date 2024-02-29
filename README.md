@@ -4,7 +4,7 @@ This is the official Python client library for the [DeepSights API](https://apip
 
 `deepsights-api` supports access to the DeepSights API for retrieving answers and reports, as well as searching and managing internal documents. It also supports the ContentStore API for direct searching of news articles and secondary reports.
 
-The library requires Python 3.10 or higher.
+The library has been built and tested on Python 3.10 - 3.12.
 
 ## Getting started
 
