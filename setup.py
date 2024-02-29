@@ -29,7 +29,7 @@ with io.open(reqs_filename, encoding="utf-8") as reqs_file:
 
 setup(
     name="deepsights-api",
-    version="0.1.0",
+    version="0.1.2",
     author="Market Logic Software",
     author_email="info@marketlogicsoftware.com",
     description="Python library for the DeepSights APIs",
