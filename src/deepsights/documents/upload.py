@@ -117,8 +117,8 @@ def document_wait_for_processing(api: DeepSights, document_id: str, timeout: int
             raise ValueError(
                 f"Document {document_id} failed to process: {response['error_message']}"
             )
-        else:
-            time.sleep(2)
+        
+        time.sleep(2)
 
     # timeout?
     if time.time() - start >= timeout:

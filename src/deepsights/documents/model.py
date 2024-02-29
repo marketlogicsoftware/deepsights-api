@@ -157,5 +157,5 @@ class DocumentSearchResult(DeepSightsIdModel):
     def __repr__(self) -> str:
         if self.document is not None:
             return f"{self.__class__.__name__}@{self.id}: {self.document.title}"
-        else:
-            return super().__repr__()
+
+        return super().__repr__()
