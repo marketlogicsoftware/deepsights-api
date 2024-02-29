@@ -19,7 +19,7 @@ This module contains the functions to delete documents from the DeepSights API.
 import time
 from typing import List
 import requests
-from deepsights import DeepSights
+from deepsights.api import DeepSights
 from deepsights.documents._cache import remove_document
 
 
@@ -69,8 +69,8 @@ def document_wait_for_deletion(api: DeepSights, document_id: str, timeout: int =
             if e.response.status_code == 404:
                 remove_document(document_id)
                 return
-            else:
-                raise e
+            
+            raise e
 
         if response["status"] in ("DELETING", "SCHEDULED_FOR_DELETING"):
             time.sleep(2)

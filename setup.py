@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+This module defines the packaging of deepsights-api.
+"""
+
 import io
 import os
 from setuptools import setup

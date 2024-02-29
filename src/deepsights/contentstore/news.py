@@ -18,7 +18,7 @@ This module contains the functions to retrieve news articles from the DeepSights
 
 from typing import List
 
-from deepsights import ContentStore
+from deepsights.api import ContentStore
 from deepsights.contentstore.model import NewsSearchResult
 from deepsights.contentstore._search import (
     contentstore_text_search,

@@ -110,4 +110,4 @@ def segment_landscape_page(page_structure: Dict) -> List[Dict]:
     segments = list(filter(lambda s: len(s) > 40, _parse_page(content)))
 
     # now merge into one
-    return "\n\n".join([s for s in segments])
+    return "\n\n".join(segments)

@@ -19,7 +19,7 @@ This module contains the functions to upload documents to the DeepSights API.
 import os
 import time
 import requests
-from deepsights import DeepSights
+from deepsights.api import DeepSights
 from deepsights.documents.load import documents_load
 
 
@@ -112,7 +112,8 @@ def document_wait_for_processing(api: DeepSights, document_id: str, timeout: int
         response = api.get(f"/artifact-service/artifacts/{document_id}")
         if response["status"] == "COMPLETED":
             break
-        elif response["status"].startswith("FAILED"):
+        
+        if response["status"].startswith("FAILED"):
             raise ValueError(
                 f"Document {document_id} failed to process: {response['error_message']}"
             )
