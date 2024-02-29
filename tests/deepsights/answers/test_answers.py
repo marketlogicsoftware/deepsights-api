@@ -36,7 +36,7 @@ def test_answers_v1():
         assert answer.id is not None
         assert answer.artifact_id is not None
         assert answer.artifact_type == "DOCUMENT"
-        assert answer.artifact_description is not None
+        assert answer.artifact_description is None
         assert answer.answer is not None
         assert answer.timestamp is not None
         assert answer.pages is not None

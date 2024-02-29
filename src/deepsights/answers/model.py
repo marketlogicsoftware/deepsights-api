@@ -18,7 +18,7 @@ This module contains the models for answers in the DeepSights API.
 
 from typing import Optional, List
 from datetime import datetime
-from pydantic import Field, BaseModel
+from pydantic import Field, BaseModel,  AliasChoices
 from deepsights.utils import DeepSightsIdModel, DeepSightsIdTitleModel
 
 
@@ -45,6 +45,7 @@ class BaseAnswer(DeepSightsIdTitleModel):
     )
     artifact_description: Optional[str] = Field(
         alias="artifact_summary",
+        default=None,
         description="The human-readable summary of the artifact.",
     )
     timestamp: Optional[datetime] = Field(
@@ -65,7 +66,8 @@ class DocumentAnswerPageReference(DeepSightsIdModel):
     """
 
     page_number: int = Field(
-        alias="page_number", description="The page number in the document."
+        validation_alias=AliasChoices("page_number", "number"),
+        description="The page number in the document."
     )
 
 
