@@ -64,8 +64,8 @@ print(top_document.title)
 # what fields are available?
 print(top_document.schema_human())
 
-# obtain an answer
-answer = deepsights.answers_get(
+# obtain an answer set
+answer_set = deepsights.answer_set_get_sync(
     ds,
     question=test_question,
 )

@@ -48,7 +48,7 @@ To retrieve an answer from DeepSights:
 import deepsights
 
 # with key from environment
-ds = DeepSights.deepsights()
+ds = deepsights.DeepSights()
 
 # obtain answer
 response = deepsights.answer_get(ds, "What are emerging food consumption moments for Gen Z?")
