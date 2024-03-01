@@ -33,14 +33,14 @@ with io.open(reqs_filename, encoding="utf-8") as reqs_file:
 
 setup(
     name="deepsights-api",
-    version="0.1.2",
+    version="0.1.7",
     author="Market Logic Software",
     author_email="info@marketlogicsoftware.com",
     description="Python library for the DeepSights APIs",
     long_description=readme,
     long_description_content_type="text/markdown",
     url="https://github.com/marketlogicsoftware/deepsights-api",
-    packages=["src/deepsights"],
+    packages=["deepsights"],
     install_requires=reqs,
     license="Apache 2.0",
     classifiers=[
@@ -54,5 +54,5 @@ setup(
     python_requires=">=3.10",
     project_urls={
         "Documentation": "https://marketlogicsoftware.github.io/deepsights-api/"
-    }
+    },
 )

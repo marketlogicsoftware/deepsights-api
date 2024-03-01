@@ -20,6 +20,7 @@ import json
 import deepsights
 
 # get the test embedding from JSON
+# THIS REQUIRES THE TEST DATA TO BE AVAILABLE FROM GITHUB REPO
 with open("tests/data/test_data.json", "rt", encoding="utf-8") as f:
     data = json.load(f)
     test_embedding = data["embedding"]
