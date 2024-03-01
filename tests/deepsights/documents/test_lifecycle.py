@@ -100,7 +100,9 @@ def test_documents_upload_and_delete():
         assert e.response.status_code == 404
 
     # wait for deletion
-    deepsights.document_wait_for_deletion(deepsights.DeepSights(), artifact_id)
+    deepsights.document_wait_for_deletion(
+        deepsights.DeepSights(), artifact_id, timeout=120
+    )
 
     # assert gone
     with pytest.raises(requests.exceptions.HTTPError):
