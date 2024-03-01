@@ -65,4 +65,4 @@ See [main.py](https://github.com/marketlogicsoftware/deepsights-api/blob/main/ma
 
 ## Documentation
 
-Access the [documentation on github]().
+Access the [documentation on github](https://marketlogicsoftware.github.io/deepsights-api/).

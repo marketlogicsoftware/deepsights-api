@@ -52,4 +52,7 @@ setup(
         "Programming Language :: Python :: 3.12",
     ],
     python_requires=">=3.10",
+    project_urls={
+        "Documentation": "https://marketlogicsoftware.github.io/deepsights-api/"
+    }
 )
