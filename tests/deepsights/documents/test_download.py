@@ -65,13 +65,12 @@ def test_document_download():
     using a DeepSights instance and verifying the existence of the downloaded file.
 
     """
-    original_filename, local_filename = deepsights.document_download(
+    local_filename = deepsights.document_download(
         deepsights.DeepSights(),
         test_document_id,
         tempfile.gettempdir(),
     )
 
-    assert original_filename is not None
     assert os.path.exists(local_filename)
 
     os.remove(local_filename)

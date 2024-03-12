@@ -154,7 +154,7 @@ def rerank_by_recency(
 ) -> List:
     """
     Reranks the search results based on recency weight. If recency weight is None, the results are not reranked.
-    Assumes the items in the results have a "timestamp" attribute. Sets the "score_rank", "age_rank", and "rank" attributes.s
+    Assumes the items in the results have a "publication_date" attribute. Sets the "score_rank", "age_rank", and "rank" attributes.s
 
     Args:
 
@@ -175,7 +175,7 @@ def rerank_by_recency(
         age_by_item_id = {}
         for r in results:
             age_by_item_id[r.id] = (
-                (datetime.now(timezone.utc) - r.timestamp).days if r.timestamp else None
+                (datetime.now(timezone.utc) - r.publication_date).days if r.publication_date else None
             )
 
         age_by_item_id = {

@@ -22,7 +22,7 @@ from deepsights.answers.model import DocumentAnswerSet, DocumentAnswer
 
 
 #################################################
-def answer_set_create(api: DeepSights, question: str) -> str:
+def answerset_create(api: DeepSights, question: str) -> str:
     """
     Creates a new answer set by submitting a question to the DeepSights API.
 
@@ -43,14 +43,14 @@ def answer_set_create(api: DeepSights, question: str) -> str:
 
 
 #################################################
-def answer_set_wait_for_completion(api: DeepSights, answer_set_id: str, timeout=30):
+def answerset_wait_for_completion(api: DeepSights, answerset_id: str, timeout=30):
     """
     Waits for the completion of an answer set.
 
     Args:
 
         api (DeepSights): The DeepSights API instance.
-        answer_set_id (str): The ID of the answer set.
+        answerset_id (str): The ID of the answer set.
         timeout (int, optional): The maximum time to wait for the answer set to complete, in seconds.
         Defaults to 30.
 
@@ -58,24 +58,24 @@ def answer_set_wait_for_completion(api: DeepSights, answer_set_id: str, timeout=
 
         ValueError: If the answer set fails to complete.
     """
-    return minion_wait_for_completion(api, "answer-sets", answer_set_id, timeout)
+    return minion_wait_for_completion(api, "answer-sets", answerset_id, timeout)
 
 
 #################################################
-def answer_set_get(api: DeepSights, answer_set_id: str) -> DocumentAnswerSet:
+def answerset_get(api: DeepSights, answerset_id: str) -> DocumentAnswerSet:
     """
     Loads an answer set from the DeepSights API.
 
     Args:
 
         api (DeepSights): An instance of the DeepSights API client.
-        answer_set_id (str): The ID of the answer set to load.
+        answerset_id (str): The ID of the answer set to load.
 
     Returns:
 
         DocumentAnswerSet: The answer set.
     """
-    response = api.get(f"/minion-commander-service/answer-sets/{answer_set_id}")
+    response = api.get(f"/minion-commander-service/answer-sets/{answerset_id}")
 
     return DocumentAnswerSet(
         answers=[
@@ -86,7 +86,7 @@ def answer_set_get(api: DeepSights, answer_set_id: str) -> DocumentAnswerSet:
 
 
 #################################################
-def answer_set_get_sync(api: DeepSights, question: str) -> DocumentAnswerSet:
+def answerset_get_sync(api: DeepSights, question: str) -> DocumentAnswerSet:
     """
     Submits a question to the DeepSights API and waits for the answer set to complete.
 
@@ -99,8 +99,8 @@ def answer_set_get_sync(api: DeepSights, question: str) -> DocumentAnswerSet:
 
         DocumentAnswerSet: The answer set.
     """
-    answer_set_id = answer_set_create(api, question)
+    answerset_id = answerset_create(api, question)
 
-    answer_set_wait_for_completion(api, answer_set_id)
+    answerset_wait_for_completion(api, answerset_id)
 
-    return answer_set_get(api, answer_set_id)
+    return answerset_get(api, answerset_id)

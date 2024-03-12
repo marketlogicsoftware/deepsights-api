@@ -28,8 +28,8 @@ def answers_get(api: DeepSights, question: str, timeout=30) -> List[DocumentAnsw
     Retrieves answers for a given question.
 
     This function is deprecated and will be removed in a future release. 
-    Please use the answer_set_create, answer_set_wait_for_completion, 
-    and answer_set_get functions instead.
+    Please use the answerset_create, answerset_wait_for_completion, 
+    and answerset_get functions instead.
 
     Args:
 
@@ -46,7 +46,7 @@ def answers_get(api: DeepSights, question: str, timeout=30) -> List[DocumentAnsw
     logging.warning(
         "===== DEPRECATION WARNING =====\n"
         "The answers_get function is deprecated and will be removed in a future release. "
-        "Please use the answer_set_create, answer_set_wait_for_completion, and answer_set_get functions instead."
+        "Please use the answerset_create, answerset_wait_for_completion, and answerset_get functions instead."
     )
 
     body = {"search_term": question}

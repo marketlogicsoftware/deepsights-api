@@ -38,7 +38,7 @@ def test_answers_v1():
         assert answer.artifact_type == "DOCUMENT"
         assert answer.artifact_description is None
         assert answer.answer is not None
-        assert answer.timestamp is not None
+        assert answer.publication_date is not None
         assert answer.pages is not None
         assert len(answer.pages) > 0
         for page in answer.pages:
@@ -50,18 +50,18 @@ def test_answers_sync():
     """
     Test case for synchronous answer retrieval.
 
-    Retrieves the answer set using the synchronous method `answer_set_get_sync` and performs various assertions on the returned answer set.
+    Retrieves the answer set using the synchronous method `answerset_get_sync` and performs various assertions on the returned answer set.
     """
-    answer_set = deepsights.answer_set_get_sync(deepsights.DeepSights(), test_question)
+    answerset = deepsights.answerset_get_sync(deepsights.DeepSights(), test_question)
 
-    assert len(answer_set.answers) > 0
-    for answer in answer_set.answers:
+    assert len(answerset.answers) > 0
+    for answer in answerset.answers:
         assert answer.id is not None
         assert answer.artifact_id is not None
         assert answer.artifact_type == "DOCUMENT"
         assert answer.artifact_description is not None
         assert answer.answer is not None
-        assert answer.timestamp is not None
+        assert answer.publication_date is not None
         assert answer.pages is not None
         assert len(answer.pages) > 0
         for page in answer.pages:
@@ -73,18 +73,18 @@ def test_answers_async():
     """
     Test case for asynchronous answer retrieval.
     """
-    minion_job_id = deepsights.answer_set_create(deepsights.DeepSights(), test_question)
-    deepsights.answer_set_wait_for_completion(deepsights.DeepSights(), minion_job_id)
-    answer_set = deepsights.answer_set_get(deepsights.DeepSights(), minion_job_id)
+    minion_job_id = deepsights.answerset_create(deepsights.DeepSights(), test_question)
+    deepsights.answerset_wait_for_completion(deepsights.DeepSights(), minion_job_id)
+    answerset = deepsights.answerset_get(deepsights.DeepSights(), minion_job_id)
 
-    assert len(answer_set.answers) > 0
-    for answer in answer_set.answers:
+    assert len(answerset.answers) > 0
+    for answer in answerset.answers:
         assert answer.id is not None
         assert answer.artifact_id is not None
         assert answer.artifact_type == "DOCUMENT"
         assert answer.artifact_description is not None
         assert answer.answer is not None
-        assert answer.timestamp is not None
+        assert answer.publication_date is not None
         assert answer.pages is not None
         assert len(answer.pages) > 0
         for page in answer.pages:

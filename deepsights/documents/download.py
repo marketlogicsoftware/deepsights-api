@@ -17,47 +17,51 @@ This module contains the functions to download documents to the DeepSights API.
 """
 
 import os
-import urllib.request
 import tempfile
+import urllib.request
 from deepsights.api import DeepSights
 from deepsights.documents.load import documents_load
 
 
 #################################################
-def document_download(api: DeepSights, document_id: str, local_path: str):
+def document_download(
+    api: DeepSights, document_id: str, output_dir: str, force_download: bool = False
+) -> str:
     """
     Download a document from the DeepSights API.
 
     Args:
-
         api (DeepSights): An instance of the DeepSights API client.
         document_id (str): The ID of the document to download.
-        local_path (str): The local path to save the downloaded document in.
+        output_dir (str): The local directory to save the downloaded document in.
+        force_download (bool): If True, the document will be downloaded even if it already exists locally.
 
     Raises:
-
         FileNotFoundError: If the local directory does not exist.
         ValueError: If the document fails to download.
 
     Returns:
-
-        Tuple[str, str]: A tuple containing the file name and the local path of the downloaded document.
+        str: The local path of the downloaded document.
     """
     # check if local path exists
-    if not os.path.exists(local_path):
-        raise FileNotFoundError(f"Local directory {local_path} does not exist.")
+    if not os.path.exists(output_dir):
+        raise FileNotFoundError(f"Local directory {output_dir} does not exist.")
 
     # obtain real filename
     document = documents_load(api, [document_id])[0]
+    local_filename = f"{output_dir}/{document.id}-{document.file_name}"
 
-    # obtain download link
-    response = api.get(
-        f"/artifact-service/artifacts/{document_id}/gcs-object-link",
-    )
+    # already downloaded?
+    if force_download or not os.path.exists(local_filename):
+        # obtain download link
+        response = api.get(
+            f"/artifact-service/artifacts/{document_id}/gcs-object-link",
+        )
 
-    # download document to temp file
-    local_filename = tempfile.mktemp(dir=local_path)
-    urllib.request.urlretrieve(response["signed_link"], local_filename)
+        # download via temp file to prevent partial downloads
+        temp_filename = tempfile.mktemp(dir=output_dir)
+        urllib.request.urlretrieve(response["signed_link"], temp_filename)
+        os.rename(temp_filename, local_filename)
 
     # return the filename
-    return document.file_name, local_filename
+    return local_filename

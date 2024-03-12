@@ -42,3 +42,4 @@ from deepsights.documents.load import (
     document_pages_load,
 )
 from deepsights.documents.search import documents_search, document_pages_search
+from deepsights.documents.list import documents_list, SortingOrder, SortingField

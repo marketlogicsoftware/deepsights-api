@@ -13,14 +13,27 @@
 # limitations under the License.
 
 """
-This module contains the functions to retrieve answers from the DeepSights API.
+Test the documents_list function
 """
 
-from deepsights.answers.model import DocumentAnswer, DocumentAnswerPageReference
-from deepsights.answers.answer import (
-    answerset_create,
-    answerset_wait_for_completion,
-    answerset_get,
-    answerset_get_sync,
-)
-from deepsights.answers.answer_v1 import answers_get
+
+import deepsights
+
+
+def test_document_list():
+    number_of_results, documents = deepsights.documents_list(
+        deepsights.DeepSights(),
+        page_size=10,
+        page_number=0,
+        sort_order=deepsights.SortingOrder.DESCENDING,
+        sort_field=deepsights.SortingField.CREATION_DATE,
+        status_filter=["COMPLETED"],
+    )
+
+    assert number_of_results >= 10
+    assert len(documents) == 10
+
+    for document in documents:
+        assert document.id is not None
+        assert document.title is not None
+        assert document.status is not None

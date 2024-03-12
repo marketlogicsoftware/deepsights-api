@@ -66,7 +66,7 @@ print(top_document.title)
 print(top_document.schema_human())
 
 # obtain an answer set
-answer_set = deepsights.answer_set_get_sync(
+answerset = deepsights.answerset_get_sync(
     ds,
     question=test_question,
 )

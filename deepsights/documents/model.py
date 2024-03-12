@@ -54,7 +54,8 @@ class Document(DeepSightsIdTitleModel):
         file_name (str, optional): The name of the file.
         file_size (int, optional): The size of the file.
         description (str, optional): The description of the document.
-        timestamp (datetime, optional): The timestamp of the document.
+        publication_date (datetime, optional): The publication date of the document.
+        creation_date (datetime, optional): The creation date of the document.§
         page_ids (List[DocumentPage], optional): The list of page IDs in the document.
         number_of_pages (int, optional): The total number of pages in the document.
     """
@@ -72,10 +73,15 @@ class Document(DeepSightsIdTitleModel):
     description: Optional[str] = Field(
         alias="summary", description="The human-readable summary of the document."
     )
-    timestamp: Optional[datetime] = Field(
+    publication_date: Optional[datetime] = Field(
         alias="publication_date",
         default=None,
-        description="The publication timestamp of the document.",
+        description="The publication date of the document.",
+    )
+    creation_date: Optional[datetime] = Field(
+        alias="creation_date",
+        default=None,
+        description="The creation date of the document.",
     )
     page_ids: List[DocumentPage] = Field(
         default=None, description="The list of page IDs in the document."
@@ -86,10 +92,14 @@ class Document(DeepSightsIdTitleModel):
         description="The total number of pages in the document.",
     )
 
+    def __init__(self, **kwargs):
+        kwargs["creation_date"] = kwargs["origin"]["creation_time"]
+        super().__init__(**kwargs)
+
     @property
     def pages(self) -> List[DocumentPage]:
         return [get_document_page(page_id) for page_id in self.page_ids]
-
+    
 
 #################################################
 class DocumentPageSearchResult(DeepSightsIdModel):
@@ -149,9 +159,9 @@ class DocumentSearchResult(DeepSightsIdModel):
         return get_document(self.id)
 
     @property
-    def timestamp(self) -> datetime:
+    def publication_date(self) -> datetime:
         document = self.document
-        return document.timestamp if document else None
+        return document.publication_date if document else None
 
     #############################################
     def __repr__(self) -> str:

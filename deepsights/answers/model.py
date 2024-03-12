@@ -33,7 +33,7 @@ class BaseAnswer(DeepSightsIdTitleModel):
         artifact_id (str): The ID of the artifact.
         artifact_type (str): The type of the artifact.
         artifact_description (Optional[str]): The human-readable summary of the artifact.
-        timestamp (datetime, optional): The publication date of the answer. Defaults to None.
+        publication_date (datetime, optional): The publication date of the answer. Defaults to None.
     """
 
     answer: str = Field(alias="summary", description="The answer from the artifact.")
@@ -48,7 +48,7 @@ class BaseAnswer(DeepSightsIdTitleModel):
         default=None,
         description="The human-readable summary of the artifact.",
     )
-    timestamp: Optional[datetime] = Field(
+    publication_date: Optional[datetime] = Field(
         alias="publication_date",
         default=None,
         description="The publication date of the artifact from which the answer is derived.",

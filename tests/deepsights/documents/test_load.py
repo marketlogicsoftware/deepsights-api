@@ -65,7 +65,8 @@ def test_document_load():
     assert documents[0].file_name is not None
     assert documents[0].file_size > 0
     assert documents[0].description is not None
-    assert documents[0].timestamp is not None
+    assert documents[0].publication_date is not None
+    assert documents[0].creation_date is not None
     assert documents[0].page_ids is None
     assert documents[0].number_of_pages > 0
 
@@ -104,7 +105,7 @@ def test_document_load_with_pages():
     assert documents[0].file_name is not None
     assert documents[0].file_size > 0
     assert documents[0].description is not None
-    assert documents[0].timestamp is not None
+    assert documents[0].publication_date is not None
     assert len(documents[0].page_ids) > 0
     assert documents[0].number_of_pages > 0
 
