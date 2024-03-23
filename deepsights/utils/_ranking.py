@@ -154,7 +154,7 @@ def rerank_by_recency(
 ) -> List:
     """
     Reranks the search results based on recency weight. If recency weight is None, the results are not reranked.
-    Assumes the items in the results have a "publication_date" attribute. Sets the "score_rank", "age_rank", and "rank" attributes.s
+    Assumes the items in the results have a "publication_date" attribute. 
 
     Args:
 
@@ -166,8 +166,9 @@ def rerank_by_recency(
         List: The reranked search results.
     """
     # record score rank
+    score_ranks = {}
     for rank, result in enumerate(results):
-        result.score_rank = rank + 1
+        score_ranks[result.id] = rank
 
     # apply recency weight
     if recency_weight:
@@ -183,14 +184,12 @@ def rerank_by_recency(
         }
 
         # record age rank
-        age_rank_by_item_ids = {k: i for i, k in enumerate(age_by_item_id)}
-        for result in results:
-            result.age_rank = age_rank_by_item_ids[result.id] + 1
+        age_ranks = {k: i for i, k in enumerate(age_by_item_id)}
 
         # apply reciprocal rank fusion
         results = rrf_merge_single(
             results,
-            ranks=lambda x: (x.score_rank, x.age_rank),
+            ranks=lambda x: (score_ranks[x.id]+1, age_ranks[x.id]+1),
             weights=(1 - recency_weight, recency_weight),
         )
 

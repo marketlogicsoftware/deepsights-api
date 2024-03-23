@@ -136,8 +136,6 @@ class DocumentSearchResult(DeepSightsIdModel):
     Attributes:
 
         page_matches (List[DocumentPageSearchResult]): The search results for each page of the document.
-        score_rank (Optional[int]): The rank of the document based on the score.
-        age_rank (Optional[int]): The rank of the document based on the age.
         rank (Optional[int]): The overall rank of the document.
     """
 
@@ -146,12 +144,6 @@ class DocumentSearchResult(DeepSightsIdModel):
     )
     rank: Optional[int] = Field(
         default=None, description="The final rank of the item in the search results."
-    )
-    score_rank: Optional[int] = Field(
-        default=None, description="The rank of the item based on its score."
-    )
-    age_rank: Optional[int] = Field(
-        default=None, description="The rank of the item based on its age; may be None."
     )
 
     @property

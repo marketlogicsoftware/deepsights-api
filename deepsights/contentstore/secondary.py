@@ -23,7 +23,7 @@ from deepsights.contentstore.model import SecondarySearchResult
 from deepsights.contentstore._search import (
     contentstore_text_search,
     contentstore_vector_search,
-    contentstore_search,
+    contentstore_hybrid_search,
 )
 
 
@@ -100,40 +100,44 @@ def _secondary_text_search(
 #################################################
 def secondary_search(
     api: ContentStore,
-    query: str = None,
-    query_embedding: List = None,
-    max_results: int = 50,
-    recency_weight: float = None,
-    vector_weight: float = 0.7,
+    query: str,
+    max_results: int = 100,
+    min_vector_score: float = 0.7,
+    vector_fraction: float = 0.9,
+    vector_weight: float = 0.9,
+    recency_weight: float = 0.4,
     promote_exact_match: bool = False,
 ):
     """
-    Perform a hybrid search for secondary reports in the content store.
+    Perform a contentstore hybrid search using the provided query.
 
     Args:
 
-        api (ContentStore): The ContentStore API instance.
-        query (str, optional): The search query. Defaults to None.
-        query_embedding (List, optional): The query embedding. Defaults to None.
-        max_results (int, optional): The maximum number of search results to return. Defaults to 50.
-        recency_weight (float, optional): The weight for recency in the search ranking. Defaults to None.
-        vector_weight (float, optional): The weight for vector similarity in the search ranking. Defaults to 0.7.
+        api (DeepSights): The DeepSights API instance.
+        query (str): The query.
+        search_result (BaseModel): The model to use for parsing search results.
+        max_results (int, optional): The maximum number of search results to return. Defaults to 100.
+        min_vector_score (float, optional): The minimum score threshold for search results. Defaults to 0.7.
+        vector_fraction (float, optional): The fraction of the search results to be vector-based. Defaults to 0.9.
+        vector_weight (float, optional): The weight to apply to vector search in result ranking. Defaults to 0.9.
+        recency_weight (float, optional): The weight to apply to recency in result ranking. Defaults to 0.4.
         promote_exact_match (bool, optional): Whether to promote exact matches in the search ranking. Defaults to False.
 
     Returns:
-    
-        List[SecondaryReportSearchResult]: The search results as a list of SecondaryReportSearchResult objects.
+
+        List[NewsArticleSearchResult]: The search results as a list of NewsArticleSearchResult objects.
     """
-    return contentstore_search(
+    return contentstore_hybrid_search(
         api,
         item_type="REPORTS",
         search_result=lambda i: SecondarySearchResult(
             **dict(source_name=i["source"]["display_name"], **i)
         ),
         query=query,
-        query_embedding=query_embedding,
         max_results=max_results,
-        recency_weight=recency_weight,
         vector_weight=vector_weight,
+        vector_fraction=vector_fraction,
+        min_vector_score=min_vector_score,
+        recency_weight=recency_weight,
         promote_exact_match=promote_exact_match,
     )

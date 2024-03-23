@@ -35,8 +35,6 @@ class ContentStoreSearchResult(DeepSightsIdTitleModel):
         publication_date (Optional[datetime], optional): The publication_date of the item's publication. Defaults to None.
         source (Optional[str], optional): The source of the item. Defaults to None.
         rank (Optional[int], optional): The final rank of the item in the search results. Defaults to None.
-        score_rank (Optional[int], optional): The rank of the item based on its score. Defaults to None.
-        age_rank (Optional[int], optional): The rank of the item based on its age. Defaults to None.
     """
 
     description: str = Field(description="The description of the item.")
@@ -54,13 +52,6 @@ class ContentStoreSearchResult(DeepSightsIdTitleModel):
     rank: Optional[int] = Field(
         default=None, description="The final rank of the item in the search results."
     )
-    score_rank: Optional[int] = Field(
-        default=None, description="The rank of the item based on its score."
-    )
-    age_rank: Optional[int] = Field(
-        default=None, description="The rank of the item based on its age; may be None."
-    )
-
 
 #################################################
 class NewsSearchResult(ContentStoreSearchResult):

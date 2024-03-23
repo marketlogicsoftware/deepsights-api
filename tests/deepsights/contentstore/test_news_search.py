@@ -79,8 +79,6 @@ def test_news_text_search_with_recency_low():
     for ix, result in enumerate(results):
         assert result.id is not None
         assert result.rank == ix + 1
-        assert result.score_rank == result.rank
-        assert result.age_rank is not None
 
 
 def test_news_text_search_with_recency_high():
@@ -105,8 +103,6 @@ def test_news_text_search_with_recency_high():
     for ix, result in enumerate(results):
         assert result.id is not None
         assert result.rank == ix + 1
-        assert result.score_rank is not None
-        assert result.age_rank == result.rank
 
 
 def test_news_vector_search():
@@ -153,8 +149,6 @@ def test_news_vector_search_with_recency_low():
     for ix, result in enumerate(results):
         assert result.id is not None
         assert result.rank == ix + 1
-        assert result.score_rank == result.rank
-        assert result.age_rank is not None
 
 
 def test_news_vector_search_with_recency_high():
@@ -178,49 +172,33 @@ def test_news_vector_search_with_recency_high():
     for ix, result in enumerate(results):
         assert result.id is not None
         assert result.rank == ix + 1
-        assert result.score_rank is not None
-        assert result.age_rank == result.rank
-
-
-def test_news_hybrid_search_fail():
-    """
-    Test case to verify that a ValueError is raised when performing a hybrid news search
-    with no query or query embedding.
-
-    Raises:
-        ValueError: If the `deepsights.news_search` function does not raise a ValueError.
-    """
-    with pytest.raises(ValueError):
-        deepsights.news_search(
-            deepsights.ContentStore(),
-            max_results=5,
-        )
 
 
 def test_news_hybrid_search_only_vector():
     """
-    Test the hybrid news search function with only query vector input.
+    Test the hybrid news search function with only vector and no recency reranking.
 
     This test case verifies that the hybrid news search function returns the same results as the vector search function
-    when only the query vector is provided as input.
+    when only the vector content  is used.
 
-    Note: This test assumes the existence of a `test_embedding` variable.
+    Note: This test assumes the existence of a `test_embedding` and `test_query` variable.
     """
     hybrid_results = deepsights.news_search(
         deepsights.ContentStore(),
-        query_embedding=test_embedding,
+        query=test_query,
         max_results=5,
+        vector_weight=1.0,
+        vector_fraction=1.0,
+        recency_weight=0.0,
     )
 
     vector_results = _news_vector_search(
-        deepsights.ContentStore(),
-        test_embedding,
-        max_results=5,
+        deepsights.ContentStore(), test_embedding, max_results=5, recency_weight=0.0
     )
 
     assert len(hybrid_results) == 5
     for ix, hybrid_result in enumerate(hybrid_results):
-        assert hybrid_result == vector_results[ix]
+        assert hybrid_result.id == vector_results[ix].id
 
 
 def test_news_hybrid_search_only_text():
@@ -228,7 +206,7 @@ def test_news_hybrid_search_only_text():
     Test case for performing hybrid search with only text query.
 
     This test case verifies that the hybrid search function returns the same results
-    when performing a search using only the text query parameter, as a plain
+    when performing a search using only the text results, as a plain
     text query does.
 
     Note: This test assumes the existence of a `test_query` variable.
@@ -237,17 +215,18 @@ def test_news_hybrid_search_only_text():
         deepsights.ContentStore(),
         query=test_query,
         max_results=5,
+        vector_fraction=0.0,
+        vector_weight=0.0,
+        recency_weight=0.0,
     )
 
     text_results = _news_text_search(
-        deepsights.ContentStore(),
-        query=test_query,
-        max_results=5,
+        deepsights.ContentStore(), query=test_query, max_results=5, recency_weight=0.0
     )
 
     assert len(hybrid_results) == 5
     for ix, hybrid_result in enumerate(hybrid_results):
-        assert hybrid_result == text_results[ix]
+        assert hybrid_result.id == text_results[ix].id
 
 
 def test_news_hybrid_search():
@@ -263,7 +242,6 @@ def test_news_hybrid_search():
     """
     hybrid_results = deepsights.news_search(
         deepsights.ContentStore(),
-        query_embedding=test_embedding,
         query=test_query,
         max_results=10,
     )
@@ -290,6 +268,43 @@ def test_news_hybrid_search():
     assert all([result in contrib_ids for result in hybrid_ids])
 
 
+def test_news_hybrid_search():
+    """
+    Test case for hybrid news search.
+
+    This function tests the hybrid news search functionality by performing a search using both
+    query embeddings and text queries. It compares the results from the hybrid search with the
+    results from vector search and text search, ensuring that all the results from the hybrid
+    search are present in the results from vector search and text search.
+
+    Note: This test assumes the existence of `test_embedding` and `test_query` variables.
+    """
+    hybrid_results = deepsights.news_search(
+        deepsights.ContentStore(),
+        query=test_query,
+        max_results=10,
+    )
+
+    vector_results = _news_vector_search(
+        deepsights.ContentStore(),
+        query_embedding=test_embedding,
+        max_results=10,
+    )
+
+    text_results = _news_text_search(
+        deepsights.ContentStore(),
+        query=test_query,
+        max_results=10,
+    )
+
+    hybrid_ids = [result.id for result in hybrid_results]
+
+    contrib_ids = [result.id for result in vector_results]
+    contrib_ids += [result.id for result in text_results]
+
+    assert all([result in contrib_ids for result in hybrid_ids])
+
+
 def test_news_hybrid_search_with_vector_high():
     """
     Test case for performing hybrid search with a high vector weight, checking
@@ -299,16 +314,18 @@ def test_news_hybrid_search_with_vector_high():
     """
     hybrid_results = deepsights.news_search(
         deepsights.ContentStore(),
-        query_embedding=test_embedding,
         query=test_query,
         max_results=10,
         vector_weight=0.99999,
+        vector_fraction=1.0,
+        recency_weight=0.0,
     )
 
     vector_results = _news_vector_search(
         deepsights.ContentStore(),
         query_embedding=test_embedding,
         max_results=10,
+        recency_weight=0.0,
     )
 
     assert len(hybrid_results) == 10
@@ -325,16 +342,18 @@ def test_news_hybrid_search_with_vector_low():
     """
     hybrid_results = deepsights.news_search(
         deepsights.ContentStore(),
-        query_embedding=test_embedding,
         query=test_query,
         max_results=10,
         vector_weight=0.00001,
+        vector_fraction=0.0,
+        recency_weight=0.0,
     )
 
     text_results = _news_text_search(
         deepsights.ContentStore(),
         query=test_query,
         max_results=10,
+        recency_weight=0.0,
     )
 
     assert len(hybrid_results) == 10

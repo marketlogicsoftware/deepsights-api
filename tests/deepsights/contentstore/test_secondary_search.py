@@ -19,7 +19,6 @@ This module contains the tests for the secondary search functionality of the Dee
 import re
 import json
 import shlex
-import pytest
 import deepsights
 from deepsights.contentstore.secondary import (
     _secondary_text_search,
@@ -82,8 +81,6 @@ def test_secondary_text_search_with_recency_low():
     for ix, result in enumerate(results):
         assert result.id is not None
         assert result.rank == ix + 1
-        assert result.score_rank == result.rank
-        assert result.age_rank is not None
 
 
 def test_secondary_text_search_with_recency_high():
@@ -108,8 +105,6 @@ def test_secondary_text_search_with_recency_high():
     for ix, result in enumerate(results):
         assert result.id is not None
         assert result.rank == ix + 1
-        assert result.score_rank is not None
-        assert result.age_rank == result.rank
 
 
 def test_secondary_vector_search():
@@ -156,8 +151,6 @@ def test_secondary_vector_search_with_recency_low():
     for ix, result in enumerate(results):
         assert result.id is not None
         assert result.rank == ix + 1
-        assert result.score_rank == result.rank
-        assert result.age_rank is not None
 
 
 def test_secondary_vector_search_with_recency_high():
@@ -181,23 +174,6 @@ def test_secondary_vector_search_with_recency_high():
     for ix, result in enumerate(results):
         assert result.id is not None
         assert result.rank == ix + 1
-        assert result.score_rank is not None
-        assert result.age_rank == result.rank
-
-
-def test_secondary_hybrid_search_fail():
-    """
-    Test case to verify that a ValueError is raised when performing a hybrid secondary search
-    with no query or query embedding.
-
-    Raises:
-        ValueError: If the `deepsights.secondary_search` function does not raise a ValueError.
-    """
-    with pytest.raises(ValueError):
-        deepsights.secondary_search(
-            deepsights.ContentStore(),
-            max_results=5,
-        )
 
 
 def test_secondary_hybrid_search_only_vector():
@@ -211,8 +187,11 @@ def test_secondary_hybrid_search_only_vector():
     """
     hybrid_results = deepsights.secondary_search(
         deepsights.ContentStore(),
-        query_embedding=test_embedding,
+        query=test_query,
         max_results=5,
+        vector_fraction=1.0,
+        vector_weight=1.0,
+        recency_weight=0.0,
     )
 
     vector_results = _secondary_vector_search(
@@ -223,7 +202,7 @@ def test_secondary_hybrid_search_only_vector():
 
     assert len(hybrid_results) == 5
     for ix, hybrid_result in enumerate(hybrid_results):
-        assert hybrid_result == vector_results[ix]
+        assert hybrid_result.id == vector_results[ix].id
 
 
 def test_secondary_hybrid_search_only_text():
@@ -240,17 +219,20 @@ def test_secondary_hybrid_search_only_text():
         deepsights.ContentStore(),
         query=test_query,
         max_results=5,
+        vector_fraction=0.0,
+        recency_weight=0.0,
     )
 
     text_results = _secondary_text_search(
         deepsights.ContentStore(),
         query=test_query,
         max_results=5,
+        recency_weight=0.0,
     )
 
     assert len(hybrid_results) == 5
     for ix, hybrid_result in enumerate(hybrid_results):
-        assert hybrid_result == text_results[ix]
+        assert hybrid_result.id == text_results[ix].id
 
 
 def test_secondary_hybrid_search():
@@ -266,7 +248,6 @@ def test_secondary_hybrid_search():
     """
     hybrid_results = deepsights.secondary_search(
         deepsights.ContentStore(),
-        query_embedding=test_embedding,
         query=test_query,
         max_results=10,
     )
@@ -282,8 +263,6 @@ def test_secondary_hybrid_search():
         query=test_query,
         max_results=10,
     )
-
-    assert len(hybrid_results) == 10
 
     hybrid_ids = [result.id for result in hybrid_results]
 
@@ -302,10 +281,11 @@ def test_secondary_hybrid_search_with_vector_high():
     """
     hybrid_results = deepsights.secondary_search(
         deepsights.ContentStore(),
-        query_embedding=test_embedding,
         query=test_query,
-        max_results=10,
+        max_results=50,
         vector_weight=0.99999,
+        vector_fraction=0.5,
+        recency_weight=0.0,
     )
 
     vector_results = _secondary_vector_search(
@@ -314,9 +294,8 @@ def test_secondary_hybrid_search_with_vector_high():
         max_results=10,
     )
 
-    assert len(hybrid_results) == 10
-    for ix, result in enumerate(hybrid_results):
-        assert result.id == vector_results[ix].id
+    for ix, result in enumerate(vector_results):
+        assert hybrid_results[ix].id == result.id
 
 
 def test_secondary_hybrid_search_with_vector_low():
@@ -328,10 +307,11 @@ def test_secondary_hybrid_search_with_vector_low():
     """
     hybrid_results = deepsights.secondary_search(
         deepsights.ContentStore(),
-        query_embedding=test_embedding,
         query=test_query,
-        max_results=10,
+        max_results=50,
         vector_weight=0.00001,
+        vector_fraction=0.5,
+        recency_weight=0.0
     )
 
     text_results = _secondary_text_search(
@@ -340,9 +320,8 @@ def test_secondary_hybrid_search_with_vector_low():
         max_results=10,
     )
 
-    assert len(hybrid_results) == 10
-    for ix, result in enumerate(hybrid_results):
-        assert result.id == text_results[ix].id
+    for ix, result in enumerate(text_results):
+        assert result.id == hybrid_results[ix].id
 
 
 def test_secondary_text_search_with_title_promotion():

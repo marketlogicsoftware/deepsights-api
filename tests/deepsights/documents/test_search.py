@@ -111,8 +111,6 @@ def test_documents_search_plain():
         for page in result.page_matches:
             assert page.id is not None
         assert result.score_rank == ix + 1
-        assert result.age_rank is None
-        assert result.rank == result.score_rank
 
 
 def test_documents_search_with_recency_low():
@@ -140,8 +138,6 @@ def test_documents_search_with_recency_low():
         for page in result.page_matches:
             assert page.id is not None
         assert result.rank == ix + 1
-        assert result.score_rank == result.rank
-        assert result.age_rank is not None
 
 
 def test_documents_search_with_recency_high():
@@ -169,8 +165,6 @@ def test_documents_search_with_recency_high():
         for page in result.page_matches:
             assert page.id is not None
         assert result.rank == ix + 1
-        assert result.score_rank is not None
-        assert result.age_rank == result.rank
 
 
 def test_documents_search_with_loading():
@@ -194,5 +188,3 @@ def test_documents_search_with_loading():
             assert page.id is not None
             assert page.text is not None
         assert result.score_rank == ix + 1
-        assert result.age_rank is None
-        assert result.rank == result.score_rank
