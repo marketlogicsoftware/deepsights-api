@@ -148,7 +148,6 @@ def documents_search(
     results = [
         DocumentSearchResult(
             id=document_id,
-            score_rank=rank + 1,
             page_matches=[p for p in page_matches if p.document_id == document_id],
         )
         for rank, document_id in enumerate(document_rank_score)

@@ -80,27 +80,27 @@ cs = deepsights.ContentStore()
 # search for news; no need for further loading, all content present in the search results
 news_results = deepsights.news_search(
     cs,
-    query_embedding=test_embedding,
+    query=test_question,
     max_results=10,
 )
 
 # search for reports; no need for further loading, all content present in the search results
-# news and reports also support recency weighting
+# news and reports also support explicit recency weighting
 report_results = deepsights.secondary_search(
     cs,
-    query_embedding=test_embedding,
+    query=test_question,
     max_results=10,
     recency_weight=0.9,
 )
 
-# we can also use hybrid search for news and reports; this will first combine recency weighting and then merge text & vector results
+# we can also use control hybrid search for news and reports; this will first combine recency weighting and then merge text & vector results
 # note that document search currently does not expose the hybrid search functionality
 hybrid_results = deepsights.secondary_search(
     cs,
-    query_embedding=test_embedding,
-    query="foo bar baz",
+    query=test_question,
     max_results=10,
     vector_weight=0.7,
+    vector_fraction=0.5,
     recency_weight=0.9,
 )
 
@@ -108,9 +108,7 @@ hybrid_results = deepsights.secondary_search(
 # for pure full-text search, omit the query_embedding
 hybrid_results_promote = deepsights.secondary_search(
     cs,
-    query="foo bar baz",
+    query=test_question,
     max_results=10,
-    vector_weight=0.7,
-    recency_weight=0.9,
     promote_exact_match=True,
 )

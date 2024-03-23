@@ -110,7 +110,7 @@ def test_documents_search_plain():
         assert len(result.page_matches) > 0
         for page in result.page_matches:
             assert page.id is not None
-        assert result.score_rank == ix + 1
+        assert result.rank == ix + 1
 
 
 def test_documents_search_with_recency_low():
@@ -187,4 +187,4 @@ def test_documents_search_with_loading():
         for page in result.page_matches:
             assert page.id is not None
             assert page.text is not None
-        assert result.score_rank == ix + 1
+        assert result.rank == ix + 1
