@@ -2,8 +2,10 @@
 
 <!--next-version-placeholder-->
 
-## v1.0.0 (06-Mar-2024)
+## v1.0.0 (in preparation)
 
+- Retried sync answers v1
+- Support for new hybrid SCS endpoint
 - Introduced documents_list() method
 - Added creation_date to document model
 - Quality of life improvements to document_download()

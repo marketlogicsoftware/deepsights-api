@@ -25,26 +25,6 @@ with open("tests/data/test_data.json", "rt", encoding="utf-8") as f:
     test_question = data["question"]
 
 
-def test_answers_v1():
-    """
-    Test case for v1 of answer retrieval.
-    """
-    answers = deepsights.answers_get(deepsights.DeepSights(), test_question)
-
-    assert len(answers) > 0
-    for answer in answers:
-        assert answer.id is not None
-        assert answer.artifact_id is not None
-        assert answer.artifact_type == "DOCUMENT"
-        assert answer.artifact_description is None
-        assert answer.answer is not None
-        assert answer.publication_date is not None
-        assert answer.pages is not None
-        assert len(answer.pages) > 0
-        for page in answer.pages:
-            assert page.id is not None
-            assert page.page_number is not None
-
 
 def test_answers_sync():
     """

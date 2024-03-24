@@ -23,4 +23,3 @@ from deepsights.answers.answer import (
     answerset_get,
     answerset_get_sync,
 )
-from deepsights.answers.answer_v1 import answers_get
