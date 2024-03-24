@@ -19,18 +19,23 @@ This module contains the functions to upload documents to the DeepSights API.
 import os
 import time
 import requests
-from deepsights.api import DeepSights
-from deepsights.documents.load import documents_load
+from deepsights.api import APIResource
+from deepsights.deepsights.resources.documents._load import documents_load
 
 
 #################################################
-def document_upload(api: DeepSights, document_filename: str):
+def document_upload(resource: APIResource, document_filename: str) -> str:
     """
     Upload a document to the DeepSights API.
 
     Args:
 
+        resource (APIResource): An instance of the DeepSights API resource.
         document_filename (str): The filename of the document to upload. Must be PDF, PPT(X), DOC(X)
+
+    Returns:
+
+        str: The ID of the uploaded document.
     """
     # check if document exists
     if not os.path.exists(document_filename):
@@ -55,7 +60,7 @@ def document_upload(api: DeepSights, document_filename: str):
     document_basename = os.path.basename(document_filename)
 
     # obtain upload link
-    response = api.post(
+    response = resource.api.post(
         "/artifact-service/document-upload-links/_generate",
         body={
             "file_name": document_basename,
@@ -80,7 +85,7 @@ def document_upload(api: DeepSights, document_filename: str):
         )
 
     # create artifact
-    response = api.post(
+    response = resource.api.post(
         "/artifact-service/artifacts",
         body={"gcs_object_id": gcs_object_id},
     )
@@ -90,13 +95,13 @@ def document_upload(api: DeepSights, document_filename: str):
 
 
 #################################################
-def document_wait_for_processing(api: DeepSights, document_id: str, timeout: int = 300):
+def document_wait_for_upload(resource: APIResource, document_id: str, timeout: int = 300):
     """
     Wait for the document to be processed and completed.
 
     Args:
 
-        api (DeepSights): An instance of the DeepSights API client.
+        resource (APIResource): An instance of the DeepSights API resource.
         document_id (str): The ID of the document to wait for.
         timeout (int, optional): The maximum time to wait for the document to be processed, in seconds. Defaults to 300.
 
@@ -109,7 +114,7 @@ def document_wait_for_processing(api: DeepSights, document_id: str, timeout: int
     # wait for completion
     start = time.time()
     while time.time() - start < timeout:
-        response = api.get(f"/artifact-service/artifacts/{document_id}")
+        response = resource.api.get(f"/artifact-service/artifacts/{document_id}")
         if response["status"] == "COMPLETED":
             break
         
@@ -127,4 +132,4 @@ def document_wait_for_processing(api: DeepSights, document_id: str, timeout: int
         )
 
     # now load into cache
-    documents_load(api, [document_id])
+    documents_load(resource, [document_id])

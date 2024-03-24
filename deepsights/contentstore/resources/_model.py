@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-This module contains the models for the content store.
+This module contains the base models for the content store.
 """
 
 from typing import Optional
@@ -47,21 +47,9 @@ class ContentStoreSearchResult(DeepSightsIdTitleModel):
     )
     source: Optional[str] = Field(
         alias="source_name",
-        description="The name of the item's source; may be None.", default=None
+        description="The name of the item's source; may be None.",
+        default=None,
     )
     rank: Optional[int] = Field(
         default=None, description="The final rank of the item in the search results."
     )
-
-#################################################
-class NewsSearchResult(ContentStoreSearchResult):
-    """
-    Represents a search result of a news article in the content store.
-    """
-
-
-#################################################
-class SecondarySearchResult(ContentStoreSearchResult):
-    """
-    Represents a search result of a secondary report in the DeepSights API.
-    """

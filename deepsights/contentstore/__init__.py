@@ -13,12 +13,7 @@
 # limitations under the License.
 
 """
-This module contains the functions to retrieve content from the DeepSights API.
+This module contains the client for the ContentStore API.
 """
 
-from deepsights.contentstore.model import (
-    NewsSearchResult,
-    SecondarySearchResult,
-)
-from deepsights.contentstore.news import news_search
-from deepsights.contentstore.secondary import secondary_search
+from deepsights.contentstore.contentstore import ContentStore

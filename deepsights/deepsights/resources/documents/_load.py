@@ -17,9 +17,9 @@ This module contains the functions to load documents from the DeepSights API.
 """
 
 from typing import List
-from deepsights.api import DeepSights
+from deepsights.api import APIResource
 from deepsights.utils import run_in_parallel
-from deepsights.documents._cache import (
+from deepsights.deepsights.resources.documents._cache import (
     get_document,
     get_document_cache_size,
     has_document,
@@ -29,18 +29,18 @@ from deepsights.documents._cache import (
     has_document_page,
     set_document_page,
 )
-from deepsights.documents.model import Document, DocumentPage
-from deepsights.documents._segmenter import segment_landscape_page
+from deepsights.deepsights.resources.documents._model import Document, DocumentPage
+from deepsights.deepsights.resources.documents._segmenter import segment_landscape_page
 
 
 #################################################
-def document_pages_load(api: DeepSights, page_ids: List[str]):
+def document_pages_load(resource: APIResource, page_ids: List[str]):
     """
     Load document pages from the cache or fetch them from the API if not cached.
 
     Args:
 
-        api (DeepSights): The DeepSights API object.
+        resource (APIResource): An instance of the DeepSights API resource.
         page_ids (List[str]): A list of page IDs to load.
 
     Returns:
@@ -63,7 +63,7 @@ def document_pages_load(api: DeepSights, page_ids: List[str]):
 
     # load uncached document pages
     def _load_document_page(page_id: str):
-        result = api.get(f"/artifact-service/pages/{page_id}", timeout=5)
+        result = resource.api.get(f"/artifact-service/pages/{page_id}", timeout=5)
 
         # map the document page
         return DocumentPage(
@@ -86,7 +86,7 @@ def document_pages_load(api: DeepSights, page_ids: List[str]):
 
 #################################################
 def documents_load(
-    api: DeepSights,
+    resource: APIResource,
     document_ids: List[str],
     force_load: bool = False,
     load_pages: bool = False,
@@ -96,7 +96,7 @@ def documents_load(
 
     Args:
 
-        api (DeepSights): The DeepSights API object.
+        resource (APIResource): An instance of the DeepSights API resource.
         document_ids (List[str]): A list of document IDs to load.
         force_load (bool, optional): Whether to force load the documents, even if in cache. Defaults to False.
         load_pages (bool, optional): Whether to load the pages of the documents. Defaults to False.
@@ -121,7 +121,9 @@ def documents_load(
 
     # load uncached documents
     def _load_document(document_id: str):
-        result = api.get(f"/artifact-service/artifacts/{document_id}", timeout=5)
+        result = resource.api.get(
+            f"/artifact-service/artifacts/{document_id}", timeout=5
+        )
 
         # capitalze the first letter of the summary
         result["summary"] = result["summary"][0].upper() + result["summary"][1:]
@@ -149,7 +151,7 @@ def documents_load(
             document = get_document(document_id)
 
             # load page ids
-            result = api.get(
+            result = resource.api.get(
                 f"/artifact-service/artifacts/{document_id}/page-ids", timeout=5
             )
 
@@ -166,7 +168,7 @@ def documents_load(
         page_ids = [page_id for page_ids in page_ids for page_id in page_ids]
 
         # now load actual pages
-        document_pages_load(api, page_ids)
+        document_pages_load(resource, page_ids)
 
     # collect results
     return [get_document(doc_id) for doc_id in document_ids]

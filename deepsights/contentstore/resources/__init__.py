@@ -13,12 +13,8 @@
 # limitations under the License.
 
 """
-This module contains the client library to interact with the Market Logic DeepSights and ContentStore APIs.
+This module contains the functions to retrieve content from the DeepSights API.
 """
 
-from deepsights.contentstore import ContentStore
-from deepsights.deepsights import (
-    DeepSights,
-    SortingField,
-    SortingOrder,
-)
+from deepsights.contentstore.resources.news import NewsResource
+from deepsights.contentstore.resources.secondary import SecondaryResource

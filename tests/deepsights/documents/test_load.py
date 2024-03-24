@@ -20,12 +20,17 @@ import json
 import pytest
 import requests
 import deepsights
+import deepsights.deepsights.resources.documents._cache
 
 # get the test embedding from JSON
 with open("tests/data/test_data.json", "rt", encoding="utf-8") as f:
     test_data = json.load(f)
     test_document_id = test_data["document_id"]
     test_page_id = test_data["document_page_id"]
+
+
+# set up the API client
+ds = deepsights.DeepSights()
 
 
 def test_document_load_404():
@@ -37,8 +42,7 @@ def test_document_load_404():
     document with a non-existent ID.
     """
     with pytest.raises(requests.exceptions.HTTPError) as exc:
-        deepsights.documents_load(
-            deepsights.DeepSights(),
+        ds.documents.load(
             ["aaa"],
             load_pages=False,
         )
@@ -50,10 +54,9 @@ def test_document_load():
     """
     Test the loading of a document using deepsights.documents_load() function.
     """
-    deepsights.set_document(test_document_id, None)
+    deepsights.deepsights.resources.documents._cache.remove_document(test_document_id)
 
-    documents = deepsights.documents_load(
-        deepsights.DeepSights(),
+    documents = ds.documents.load(
         [test_document_id],
         load_pages=False,
     )
@@ -70,12 +73,13 @@ def test_document_load():
     assert documents[0].page_ids is None
     assert documents[0].number_of_pages > 0
 
-    assert deepsights.has_document(test_document_id)
+    assert deepsights.deepsights.resources.documents._cache.has_document(
+        test_document_id
+    )
 
     # test caching
     documents[0].title = "__TEST__"
-    documents = deepsights.documents_load(
-        deepsights.DeepSights(),
+    documents = ds.documents.load(
         [test_document_id],
         load_pages=False,
     )
@@ -90,10 +94,9 @@ def test_document_load_with_pages():
     by loading a document with its pages and performing various assertions on the
     loaded document.
     """
-    deepsights.set_document(test_document_id, None)
+    deepsights.deepsights.resources.documents._cache.remove_document(test_document_id)
 
-    documents = deepsights.documents_load(
-        deepsights.DeepSights(),
+    documents = ds.documents.load(
         [test_document_id],
         load_pages=True,
     )
@@ -109,9 +112,11 @@ def test_document_load_with_pages():
     assert len(documents[0].page_ids) > 0
     assert documents[0].number_of_pages > 0
 
-    assert deepsights.has_document(test_document_id)
+    assert deepsights.deepsights.resources.documents._cache.has_document(
+        test_document_id
+    )
     for page_id in documents[0].page_ids:
-        assert deepsights.has_document_page(page_id)
+        assert deepsights.deepsights.resources.documents._cache.has_document_page(page_id)
 
 
 def test_document_page_load():
@@ -121,13 +126,15 @@ def test_document_page_load():
     This function sets a document page, loads it using the `document_pages_load` method,
     and then performs assertions to verify the loaded page.
     """
-    deepsights.set_document_page(test_page_id, None)
+    deepsights.deepsights.resources.documents._cache.remove_document_page(test_page_id)
 
-    pages = deepsights.document_pages_load(deepsights.DeepSights(), [test_page_id])
+    pages = ds.documents.load_pages([test_page_id])
 
     assert len(pages) == 1
     assert pages[0].id == test_page_id
     assert pages[0].page_number > 0
     assert pages[0].text is not None
 
-    assert deepsights.has_document_page(test_page_id)
+    assert deepsights.deepsights.resources.documents._cache.has_document_page(
+        test_page_id
+    )

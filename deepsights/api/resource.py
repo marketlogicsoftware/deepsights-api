@@ -13,13 +13,27 @@
 # limitations under the License.
 
 """
-This module contains the functions to retrieve answers from the DeepSights API.
+This module contains the base class for all resources in an API. 
 """
 
-from deepsights.answers.model import DocumentAnswer, DocumentAnswerPageReference
-from deepsights.answers.answer import (
-    answerset_create,
-    answerset_wait_for_completion,
-    answerset_get,
-    answerset_get_sync,
-)
+
+from deepsights.api.api import API
+
+
+#################################################
+class APIResource:
+    """
+    Represents a resource in the API.
+
+    Args:
+        api (API): The API instance associated with the resource.
+    """
+
+    def __init__(self, api: API) -> None:
+        """
+        Initializes a new instance of the APIResource class.
+
+        Args:
+            api (API): The API instance associated with the resource.
+        """
+        self.api = api

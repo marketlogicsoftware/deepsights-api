@@ -24,6 +24,10 @@ with open("tests/data/test_data.json", "rt", encoding="utf-8") as f:
     test_embedding = json.load(f)["embedding"]
 
 
+# set up the API client
+ds = deepsights.DeepSights()
+
+
 def test_document_pages_search_plain():
     """
     Test the document pages search function with plain text.
@@ -32,8 +36,7 @@ def test_document_pages_search_plain():
     It asserts that the search results are not empty and that each result has a document ID, an ID, and a score greater than 0.
     Additionally, it checks that the scores are sorted in descending order.
     """
-    results = deepsights.document_pages_search(
-        deepsights.DeepSights(),
+    results = ds.documents.search_pages(
         test_embedding,
     )
 
@@ -54,8 +57,8 @@ def test_document_pages_search_cutoff():
     This test verifies that when the `document_pages_search` function is called with a high score cutoff (0.9999),
     it returns an empty list of results.
     """
-    results = deepsights.document_pages_search(
-        deepsights.DeepSights(), test_embedding, min_score=0.9999
+    results = ds.documents.search_pages(
+        test_embedding, min_score=0.9999
     )
 
     assert len(results) == 0
@@ -68,8 +71,7 @@ def test_document_pages_search_with_loading():
     This function tests the `deepsights.document_pages_search` function by performing a search
     with loading of pages. It asserts that the returned results meet certain criteria.
     """
-    results = deepsights.document_pages_search(
-        deepsights.DeepSights(),
+    results = ds.documents.search_pages(
         test_embedding,
         max_results=10,
         load_pages=True,
@@ -98,8 +100,7 @@ def test_documents_search_plain():
 
     Note: This test assumes the existence of a `test_embedding` variable.
     """
-    results = deepsights.documents_search(
-        deepsights.DeepSights(),
+    results = ds.documents.search(
         query_embedding=test_embedding,
     )
 
@@ -122,8 +123,7 @@ def test_documents_search_with_recency_low():
 
     Note: This test assumes the existence of a `test_embedding` variable.
     """
-    results = deepsights.documents_search(
-        deepsights.DeepSights(),
+    results = ds.documents.search(
         query_embedding=test_embedding,
         max_results=10,
         recency_weight=0.00001,
@@ -149,8 +149,7 @@ def test_documents_search_with_recency_high():
 
     Note: This test assumes the existence of a `test_embedding` variable.
     """
-    results = deepsights.documents_search(
-        deepsights.DeepSights(),
+    results = ds.documents.search(
         query_embedding=test_embedding,
         max_results=10,
         recency_weight=0.99999,
@@ -171,8 +170,7 @@ def test_documents_search_with_loading():
     """
     Test the `documents_search` function with loading enabled.
     """
-    results = deepsights.documents_search(
-        deepsights.DeepSights(),
+    results = ds.documents.search(
         query_embedding=test_embedding,
         max_results=10,
         load_documents=True,

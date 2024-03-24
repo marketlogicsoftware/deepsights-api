@@ -16,13 +16,14 @@
 Test the documents_list function
 """
 
-
 import deepsights
+
+# set up the API client
+ds = deepsights.DeepSights()
 
 
 def test_document_list():
-    number_of_results, documents = deepsights.documents_list(
-        deepsights.DeepSights(),
+    number_of_results, documents = ds.documents.list(
         page_size=10,
         page_number=0,
         sort_order=deepsights.SortingOrder.DESCENDING,

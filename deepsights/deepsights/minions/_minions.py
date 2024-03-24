@@ -17,19 +17,19 @@ This module contains functions to interact with minions.
 """
 
 import time
-from deepsights.api import DeepSights
+from deepsights.api import API
 
 
 #################################################
 def minion_wait_for_completion(
-    api: DeepSights, minion_name: str, minion_job_id: str, timeout: int
+    api: API, minion_name: str, minion_job_id: str, timeout: int
 ):
     """
     Waits for the completion of a minion job.
 
     Args:
 
-        api (DeepSights): The DeepSights API instance.
+        api (API): The DeepSights API instance.
         minion_name (str): The name of the minion.
         minion_job_id (str): The ID of the answer set.
         timeout (int, optional): The maximum time to wait for the answer set to complete, in seconds.

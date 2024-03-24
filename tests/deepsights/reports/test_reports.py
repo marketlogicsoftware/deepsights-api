@@ -26,11 +26,15 @@ with open("tests/data/test_data.json", "rt", encoding="utf-8") as f:
     test_report_id = data["report_id"]
 
 
+# set up the API client
+ds = deepsights.DeepSights()
+
+
 def test_report_wait_for_completion():
     """
     Test function to check the behavior of the report_wait_for_completion function.
     """
-    deepsights.report_wait_for_completion(deepsights.DeepSights(), test_report_id)
+    ds.reports.wait_for_report(test_report_id)
 
 
 def test_report_get():
@@ -40,7 +44,7 @@ def test_report_get():
     This test verifies that the report retrieved from the deepsights.report_get function
     has the expected attributes and properties.
     """
-    report = deepsights.report_get(deepsights.DeepSights(), test_report_id)
+    report = ds.reports.get(test_report_id)
 
     assert report.id == test_report_id
     assert report.question is not None

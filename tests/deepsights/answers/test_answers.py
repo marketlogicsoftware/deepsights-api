@@ -25,6 +25,9 @@ with open("tests/data/test_data.json", "rt", encoding="utf-8") as f:
     test_question = data["question"]
 
 
+# set up the API client
+ds = deepsights.DeepSights()
+
 
 def test_answers_sync():
     """
@@ -32,7 +35,7 @@ def test_answers_sync():
 
     Retrieves the answer set using the synchronous method `answerset_get_sync` and performs various assertions on the returned answer set.
     """
-    answerset = deepsights.answerset_get_sync(deepsights.DeepSights(), test_question)
+    answerset = ds.answers.create_and_wait(test_question)
 
     assert len(answerset.answers) > 0
     for answer in answerset.answers:
@@ -53,9 +56,9 @@ def test_answers_async():
     """
     Test case for asynchronous answer retrieval.
     """
-    minion_job_id = deepsights.answerset_create(deepsights.DeepSights(), test_question)
-    deepsights.answerset_wait_for_completion(deepsights.DeepSights(), minion_job_id)
-    answerset = deepsights.answerset_get(deepsights.DeepSights(), minion_job_id)
+    minion_job_id = ds.answers.create(test_question)
+    ds.answers.wait_for_answer(minion_job_id)
+    answerset = ds.answers.get(minion_job_id)
 
     assert len(answerset.answers) > 0
     for answer in answerset.answers:

@@ -12,13 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 """
-This module contains the functions to retrieve reports from the DeepSights API.
+This module contains the resource to interact with documents via the DeepSights API.
 """
 
-from deepsights.reports.report import (
-    report_create,
-    report_wait_for_completion,
-    report_get,
-)
+from deepsights.deepsights.resources.documents.documents import DocumentResource
+from deepsights.deepsights.resources.documents._list import SortingField, SortingOrder

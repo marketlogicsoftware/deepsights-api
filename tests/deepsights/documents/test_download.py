@@ -28,6 +28,8 @@ with open("tests/data/test_data.json", "rt", encoding="utf-8") as f:
     test_data = json.load(f)
     test_document_id = test_data["document_id"]
 
+# set up the API client
+ds = deepsights.DeepSights()
 
 def test_document_download_404():
     """
@@ -35,8 +37,7 @@ def test_document_download_404():
     It verifies that the function raises an HTTPError with a status code of 404.
     """
     with pytest.raises(requests.exceptions.HTTPError) as exc:
-        deepsights.document_download(
-            deepsights.DeepSights(),
+        ds.documents.download(
             "non_existing_document_id",
             tempfile.gettempdir(),
         )
@@ -50,8 +51,7 @@ def test_document_download_no_path():
     with a non-existing path.
     """
     with pytest.raises(FileNotFoundError):
-        deepsights.document_download(
-            deepsights.DeepSights(),
+        ds.documents.download(
             "non_existing_document_id",
             "/does_not_exist",
         )
@@ -65,8 +65,7 @@ def test_document_download():
     using a DeepSights instance and verifying the existence of the downloaded file.
 
     """
-    local_filename = deepsights.document_download(
-        deepsights.DeepSights(),
+    local_filename = ds.documents.download(
         test_document_id,
         tempfile.gettempdir(),
     )

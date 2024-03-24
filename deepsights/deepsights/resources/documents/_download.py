@@ -19,19 +19,22 @@ This module contains the functions to download documents to the DeepSights API.
 import os
 import tempfile
 import urllib.request
-from deepsights.api import DeepSights
-from deepsights.documents.load import documents_load
+from deepsights.api import APIResource
+from deepsights.deepsights.resources.documents._load import documents_load
 
 
 #################################################
 def document_download(
-    api: DeepSights, document_id: str, output_dir: str, force_download: bool = False
+    resource: APIResource,
+    document_id: str,
+    output_dir: str,
+    force_download: bool = False,
 ) -> str:
     """
     Download a document from the DeepSights API.
 
     Args:
-        api (DeepSights): An instance of the DeepSights API client.
+        resource (APIResource): An instance of the DeepSights API resource.
         document_id (str): The ID of the document to download.
         output_dir (str): The local directory to save the downloaded document in.
         force_download (bool): If True, the document will be downloaded even if it already exists locally.
@@ -48,13 +51,13 @@ def document_download(
         raise FileNotFoundError(f"Local directory {output_dir} does not exist.")
 
     # obtain real filename
-    document = documents_load(api, [document_id])[0]
+    document = documents_load(resource, [document_id])[0]
     local_filename = f"{output_dir}/{document.id}-{document.file_name}"
 
     # already downloaded?
     if force_download or not os.path.exists(local_filename):
         # obtain download link
-        response = api.get(
+        response = resource.api.get(
             f"/artifact-service/artifacts/{document_id}/gcs-object-link",
         )
 

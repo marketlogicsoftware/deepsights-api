@@ -13,12 +13,8 @@
 # limitations under the License.
 
 """
-This module contains the client library to interact with the Market Logic DeepSights and ContentStore APIs.
+This module contains to inquire quota information from the DeepSights API.
 """
 
-from deepsights.contentstore import ContentStore
-from deepsights.deepsights import (
-    DeepSights,
-    SortingField,
-    SortingOrder,
-)
+from deepsights.deepsights.resources.quota.quota import QuotaResource
+from deepsights.deepsights.resources.quota._model import APIProfile, QuotaStatus

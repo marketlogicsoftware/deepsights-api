@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-This module contains the base functions to interact with the DeepSights API.
+This module contains the base functions to interact with the DeepSights APIs.
 """
 
 import os
@@ -185,47 +185,3 @@ class API:
                 "DELETE %s failed with status code %s", path, response.status_code
             )
             response.raise_for_status()
-
-
-#################################################
-class ContentStore(API):
-    """
-    This class provides methods to interact with the ContentStore API.
-    """
-
-    #######################################
-    def __init__(self, api_key: str = None) -> None:
-        """
-        Initializes the API client.
-
-        Args:
-
-            api_key (str, optional): The API key to be used for authentication. If not provided, it will be fetched from the environment variable CONTENTSTORE_API_KEY.
-        """
-        super().__init__(
-            endpoint_base="https://apigee.mlsdevcloud.com/secondary-content/api/",
-            api_key=api_key,
-            api_key_env_var="CONTENTSTORE_API_KEY",
-        )
-
-
-#################################################
-class DeepSights(API):
-    """
-    This class provides methods to interact with the DeepSights API.
-    """
-
-    #######################################
-    def __init__(self, api_key: str = None) -> None:
-        """
-        Initializes the API client.
-
-        Args:
-        
-            api_key (str, optional): The API key to be used for authentication. If not provided, it will be fetched from the environment variable DEEPSIGHTS_API_KEY.
-        """
-        super().__init__(
-            endpoint_base="https://api.deepsights.ai/ds/v1/",
-            api_key=api_key,
-            api_key_env_var="DEEPSIGHTS_API_KEY",
-        )

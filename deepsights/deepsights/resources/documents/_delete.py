@@ -19,24 +19,24 @@ This module contains the functions to delete documents from the DeepSights API.
 import time
 from typing import List
 import requests
-from deepsights.api import DeepSights
-from deepsights.documents._cache import remove_document
+from deepsights.api import APIResource
+from deepsights.deepsights.resources.documents._cache import remove_document
 
 
 #################################################
-def documents_delete(api: DeepSights, document_ids: List):
+def documents_delete(resource: APIResource, document_ids: List):
     """
     Delete documents from the DeepSights API.
 
     Args:
 
-        api (DeepSights): An instance of the DeepSights API client.
+        resource (APIResource): An instance of the DeepSights API resource.
         document_ids (List): A list of document IDs to be deleted.
     """
 
     # delete documents one by one
     for document_id in document_ids:
-        api.delete(
+        resource.api.delete(
             f"/artifact-service/artifacts/{document_id}",
         )
 
@@ -45,13 +45,15 @@ def documents_delete(api: DeepSights, document_ids: List):
 
 
 #################################################
-def document_wait_for_deletion(api: DeepSights, document_id: str, timeout: int = 60):
+def document_wait_for_deletion(
+    resource: APIResource, document_id: str, timeout: int = 60
+):
     """
     Wait for the document to be deleted.
 
     Args:
 
-        api (DeepSights): An instance of the DeepSights API client.
+        resource (APIResource): An instance of the DeepSights API resource.
         document_id (str): The ID of the document to wait for.
         timeout (int, optional): The maximum time to wait for the document to be deleted, in seconds. Defaults to 60.
 
@@ -64,12 +66,12 @@ def document_wait_for_deletion(api: DeepSights, document_id: str, timeout: int =
     start = time.time()
     while time.time() - start < timeout:
         try:
-            response = api.get(f"/artifact-service/artifacts/{document_id}")
+            response = resource.api.get(f"/artifact-service/artifacts/{document_id}")
         except requests.exceptions.HTTPError as e:
             if e.response.status_code == 404:
                 remove_document(document_id)
                 return
-            
+
             raise e
 
         if response["status"] in ("DELETING", "SCHEDULED_FOR_DELETING"):

@@ -20,7 +20,7 @@ from typing import List, Optional
 from datetime import datetime
 from pydantic import Field
 from deepsights.utils import DeepSightsIdModel, DeepSightsIdTitleModel
-from deepsights.documents._cache import get_document_page, get_document
+from deepsights.deepsights.resources.documents._cache import get_document_page, get_document
 
 
 #################################################

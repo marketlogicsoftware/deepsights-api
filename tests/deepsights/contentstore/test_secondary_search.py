@@ -20,16 +20,16 @@ import re
 import json
 import shlex
 import deepsights
-from deepsights.contentstore.secondary import (
-    _secondary_text_search,
-    _secondary_vector_search,
-)
 
 # get the test data from JSON
 with open("tests/data/test_data.json", "rt", encoding="utf-8") as f:
     data = json.load(f)
     test_embedding = data["embedding"]
     test_query = data["question"]
+
+
+# set up the API client
+cs = deepsights.ContentStore()
 
 
 def test_secondary_text_search():
@@ -43,8 +43,7 @@ def test_secondary_text_search():
 
     Note: This test assumes the existence of a `test_query` variable.
     """
-    results = _secondary_text_search(
-        deepsights.ContentStore(),
+    results = cs.secondary._text_search(
         query=test_query,
         max_results=5,
     )
@@ -70,8 +69,7 @@ def test_secondary_text_search_with_recency_low():
     Note: This test assumes the existence of a `test_query` variable.
     """
 
-    results = _secondary_text_search(
-        deepsights.ContentStore(),
+    results = cs.secondary._text_search(
         query=test_query,
         max_results=10,
         recency_weight=0.00001,
@@ -94,8 +92,7 @@ def test_secondary_text_search_with_recency_high():
 
     Note: This test assumes the existence of a `test_query` variable.
     """
-    results = _secondary_text_search(
-        deepsights.ContentStore(),
+    results = cs.secondary._text_search(
         query=test_query,
         max_results=10,
         recency_weight=0.99999,
@@ -116,8 +113,7 @@ def test_secondary_vector_search():
 
     Note: This test assumes the existence of a `test_embedding` variable.
     """
-    results = _secondary_vector_search(
-        deepsights.ContentStore(),
+    results = cs.secondary._vector_search(
         test_embedding,
         max_results=5,
     )
@@ -140,8 +136,7 @@ def test_secondary_vector_search_with_recency_low():
 
     Note: This test assumes the existence of a `test_embedding` variable.
     """
-    results = _secondary_vector_search(
-        deepsights.ContentStore(),
+    results = cs.secondary._vector_search(
         test_embedding,
         max_results=10,
         recency_weight=0.00001,
@@ -163,8 +158,7 @@ def test_secondary_vector_search_with_recency_high():
 
     Note: This test assumes the existence of a `test_embedding` variable.
     """
-    results = _secondary_vector_search(
-        deepsights.ContentStore(),
+    results = cs.secondary._vector_search(
         test_embedding,
         max_results=10,
         recency_weight=0.99999,
@@ -185,8 +179,7 @@ def test_secondary_hybrid_search_only_vector():
 
     Note: This test assumes the existence of a `test_embedding` variable.
     """
-    hybrid_results = deepsights.secondary_search(
-        deepsights.ContentStore(),
+    hybrid_results = cs.secondary.search(
         query=test_query,
         max_results=5,
         vector_fraction=1.0,
@@ -194,8 +187,7 @@ def test_secondary_hybrid_search_only_vector():
         recency_weight=0.0,
     )
 
-    vector_results = _secondary_vector_search(
-        deepsights.ContentStore(),
+    vector_results = cs.secondary._vector_search(
         test_embedding,
         max_results=5,
     )
@@ -215,16 +207,14 @@ def test_secondary_hybrid_search_only_text():
 
     Note: This test assumes the existence of a `test_query` variable.
     """
-    hybrid_results = deepsights.secondary_search(
-        deepsights.ContentStore(),
+    hybrid_results = cs.secondary.search(
         query=test_query,
         max_results=5,
         vector_fraction=0.0,
         recency_weight=0.0,
     )
 
-    text_results = _secondary_text_search(
-        deepsights.ContentStore(),
+    text_results = cs.secondary._text_search(
         query=test_query,
         max_results=5,
         recency_weight=0.0,
@@ -246,20 +236,17 @@ def test_secondary_hybrid_search():
 
     Note: This test assumes the existence of `test_embedding` and `test_query` variables.
     """
-    hybrid_results = deepsights.secondary_search(
-        deepsights.ContentStore(),
+    hybrid_results = cs.secondary.search(
         query=test_query,
         max_results=10,
     )
 
-    vector_results = _secondary_vector_search(
-        deepsights.ContentStore(),
+    vector_results = cs.secondary._vector_search(
         query_embedding=test_embedding,
         max_results=10,
     )
 
-    text_results = _secondary_text_search(
-        deepsights.ContentStore(),
+    text_results = cs.secondary._text_search(
         query=test_query,
         max_results=10,
     )
@@ -279,8 +266,7 @@ def test_secondary_hybrid_search_with_vector_high():
 
     Note: This test assumes the existence of `test_embedding` and `test_query` variables.
     """
-    hybrid_results = deepsights.secondary_search(
-        deepsights.ContentStore(),
+    hybrid_results = cs.secondary.search(
         query=test_query,
         max_results=50,
         vector_weight=0.99999,
@@ -288,8 +274,7 @@ def test_secondary_hybrid_search_with_vector_high():
         recency_weight=0.0,
     )
 
-    vector_results = _secondary_vector_search(
-        deepsights.ContentStore(),
+    vector_results = cs.secondary._vector_search(
         query_embedding=test_embedding,
         max_results=10,
     )
@@ -305,17 +290,15 @@ def test_secondary_hybrid_search_with_vector_low():
 
     Note: This test assumes the existence of `test_embedding` and `test_query` variables.
     """
-    hybrid_results = deepsights.secondary_search(
-        deepsights.ContentStore(),
+    hybrid_results = cs.secondary.search(
         query=test_query,
         max_results=50,
         vector_weight=0.00001,
         vector_fraction=0.5,
-        recency_weight=0.0
+        recency_weight=0.0,
     )
 
-    text_results = _secondary_text_search(
-        deepsights.ContentStore(),
+    text_results = cs.secondary._text_search(
         query=test_query,
         max_results=10,
     )
@@ -334,8 +317,7 @@ def test_secondary_text_search_with_title_promotion():
     query = "gen x digital buyers"
 
     # first find top 10 results without title promotion and hard recency weight
-    hybrid_results_no_promotion = deepsights.secondary_search(
-        deepsights.ContentStore(),
+    hybrid_results_no_promotion = cs.secondary.search(
         query=query,
         max_results=50,
         promote_exact_match=False,
@@ -354,6 +336,7 @@ def test_secondary_text_search_with_title_promotion():
                 for term in shlex.split(query)
             ]
         )
+
     # must not match top result
     assert not matches(query, hybrid_results_no_promotion[0])
 
@@ -362,13 +345,12 @@ def test_secondary_text_search_with_title_promotion():
     for ix, result in enumerate(hybrid_results_no_promotion[1:], 1):
         if matches(query, result):
             break
-   
+
     assert ix > 0
-    assert ix < len(hybrid_results_no_promotion)-1
+    assert ix < len(hybrid_results_no_promotion) - 1
 
     # now retrieve with title promotion
-    hybrid_results = deepsights.secondary_search(
-        deepsights.ContentStore(),
+    hybrid_results = cs.secondary.search(
         query=query,
         max_results=50,
         promote_exact_match=True,

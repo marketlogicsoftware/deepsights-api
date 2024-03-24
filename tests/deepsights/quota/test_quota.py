@@ -20,6 +20,12 @@ import pytest
 import requests
 import deepsights
 
+# set up the API client
+ds = deepsights.DeepSights()
+
+# set up an unauthorized API client
+unauthorized_ds = deepsights.DeepSights("2344234")
+
 
 def test_ds_api_authentication():
     """
@@ -30,30 +36,16 @@ def test_ds_api_authentication():
 
     """
     with pytest.raises(requests.exceptions.HTTPError) as exc:
-        deepsights.api_get_profile(deepsights.DeepSights(api_key="1234567890"))
+        unauthorized_ds.quota.get_profile()
 
     assert exc.value.response.status_code == 401
 
 
-def test_cs_api_authentication():
+def test_ds_api_profile():
     """
-    Test case for ContentStore API authentication.
-
-    This test verifies that an HTTPError with status code 401 is raised when attempting to get the profile
-    using an invalid API key.
-
+    Test case to verify the profile of the DeepSights API response.
     """
-    with pytest.raises(requests.exceptions.HTTPError) as exc:
-        deepsights.api_get_profile(deepsights.ContentStore(api_key="1234567890"))
-
-    assert exc.value.response.status_code == 401
-
-
-def test_ds_api_attributes():
-    """
-    Test case to verify the attributes of the DeepSights API response.
-    """
-    r = deepsights.api_get_profile(deepsights.DeepSights())
+    r = ds.quota.get_profile()
 
     assert r.app is not None
     assert r.tenant is not None
@@ -67,7 +59,7 @@ def test_ds_quota_info():
     It checks the day quota and minute quota, ensuring that they are not None,
     and that the quota reset time and quota usage are valid.
     """
-    r = deepsights.quota_get_status(deepsights.DeepSights())
+    r = ds.quota.get_status()
 
     assert r.day_quota is not None
     assert r.day_quota.quota_reset_at is not None

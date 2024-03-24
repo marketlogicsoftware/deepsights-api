@@ -17,11 +17,9 @@ This module contains the base functions to search the ContentStore.
 """
 
 from typing import List
-from concurrent.futures import ThreadPoolExecutor
 from pydantic import BaseModel
-from deepsights.api import ContentStore
+from deepsights.api import API
 from deepsights.utils import (
-    rrf_merge_multi,
     promote_exact_matches,
     rerank_by_recency,
 )
@@ -29,7 +27,7 @@ from deepsights.utils import (
 
 #################################################
 def contentstore_hybrid_search(
-    api: ContentStore,
+    api: API,
     query: str,
     item_type: str,
     search_result: BaseModel,
@@ -45,7 +43,7 @@ def contentstore_hybrid_search(
 
     Args:
 
-        api (DeepSights): The DeepSights API instance.
+        api (API): The DeepSights API instance.
         query (str): The query.
         item_type (str): The type of items to search for.
         search_result (BaseModel): The model to use for parsing search results.
@@ -98,7 +96,7 @@ def contentstore_hybrid_search(
 
 #################################################
 def contentstore_vector_search(
-    api: ContentStore,
+    api: API,
     query_embedding: List,
     item_type: str,
     search_result: BaseModel,
@@ -111,7 +109,7 @@ def contentstore_vector_search(
 
     Args:
 
-        api (DeepSights): The DeepSights API instance.
+        api (API): The DeepSights API instance.
         query_embedding (List): The query embedding vector.
         item_type (str): The type of items to search for.
         search_result (BaseModel): The model to use for parsing search results.
@@ -150,7 +148,7 @@ def contentstore_vector_search(
 
 #################################################
 def contentstore_text_search(
-    api: ContentStore,
+    api: API,
     query: str,
     item_type: str,
     search_result: BaseModel,
@@ -162,7 +160,7 @@ def contentstore_text_search(
 
     Args:
 
-        api (DeepSights): The DeepSights API instance.
+        api (API): The DeepSights API instance.
         query (str): The search query.
         item_type (str): The type of items to search for.
         search_result (BaseModel): The model used to parse the search results.

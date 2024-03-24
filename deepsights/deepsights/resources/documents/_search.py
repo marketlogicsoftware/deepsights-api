@@ -17,15 +17,21 @@ This module contains the functions to search for documents and document pages ba
 """
 
 from typing import List
-from deepsights.api import DeepSights
+from deepsights.api import APIResource
 from deepsights.utils import rerank_by_recency, promote_exact_matches
-from deepsights.documents.model import DocumentPageSearchResult, DocumentSearchResult
-from deepsights.documents.load import documents_load, document_pages_load
+from deepsights.deepsights.resources.documents._model import (
+    DocumentPageSearchResult,
+    DocumentSearchResult,
+)
+from deepsights.deepsights.resources.documents._load import (
+    documents_load,
+    document_pages_load,
+)
 
 
 #################################################
 def document_pages_search(
-    api: DeepSights,
+    resource: APIResource,
     query_embedding: List,
     min_score: float = 0.7,
     max_results: int = 50,
@@ -36,7 +42,7 @@ def document_pages_search(
 
     Args:
 
-        api (ds.DeepSights): The DeepSights API instance.
+        resource (APIResource): An instance of the DeepSights API resource.
         query_embedding (List): The query vector embedding.
         min_score (float, optional): The minimum score threshold for search results. Defaults to 0.7.
         max_results (int, optional): The maximum number of search results to return. Defaults to 50.
@@ -57,7 +63,7 @@ def document_pages_search(
         "limit": max_results,
     }
     params = {"ai_model": "ADA", "search_model": "PAGE"}
-    response = api.post(
+    response = resource.api.post(
         "vector-search-service/vectors/_search", params=params, body=body
     )
 
@@ -76,14 +82,14 @@ def document_pages_search(
     # load pages if requested
     if load_pages:
         # make sure pages are loaded
-        document_pages_load(api, page_ids=[r.id for r in results])
+        document_pages_load(resource, page_ids=[r.id for r in results])
 
     return results
 
 
 #################################################
 def documents_search(
-    api: DeepSights,
+    resource: APIResource,
     query: str = None,
     query_embedding: List = None,
     min_score: float = 0.7,
@@ -97,7 +103,7 @@ def documents_search(
 
     Args:
 
-        api (ds.DeepSights): The DeepSights API instance.
+        resource (APIResource): An instance of the DeepSights API resource.
         query (str): The search query; currently only used for promoting exact matches.
         query_embedding (List): The query vector embedding.
         min_score (float, optional): The minimum score threshold for document matches. Defaults to 0.7.
@@ -123,7 +129,7 @@ def documents_search(
 
     # get the page matches
     page_matches = document_pages_search(
-        api,
+        resource,
         query_embedding,
         min_score=min_score,
         max_results=max_results,
@@ -156,12 +162,12 @@ def documents_search(
     # load documents if requested
     if load_documents or recency_weight:
         # make sure the documents are loaded
-        documents_load(api, document_ids=[r.id for r in results])
+        documents_load(resource, document_ids=[r.id for r in results])
 
         # load pages if requested
         if load_documents:
             page_ids = [p.id for r in results for p in r.page_matches]
-            document_pages_load(api, page_ids=page_ids)
+            document_pages_load(resource, page_ids=page_ids)
 
             # order pages by their number
             for r in results:

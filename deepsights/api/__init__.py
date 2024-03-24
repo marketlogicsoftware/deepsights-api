@@ -14,9 +14,8 @@
 
 
 """
-This module contains the base functions to interact with the DeepSights API.
+This module defines the base API and Resource classes.
 """
 
-from deepsights.api.api import DeepSights, ContentStore
-from deepsights.api.model import APIProfile, QuotaInfo, QuotaStatus
-from deepsights.api.quota import quota_get_status, api_get_profile
+from deepsights.api.api import API
+from deepsights.api.resource import APIResource

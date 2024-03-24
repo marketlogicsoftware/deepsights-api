@@ -17,9 +17,9 @@ This module contains the functions to list documents from the DeepSights API.
 """
 
 from typing import List
-from deepsights.api import DeepSights
-from deepsights.documents.model import Document
-from deepsights.documents._cache import set_document
+from deepsights.api import APIResource
+from deepsights.deepsights.resources.documents._model import Document
+from deepsights.deepsights.resources.documents._cache import set_document
 
 
 #################################################
@@ -45,7 +45,7 @@ class SortingField:
 
 #################################################
 def documents_list(
-    api: DeepSights,
+    resource: APIResource,
     page_size: int = 50,
     page_number: int = 0,
     sort_order: str = SortingOrder.DESCENDING,
@@ -56,7 +56,8 @@ def documents_list(
     List documents from the DeepSights API.
 
     Args:
-        api (DeepSights): The DeepSights API object.
+
+        resource (APIResource): An instance of the DeepSights API resource.
         page_size (int): The number of pages to return.
         page_number (int): The page number to return.
         sort_order (str): The sorting order.
@@ -89,7 +90,7 @@ def documents_list(
         body["statuses"] = status_filter
 
     # fetch ids
-    result = api.post(
+    result = resource.api.post(
         "/artifact-service/artifacts/_search",
         body=body,
     )

@@ -19,15 +19,16 @@ This module contains the tests for the DeepSights ContentStore news search funct
 import re
 import json
 import shlex
-import pytest
 import deepsights
-from deepsights.contentstore.news import _news_text_search, _news_vector_search
 
 # get the test data from JSON
 with open("tests/data/test_data.json", "rt", encoding="utf-8") as f:
     data = json.load(f)
     test_embedding = data["embedding"]
     test_query = data["question"]
+
+# set up the API client
+cs = deepsights.ContentStore()
 
 
 def test_news_text_search():
@@ -41,8 +42,7 @@ def test_news_text_search():
 
     Note: This test assumes the existence of a `test_query` variable.
     """
-    results = _news_text_search(
-        deepsights.ContentStore(),
+    results = cs.news._text_search(
         query=test_query,
         max_results=5,
     )
@@ -68,8 +68,7 @@ def test_news_text_search_with_recency_low():
     Note: This test assumes the existence of a `test_query` variable.
     """
 
-    results = _news_text_search(
-        deepsights.ContentStore(),
+    results = cs.news._text_search(
         query=test_query,
         max_results=10,
         recency_weight=0.00001,
@@ -92,8 +91,7 @@ def test_news_text_search_with_recency_high():
 
     Note: This test assumes the existence of a `test_query` variable.
     """
-    results = _news_text_search(
-        deepsights.ContentStore(),
+    results = cs.news._text_search(
         query=test_query,
         max_results=10,
         recency_weight=0.99999,
@@ -114,8 +112,7 @@ def test_news_vector_search():
 
     Note: This test assumes the existence of a `test_embedding` variable.
     """
-    results = _news_vector_search(
-        deepsights.ContentStore(),
+    results = cs.news._vector_search(
         test_embedding,
         max_results=5,
     )
@@ -138,8 +135,7 @@ def test_news_vector_search_with_recency_low():
 
     Note: This test assumes the existence of a `test_embedding` variable.
     """
-    results = _news_vector_search(
-        deepsights.ContentStore(),
+    results = cs.news._vector_search(
         test_embedding,
         max_results=10,
         recency_weight=0.00001,
@@ -161,8 +157,7 @@ def test_news_vector_search_with_recency_high():
 
     Note: This test assumes the existence of a `test_embedding` variable.
     """
-    results = _news_vector_search(
-        deepsights.ContentStore(),
+    results = cs.news._vector_search(
         test_embedding,
         max_results=10,
         recency_weight=0.99999,
@@ -183,8 +178,7 @@ def test_news_hybrid_search_only_vector():
 
     Note: This test assumes the existence of a `test_embedding` and `test_query` variable.
     """
-    hybrid_results = deepsights.news_search(
-        deepsights.ContentStore(),
+    hybrid_results = cs.news.search(
         query=test_query,
         max_results=5,
         vector_weight=1.0,
@@ -192,8 +186,10 @@ def test_news_hybrid_search_only_vector():
         recency_weight=0.0,
     )
 
-    vector_results = _news_vector_search(
-        deepsights.ContentStore(), test_embedding, max_results=5, recency_weight=0.0
+    vector_results = cs.news._vector_search(
+        test_embedding,
+        max_results=5,
+        recency_weight=0.0,
     )
 
     assert len(hybrid_results) == 5
@@ -211,8 +207,7 @@ def test_news_hybrid_search_only_text():
 
     Note: This test assumes the existence of a `test_query` variable.
     """
-    hybrid_results = deepsights.news_search(
-        deepsights.ContentStore(),
+    hybrid_results = cs.news.search(
         query=test_query,
         max_results=5,
         vector_fraction=0.0,
@@ -220,8 +215,10 @@ def test_news_hybrid_search_only_text():
         recency_weight=0.0,
     )
 
-    text_results = _news_text_search(
-        deepsights.ContentStore(), query=test_query, max_results=5, recency_weight=0.0
+    text_results = cs.news._text_search(
+        query=test_query,
+        max_results=5,
+        recency_weight=0.0,
     )
 
     assert len(hybrid_results) == 5
@@ -240,20 +237,17 @@ def test_news_hybrid_search():
 
     Note: This test assumes the existence of `test_embedding` and `test_query` variables.
     """
-    hybrid_results = deepsights.news_search(
-        deepsights.ContentStore(),
+    hybrid_results = cs.news.search(
         query=test_query,
         max_results=10,
     )
 
-    vector_results = _news_vector_search(
-        deepsights.ContentStore(),
+    vector_results = cs.news._vector_search(
         query_embedding=test_embedding,
         max_results=10,
     )
 
-    text_results = _news_text_search(
-        deepsights.ContentStore(),
+    text_results = cs.news._text_search(
         query=test_query,
         max_results=10,
     )
@@ -279,20 +273,17 @@ def test_news_hybrid_search():
 
     Note: This test assumes the existence of `test_embedding` and `test_query` variables.
     """
-    hybrid_results = deepsights.news_search(
-        deepsights.ContentStore(),
+    hybrid_results = cs.news.search(
         query=test_query,
         max_results=10,
     )
 
-    vector_results = _news_vector_search(
-        deepsights.ContentStore(),
+    vector_results = cs.news._vector_search(
         query_embedding=test_embedding,
         max_results=10,
     )
 
-    text_results = _news_text_search(
-        deepsights.ContentStore(),
+    text_results = cs.news._text_search(
         query=test_query,
         max_results=10,
     )
@@ -312,8 +303,7 @@ def test_news_hybrid_search_with_vector_high():
 
     Note: This test assumes the existence of `test_embedding` and `test_query` variables.
     """
-    hybrid_results = deepsights.news_search(
-        deepsights.ContentStore(),
+    hybrid_results = cs.news.search(
         query=test_query,
         max_results=10,
         vector_weight=0.99999,
@@ -321,8 +311,7 @@ def test_news_hybrid_search_with_vector_high():
         recency_weight=0.0,
     )
 
-    vector_results = _news_vector_search(
-        deepsights.ContentStore(),
+    vector_results = cs.news._vector_search(
         query_embedding=test_embedding,
         max_results=10,
         recency_weight=0.0,
@@ -340,8 +329,7 @@ def test_news_hybrid_search_with_vector_low():
 
     Note: This test assumes the existence of `test_embedding` and `test_query` variables.
     """
-    hybrid_results = deepsights.news_search(
-        deepsights.ContentStore(),
+    hybrid_results = cs.news.search(
         query=test_query,
         max_results=10,
         vector_weight=0.00001,
@@ -349,8 +337,7 @@ def test_news_hybrid_search_with_vector_low():
         recency_weight=0.0,
     )
 
-    text_results = _news_text_search(
-        deepsights.ContentStore(),
+    text_results = cs.news._text_search(
         query=test_query,
         max_results=10,
         recency_weight=0.0,
@@ -371,8 +358,7 @@ def test_news_text_search_with_title_promotion():
     query = "gen x candy"
 
     # first find top 10 results without title promotion and hard recency weight
-    hybrid_results_no_promotion = deepsights.news_search(
-        deepsights.ContentStore(),
+    hybrid_results_no_promotion = cs.news.search(
         query=query,
         max_results=50,
         promote_exact_match=False,
@@ -405,8 +391,7 @@ def test_news_text_search_with_title_promotion():
     assert ix < len(hybrid_results_no_promotion) - 1
 
     # now retrieve with title promotion
-    hybrid_results = deepsights.news_search(
-        deepsights.ContentStore(),
+    hybrid_results = cs.news.search(
         query=query,
         max_results=50,
         promote_exact_match=True,

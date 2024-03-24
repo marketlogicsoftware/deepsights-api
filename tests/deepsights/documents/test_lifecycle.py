@@ -19,6 +19,11 @@ Test the lifecycle of documents
 import pytest
 import requests
 import deepsights
+import deepsights.deepsights.resources.documents._cache
+
+
+# set up the API client
+ds = deepsights.DeepSights()
 
 
 def test_documents_upload_no_file():
@@ -26,8 +31,7 @@ def test_documents_upload_no_file():
     Test case to verify that a FileNotFoundError is raised when trying to upload a non-existing file.
     """
     with pytest.raises(FileNotFoundError):
-        deepsights.document_upload(
-            deepsights.DeepSights(),
+        ds.documents.upload(
             "tests/data/non_existing.pdf",
         )
 
@@ -37,8 +41,7 @@ def test_documents_upload_unsupported_type():
     Test case to verify that uploading an unsupported file type raises a ValueError.
     """
     with pytest.raises(ValueError):
-        deepsights.document_upload(
-            deepsights.DeepSights(),
+        ds.documents.upload(
             "tests/data/test_text.txt",
         )
 
@@ -52,8 +55,7 @@ def test_documents_delete_404():
 
     """
     with pytest.raises(requests.exceptions.HTTPError) as exc:
-        deepsights.documents_delete(
-            deepsights.DeepSights(),
+        ds.documents.delete(
             ["aaa"],
         )
 
@@ -65,32 +67,30 @@ def test_documents_upload_and_delete():
     Test case for uploading and deleting documents.
     """
     # upload the document
-    artifact_id = deepsights.document_upload(
-        deepsights.DeepSights(),
+    artifact_id = ds.documents.upload(
         "tests/data/test_presentation.pdf",
     )
 
     assert artifact_id is not None
 
     # wait for completion
-    deepsights.document_wait_for_processing(deepsights.DeepSights(), artifact_id)
+    ds.documents.wait_for_upload(artifact_id)
 
-    doc = deepsights.get_document(artifact_id)
+    doc = deepsights.deepsights.resources.documents._cache.get_document(artifact_id)
     assert doc is not None
     assert doc.id == artifact_id
     assert doc.status == "COMPLETED"
 
     # delete
-    deepsights.documents_delete(
-        deepsights.DeepSights(),
+    ds.documents.delete(
         [artifact_id],
     )
 
-    assert not deepsights.has_document(artifact_id)
+    assert not deepsights.deepsights.resources.documents._cache.has_document(artifact_id)
 
     # check status
     try:
-        doc = deepsights.documents_load(deepsights.DeepSights(), [artifact_id])[0]
+        doc = ds.documents.load([artifact_id])[0]
 
         assert doc is not None
         assert doc.id == artifact_id
@@ -100,11 +100,9 @@ def test_documents_upload_and_delete():
         assert e.response.status_code == 404
 
     # wait for deletion
-    deepsights.document_wait_for_deletion(
-        deepsights.DeepSights(), artifact_id, timeout=120
-    )
+    ds.documents.wait_for_delete(artifact_id, timeout=120)
 
     # assert gone
     with pytest.raises(requests.exceptions.HTTPError):
-        docs = deepsights.documents_load(deepsights.DeepSights(), [artifact_id])
+        docs = ds.documents.load([artifact_id])
         print(docs)
