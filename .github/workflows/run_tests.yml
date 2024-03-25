@@ -29,5 +29,7 @@ jobs:
       env:
         DEEPSIGHTS_API_KEY: ${{ secrets.DEEPSIGHTS_API_KEY }}
         CONTENTSTORE_API_KEY: ${{ secrets.CONTENTSTORE_API_KEY }}
+        MIP_API_KEY: ${{ secrets.MIP_API_KEY }}
+        MIP_IDENTITY_VALID_EMAIL: ${{ secrets.MIP_IDENTITY_VALID_EMAIL }}
       run: |
         pytest
