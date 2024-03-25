@@ -4,13 +4,13 @@
 
 ## v1.0.0 (in preparation)
 
+- Introduced user client, removing answers and reports from API key based super-access
+- Restructured API clients to use API resources for improved modularity
 - Retried sync answers v1
 - Support for new hybrid SCS endpoint
-- Introduced documents_list() method
+- Introduced documents.list() method
 - Added creation_date to document model
-- Quality of life improvements to document_download()
-- Signature change for answer_set_* methods for clarity
-- Moved out of beta
+- Quality of life improvements to documents.download()
 
 ## v0.2.0 (01-Mar-2024)
 

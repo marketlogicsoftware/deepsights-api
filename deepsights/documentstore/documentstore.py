@@ -13,21 +13,20 @@
 # limitations under the License.
 
 """
-This module contains the client to interact with the ContentStore API.
+This module contains the client to interact with the document store in the DeepSights API.
 """
 
 from deepsights.api.api import APIKeyAPI
-from deepsights.contentstore.resources import NewsResource, SecondaryResource
+from deepsights.documentstore.resources import DocumentResource
 
 
 #################################################
-class ContentStore(APIKeyAPI):
+class DocumentStore(APIKeyAPI):
     """
-    This class provides the client to interact with the ContentStore API.
+    This class provides methods to interact with the document store in the DeepSights API.
     """
 
-    news: NewsResource
-    secondary: SecondaryResource
+    documents: DocumentResource
 
     #######################################
     def __init__(self, api_key: str = None) -> None:
@@ -36,13 +35,12 @@ class ContentStore(APIKeyAPI):
 
         Args:
 
-            api_key (str, optional): The API key to be used for authentication. If not provided, it will be fetched from the environment variable CONTENTSTORE_API_KEY.
+            api_key (str, optional): The API key to be used for authentication. If not provided, it will be fetched from the environment variable DEEPSIGHTS_API_KEY.
         """
         super().__init__(
-            endpoint_base="https://apigee.mlsdevcloud.com/secondary-content/api/",
+            endpoint_base="https://api.deepsights.ai/ds/v1/",
             api_key=api_key,
-            api_key_env_var="CONTENTSTORE_API_KEY",
+            api_key_env_var="DEEPSIGHTS_API_KEY",
         )
 
-        self.news = NewsResource(self)
-        self.secondary = SecondaryResource(self)
+        self.documents = DocumentResource(self)

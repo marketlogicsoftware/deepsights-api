@@ -13,8 +13,8 @@
 # limitations under the License.
 
 """
-This module contains the model and resources to retrieve content from the ContentStore API.
+This module contains the resource to retrieve answers from the DeepSights API.
 """
 
-from deepsights.contentstore.resources.news import NewsResource
-from deepsights.contentstore.resources.secondary import SecondaryResource
+from deepsights.userclient.resources.answers import AnswerResource
+from deepsights.userclient.resources.reports import ReportResource

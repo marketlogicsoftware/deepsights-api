@@ -13,10 +13,7 @@
 # limitations under the License.
 
 """
-This module contains resources for the DeepSights API.
+This module contains the resources to interrogate quota from the DeepSights API.
 """
 
 from deepsights.deepsights.resources.quota import QuotaResource
-from deepsights.deepsights.resources.documents import DocumentResource, SortingField, SortingOrder
-from deepsights.deepsights.resources.answers import AnswerResource
-from deepsights.deepsights.resources.reports import ReportResource

@@ -13,8 +13,7 @@
 # limitations under the License.
 
 """
-This module contains the client DeepSights API.
+This module contains the client for the ContentStore API.
 """
 
 from deepsights.deepsights.deepsights import DeepSights
-from deepsights.deepsights.resources.documents import SortingOrder, SortingField

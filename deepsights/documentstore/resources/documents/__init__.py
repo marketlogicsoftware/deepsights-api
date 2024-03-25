@@ -13,8 +13,8 @@
 # limitations under the License.
 
 """
-This module contains the model and resources to retrieve content from the ContentStore API.
+This module contains the resource to interact with documents via the DeepSights API.
 """
 
-from deepsights.contentstore.resources.news import NewsResource
-from deepsights.contentstore.resources.secondary import SecondaryResource
+from deepsights.documentstore.resources.documents.documents import DocumentResource
+from deepsights.documentstore.resources.documents._list import SortingField, SortingOrder

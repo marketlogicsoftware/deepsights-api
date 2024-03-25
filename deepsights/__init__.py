@@ -16,9 +16,8 @@
 This module contains the client library to interact with the Market Logic DeepSights and ContentStore APIs.
 """
 
-from deepsights.contentstore import ContentStore
-from deepsights.deepsights import (
-    DeepSights,
+from deepsights.documentstore import (
     SortingField,
     SortingOrder,
 )
+from deepsights.deepsights import DeepSights

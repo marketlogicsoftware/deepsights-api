@@ -13,45 +13,80 @@
 # limitations under the License.
 
 """
-This module contains the base functions to interact with the DeepSights API.
+This module contains the DeepSights client.
 """
 
-from deepsights.api.api import API
-from deepsights.deepsights.resources import (
-    QuotaResource,
-    ReportResource,
-    DocumentResource,
-    AnswerResource,
-)
+from cachetools import TTLCache
+from deepsights.api.api import APIKeyAPI
+from deepsights.documentstore import DocumentStore
+from deepsights.contentstore import ContentStore
+from deepsights.userclient import UserClient
+from deepsights.deepsights._mip_identity import MIPIdentityResolver
+from deepsights.deepsights.resources.quota import QuotaResource
 
 
 #################################################
-class DeepSights(API):
+class DeepSights(APIKeyAPI):
     """
-    This class provides methods to interact with the DeepSights API.
+    This DeepSights client.
     """
 
     quota: QuotaResource
-    documents: DocumentResource
-    answers: AnswerResource
-    reports: ReportResource
+    documentstore: DocumentStore
+    contentstore: ContentStore
 
     #######################################
-    def __init__(self, api_key: str = None) -> None:
+    def __init__(
+            self,
+            ds_api_key: str = None,
+            cs_api_key: str = None,
+            mip_api_key: str = None,
+        ) -> None:
+            """
+            Initializes the DeepSights API client.
+
+            Args:
+                ds_api_key (str): The API key for the DeepSights API. If None, the DEEPSIGHTS_API_KEY environment variable is used.
+                cs_api_key (str): The API key for the ContentStore API. If None, the CONTENTSTORE_API_KEY environment variable is used.
+                mip_api_key (str): The API key for the MIP API. If None, the MIP_API_KEY environment variable is used.
+            """
+            super().__init__(
+                endpoint_base="https://api.deepsights.ai/ds/v1/",
+                api_key=ds_api_key,
+                api_key_env_var="DEEPSIGHTS_API_KEY",
+            )
+
+            self.quota = QuotaResource(self)
+            self.documentstore = DocumentStore(ds_api_key)
+            self.contentstore = ContentStore(cs_api_key)
+            self._mip_identity_resolver = MIPIdentityResolver(mip_api_key)
+
+            self.userclients = TTLCache(maxsize=100, ttl=240)
+
+    #######################################
+    def get_userclient(self, user_email: str) -> UserClient:
         """
-        Initializes the API client.
+        Retrieves a user client for the given user.
 
         Args:
+            user_email (str): The email of the user to impersonate.
 
-            api_key (str, optional): The API key to be used for authentication. If not provided, it will be fetched from the environment variable DEEPSIGHTS_API_KEY.
+        Returns:
+            UserClient: The user client for the given user. Will be cached.
+
+        Raises:
+            ValueError: If the user is not found.
+
         """
-        super().__init__(
-            endpoint_base="https://api.deepsights.ai/ds/v1/",
-            api_key=api_key,
-            api_key_env_var="DEEPSIGHTS_API_KEY",
-        )
+        # normalize the email
+        user_email = user_email.lower().strip()
 
-        self.quota = QuotaResource(self)
-        self.documents = DocumentResource(self)
-        self.answers = AnswerResource(self)
-        self.reports = ReportResource(self)
+        # create the user client if it doesn't exist
+        if user_email not in self.userclients:
+            oauth_token = self._mip_identity_resolver.get_oauth_token(user_email)
+            if not oauth_token:
+                raise ValueError(f"User not found: {user_email}")
+
+            self.userclients[user_email] = UserClient(oauth_token)
+
+        return self.userclients[user_email]

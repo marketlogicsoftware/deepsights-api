@@ -13,36 +13,34 @@
 # limitations under the License.
 
 """
-This module contains the client to interact with the ContentStore API.
+This module contains the user client for the DeepSights API, impersonating a given user.
 """
 
-from deepsights.api.api import APIKeyAPI
-from deepsights.contentstore.resources import NewsResource, SecondaryResource
-
+from deepsights.api.api import OAuthTokenAPI
+from deepsights.userclient.resources import AnswerResource, ReportResource
 
 #################################################
-class ContentStore(APIKeyAPI):
+class UserClient(OAuthTokenAPI):
     """
-    This class provides the client to interact with the ContentStore API.
+    This class defined the user client for DeepSights APIs, impersonating a given user.
     """
 
-    news: NewsResource
-    secondary: SecondaryResource
+    answers: AnswerResource
+    reports: ReportResource
 
     #######################################
-    def __init__(self, api_key: str = None) -> None:
+    def __init__(self, oauth_token: str) -> None:
         """
         Initializes the API client.
 
         Args:
 
-            api_key (str, optional): The API key to be used for authentication. If not provided, it will be fetched from the environment variable CONTENTSTORE_API_KEY.
+            oauth_token (str): The OAuth token to be used for authentication.
         """
         super().__init__(
-            endpoint_base="https://apigee.mlsdevcloud.com/secondary-content/api/",
-            api_key=api_key,
-            api_key_env_var="CONTENTSTORE_API_KEY",
+            endpoint_base="https://api.deepsights.ai/ds/v1",
+            oauth_token=oauth_token,
         )
 
-        self.news = NewsResource(self)
-        self.secondary = SecondaryResource(self)
+        self.answers = AnswerResource(self)
+        self.reports = ReportResource(self)

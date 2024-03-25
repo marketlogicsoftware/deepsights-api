@@ -51,14 +51,14 @@ To retrieve an answer from DeepSights:
 ```Python
 import deepsights
 
-# with key from environment
+# with API keys from environment
 ds = deepsights.DeepSights()
 
 # obtain answer
-response = deepsights.answerset_get_sync(ds, "What are emerging food consumption moments for Gen Z?")
+response = ds.answers.create_and_wait(ds, "What are emerging food consumption moments for Gen Z?")
 
 # returned data are pydantic objects
-print(response.answer)
+print(response.answers[0].answer)
 
 # you can retrieve the supported properties via schema_human()
 print(response.schema_human())
