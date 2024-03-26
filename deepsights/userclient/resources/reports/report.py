@@ -101,19 +101,33 @@ class ReportResource(APIResource):
         """
         response = self.api.get(f"end-user-gateway-service/desk-researches/{report_id}")
 
-        return Report(
-            **dict(
-                permission_validation=response["permission_validation_result"],
-                id=response["desk_research"]["minion_job"]["id"],
-                status=response["desk_research"]["minion_job"]["status"],
-                question=response["desk_research"]["context"]["input"],
-                topic=response["desk_research"]["context"]["topic"],
-                summary=response["desk_research"]["context"]["summary"],
-                document_sources=response["desk_research"]["context"][
-                    "artifact_vector_search_results"
-                ],
-                news_sources=response["desk_research"]["context"][
-                    "scs_news_search_results"
-                ],
+        if response["permission_validation_result"] == "RESTRICTED":
+            return Report(
+                **dict(
+                    permission_validation=response["permission_validation_result"],
+                    id=response["restricted_desk_research"]["desk_research_id"],
+                    status="n/a",
+                    question=response["restricted_desk_research"]["input"],
+                    topic="n/a",
+                    summary="n/a",
+                    document_sources=[],
+                    news_sources=[],
+                )
             )
-        )
+        else:
+            return Report(
+                **dict(
+                    permission_validation=response["permission_validation_result"],
+                    id=response["desk_research"]["minion_job"]["id"],
+                    status=response["desk_research"]["minion_job"]["status"],
+                    question=response["desk_research"]["context"]["input"],
+                    topic=response["desk_research"]["context"]["topic"],
+                    summary=response["desk_research"]["context"]["summary"],
+                    document_sources=response["desk_research"]["context"][
+                        "artifact_vector_search_results"
+                    ],
+                    news_sources=response["desk_research"]["context"][
+                        "scs_news_search_results"
+                    ],
+                )
+            )

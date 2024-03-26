@@ -18,7 +18,7 @@ This module defines the packaging of deepsights-api.
 
 import io
 import os
-from setuptools import setup
+from setuptools import setup, find_packages
 
 
 package_root = os.path.abspath(os.path.dirname(__file__))
@@ -40,7 +40,8 @@ setup(
     long_description=readme,
     long_description_content_type="text/markdown",
     url="https://github.com/marketlogicsoftware/deepsights-api",
-    packages=["deepsights"],
+    packages=find_packages(exclude=["tests", "tests.*"]),
+    include_package_data=True,
     install_requires=reqs,
     license="Apache 2.0",
     classifiers=[

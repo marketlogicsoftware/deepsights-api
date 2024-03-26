@@ -32,9 +32,11 @@ with open("tests/data/test_data.json", "rt", encoding="utf-8") as f:
 uc = deepsights.DeepSights().get_userclient(os.environ["MIP_IDENTITY_VALID_EMAIL"])
 
 
-def test_report_create_and_wait_briefly():
+def _test_report_create_and_wait_briefly():
     """
     Test function to check the behavior of the report_wait_for_completion function.
+
+    Very expensive, only run when necessary.
     """
     report_id = uc.reports.create(test_question)
 
@@ -59,6 +61,7 @@ def test_report_get():
     report = uc.reports.get(test_report_id)
 
     assert report.id == test_report_id
+    assert report.permission_validation == "GRANTED"
     assert report.question is not None
     assert report.status == "COMPLETED"
     assert report.topic is not None
