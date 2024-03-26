@@ -57,7 +57,7 @@ documents = ds.documentstore.documents.load(
     load_pages=True,
 )
 
-# get the first dod
+# get the first doc
 top_document = documents[0]
 print(top_document.title)
 

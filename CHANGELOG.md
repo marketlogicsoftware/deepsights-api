@@ -2,7 +2,7 @@
 
 <!--next-version-placeholder-->
 
-## v1.0.0 (in preparation)
+## v1.0.0 (26-Mar-2024)
 
 - Introduced user client, removing answers and reports from API key based super-access
 - Restructured API clients to use API resources for improved modularity
