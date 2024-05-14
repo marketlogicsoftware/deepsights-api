@@ -19,7 +19,7 @@ This module contains the tests for the secondary search functionality of the Dee
 import re
 import json
 import shlex
-from datetime import datetime
+from datetime import datetime, timezone
 import deepsights
 
 # get the test data from JSON
@@ -266,8 +266,8 @@ def test_secondary_hybrid_search_with_date():
 
     This test case performs a hybrid secondary search with a specified date range.
     """
-    start = datetime.fromisoformat("2024-01-01T00:00:00Z")
-    end = datetime.fromisoformat("2024-03-01T00:00:00Z")
+    start = datetime.fromisoformat("2024-01-01T00:00:00+00:00").astimezone(timezone.utc)
+    end = datetime.fromisoformat("2024-03-01T00:00:00+00:00").astimezone(timezone.utc)
 
     hybrid_results = ds.contentstore.secondary.search(
         query=test_query,

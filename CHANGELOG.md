@@ -2,6 +2,11 @@
 
 <!--next-version-placeholder-->
 
+## v1.0.1 (14-May-2024)
+
+- Added date range filtering for content store searches
+
+
 ## v1.0.0 (26-Mar-2024)
 
 - Introduced user client, removing answers and reports from API key based super-access
@@ -11,6 +16,7 @@
 - Introduced documents.list() method
 - Added creation_date to document model
 - Quality of life improvements to documents.download()
+
 
 ## v0.2.0 (01-Mar-2024)
 

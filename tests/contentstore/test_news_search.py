@@ -19,7 +19,7 @@ This module contains the tests for the DeepSights ContentStore news search funct
 import re
 import json
 import shlex
-from datetime import datetime
+from datetime import datetime, timezone
 import deepsights
 
 # get the test data from JSON
@@ -303,8 +303,8 @@ def test_news_hybrid_search_with_date():
 
     This test case performs a hybrid news search with a specified date range.
     """
-    start = datetime.fromisoformat("2024-01-01T00:00:00Z")
-    end = datetime.fromisoformat("2024-03-01T00:00:00Z")
+    start = datetime.fromisoformat("2024-01-01T00:00:00+00:00").astimezone(timezone.utc)
+    end = datetime.fromisoformat("2024-03-01T00:00:00+00:00").astimezone(timezone.utc)
 
     hybrid_results = ds.contentstore.news.search(
         query=test_query,
