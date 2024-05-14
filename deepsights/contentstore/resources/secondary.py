@@ -17,6 +17,7 @@ This module contains the resource to retrieve secondary reports from the DeepSig
 """
 
 from typing import List
+from datetime import datetime
 
 from deepsights.api import APIResource
 from deepsights.contentstore.resources._model import ContentStoreSearchResult
@@ -116,6 +117,8 @@ class SecondaryResource(APIResource):
         vector_weight: float = 0.9,
         recency_weight: float = 0.4,
         promote_exact_match: bool = False,
+        search_from_timestamp: datetime = None,
+        search_to_timestamp: datetime = None,
     ):
         """
         Perform a contentstore hybrid search using the provided query.
@@ -130,6 +133,8 @@ class SecondaryResource(APIResource):
             vector_weight (float, optional): The weight to apply to vector search in result ranking. Defaults to 0.9.
             recency_weight (float, optional): The weight to apply to recency in result ranking. Defaults to 0.4.
             promote_exact_match (bool, optional): Whether to promote exact matches in the search ranking. Defaults to False.
+            search_from_timestamp (datetime, optional): The start timestamp for the search. Defaults to None.
+            search_to_timestamp (datetime, optional): The end timestamp for the search. Defaults to None.
 
         Returns:
 
@@ -148,4 +153,6 @@ class SecondaryResource(APIResource):
             min_vector_score=min_vector_score,
             recency_weight=recency_weight,
             promote_exact_match=promote_exact_match,
+            search_from_timestamp=search_from_timestamp,
+            search_to_timestamp=search_to_timestamp,
         )

@@ -17,6 +17,7 @@ This module contains the base functions to search the ContentStore.
 """
 
 from typing import List
+from datetime import datetime
 from pydantic import BaseModel
 from deepsights.api import API
 from deepsights.utils import (
@@ -37,6 +38,8 @@ def contentstore_hybrid_search(
     vector_weight: float = 0.9,
     recency_weight: float = 0.4,
     promote_exact_match: bool = False,
+    search_from_timestamp: datetime = None,
+    search_to_timestamp: datetime = None,
 ):
     """
     Perform a contentstore hybrid search using the provided query.
@@ -53,6 +56,8 @@ def contentstore_hybrid_search(
         vector_weight (float, optional): The weight to apply to vector search in result ranking. Defaults to 0.9.
         recency_weight (float, optional): The weight to apply to recency in result ranking. Defaults to 0.4.
         promote_exact_match (bool, optional): Whether to promote exact matches to the top of the results. Defaults to False.
+        search_from_timestamp (datetime, optional): The start timestamp for the search. Defaults to None.
+        search_to_timestamp (datetime, optional): The end timestamp for the search. Defaults to None.
 
     Returns:
 
@@ -67,6 +72,13 @@ def contentstore_hybrid_search(
         recency_weight is None or 0 <= recency_weight <= 1
     ), "Recency weight must be between 0 and 1."
 
+    time_filter = None
+    if search_from_timestamp or search_to_timestamp:
+        time_filter = {
+            "from": search_from_timestamp.isoformat() if search_from_timestamp else None,
+            "to": search_to_timestamp.isoformat() if search_to_timestamp else None,
+        }
+
     body = {
         "query": query,
         "source_items_type": item_type,
@@ -77,6 +89,7 @@ def contentstore_hybrid_search(
         "beta": 1.0 - recency_weight,
         "text_search_fraction": 1.0 - vector_fraction,
         "k": 60,
+        "published_at": time_filter,
     }
     response = api.post("item-service/items/_hybrid-search", body=body)
 

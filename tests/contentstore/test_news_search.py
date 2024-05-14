@@ -19,6 +19,7 @@ This module contains the tests for the DeepSights ContentStore news search funct
 import re
 import json
 import shlex
+from datetime import datetime
 import deepsights
 
 # get the test data from JSON
@@ -294,6 +295,41 @@ def test_news_hybrid_search():
     contrib_ids += [result.id for result in text_results]
 
     assert all([result in contrib_ids for result in hybrid_ids])
+
+
+def test_news_hybrid_search_with_date():
+    """
+    Test case for hybrid news search with date.
+
+    This test case performs a hybrid news search with a specified date range.
+    """
+    start = datetime.fromisoformat("2024-01-01T00:00:00Z")
+    end = datetime.fromisoformat("2024-03-01T00:00:00Z")
+
+    hybrid_results = ds.contentstore.news.search(
+        query=test_query,
+        max_results=10,
+        search_from_timestamp=start,
+    )
+    for result in hybrid_results:
+        assert result.publication_date >= start
+
+    hybrid_results = ds.contentstore.news.search(
+        query=test_query,
+        max_results=10,
+        search_to_timestamp=end,
+    )
+    for result in hybrid_results:
+        assert result.publication_date <= end
+
+    hybrid_results = ds.contentstore.news.search(
+        query=test_query,
+        max_results=10,
+        search_from_timestamp=start,
+        search_to_timestamp=end,
+    )
+    for result in hybrid_results:
+        assert result.publication_date <= end and result.publication_date >= start
 
 
 def test_news_hybrid_search_with_vector_high():
