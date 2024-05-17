@@ -42,11 +42,12 @@ class SecondaryResource(APIResource):
     """
 
     #################################################
-    def _vector_search(
+    def vector_search(
         self,
         query_embedding: List,
         min_score: float = 0.7,
         max_results: int = 50,
+        languages: List[str] = None,
         recency_weight: float = None,
     ):
         """
@@ -57,6 +58,7 @@ class SecondaryResource(APIResource):
             query_embedding (List): The embedding vector representing the query.
             min_score (float, optional): The minimum score threshold for search results. Defaults to 0.7.
             max_results (int, optional): The maximum number of search results to return. Defaults to 50.
+            languages (List[str], optional): The languages to search for. Defaults to None.
             recency_weight (float, optional): The weight to apply to recency in the search ranking. Defaults to None.
 
         Returns:
@@ -74,13 +76,16 @@ class SecondaryResource(APIResource):
             min_score=min_score,
             max_results=max_results,
             recency_weight=recency_weight,
+            languages=languages,
         )
 
     #################################################
-    def _text_search(
+    def text_search(
         self,
         query: str,
         max_results: int = 50,
+        offset: int = 0,
+        languages: List[str] = None,
         recency_weight: float = None,
     ):
         """
@@ -90,6 +95,8 @@ class SecondaryResource(APIResource):
 
             query (str): The search query.
             max_results (int, optional): The maximum number of search results to return. Defaults to 50.
+            offset (int, optional): The offset to start the search from. Defaults to 0.
+            languages (List[str], optional): The languages to search for. Defaults to None.
             recency_weight (float, optional): The weight to assign to recency in the search ranking. Defaults to None.
 
         Returns:
@@ -104,6 +111,8 @@ class SecondaryResource(APIResource):
             ),
             query=query,
             max_results=max_results,
+            offset=offset,
+            languages=languages,
             recency_weight=recency_weight,
         )
 
@@ -112,6 +121,7 @@ class SecondaryResource(APIResource):
         self,
         query: str,
         max_results: int = 100,
+        languages: List[str] = None,
         min_vector_score: float = 0.7,
         vector_fraction: float = 0.9,
         vector_weight: float = 0.9,
@@ -128,6 +138,7 @@ class SecondaryResource(APIResource):
             query (str): The query.
             search_result (BaseModel): The model to use for parsing search results.
             max_results (int, optional): The maximum number of search results to return. Defaults to 100.
+            languages (List[str], optional): The languages to search for. Defaults to None.
             min_vector_score (float, optional): The minimum score threshold for search results. Defaults to 0.7.
             vector_fraction (float, optional): The fraction of the search results to be vector-based. Defaults to 0.9.
             vector_weight (float, optional): The weight to apply to vector search in result ranking. Defaults to 0.9.
@@ -155,4 +166,5 @@ class SecondaryResource(APIResource):
             promote_exact_match=promote_exact_match,
             search_from_timestamp=search_from_timestamp,
             search_to_timestamp=search_to_timestamp,
+            languages=languages,
         )

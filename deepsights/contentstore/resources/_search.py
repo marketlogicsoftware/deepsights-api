@@ -33,6 +33,7 @@ def contentstore_hybrid_search(
     item_type: str,
     search_result: BaseModel,
     max_results: int = 100,
+    languages: List[str] = None,
     min_vector_score: float = 0.7,
     vector_fraction: float = 0.9,
     vector_weight: float = 0.9,
@@ -51,6 +52,7 @@ def contentstore_hybrid_search(
         item_type (str): The type of items to search for.
         search_result (BaseModel): The model to use for parsing search results.
         max_results (int, optional): The maximum number of search results to return. Defaults to 100.
+        languages (List[str], optional): The languages to search for. Defaults to None.
         min_vector_score (float, optional): The minimum score threshold for search results. Defaults to 0.7.
         vector_fraction (float, optional): The fraction of the search results to be vector-based. Defaults to 0.9.
         vector_weight (float, optional): The weight to apply to vector search in result ranking. Defaults to 0.9.
@@ -67,7 +69,7 @@ def contentstore_hybrid_search(
     assert 0 <= min_vector_score <= 1, "Minimum vector score must be between 0 and 1."
     assert 0 <= vector_fraction <= 1, "Vector fraction must be between 0 and 1"
     assert 0 <= vector_weight <= 1, "Vector weught must be between 0 and 1"
-    assert 0 < max_results <= 100, "Maximum results must be between 1 and 100."
+    assert 0 < max_results <= 250, "Maximum results must be between 1 and 250."
     assert (
         recency_weight is None or 0 <= recency_weight <= 1
     ), "Recency weight must be between 0 and 1."
@@ -75,7 +77,9 @@ def contentstore_hybrid_search(
     time_filter = None
     if search_from_timestamp or search_to_timestamp:
         time_filter = {
-            "from": search_from_timestamp.isoformat() if search_from_timestamp else None,
+            "from": (
+                search_from_timestamp.isoformat() if search_from_timestamp else None
+            ),
             "to": search_to_timestamp.isoformat() if search_to_timestamp else None,
         }
 
@@ -90,6 +94,7 @@ def contentstore_hybrid_search(
         "text_search_fraction": 1.0 - vector_fraction,
         "k": 60,
         "published_at": time_filter,
+        "languages": languages,
     }
     response = api.post("item-service/items/_hybrid-search", body=body)
 
@@ -115,6 +120,7 @@ def contentstore_vector_search(
     search_result: BaseModel,
     min_score: float = 0.7,
     max_results: int = 50,
+    languages: List[str] = None,
     recency_weight: float = None,
 ):
     """
@@ -128,6 +134,7 @@ def contentstore_vector_search(
         search_result (BaseModel): The model to use for parsing search results.
         min_score (float, optional): The minimum score threshold for search results. Defaults to 0.7.
         max_results (int, optional): The maximum number of search results to return. Defaults to 50.
+        languages (List[str], optional): The languages to search for. Defaults to None.
         recency_weight (float, optional): The weight to apply to recency in result ranking. Defaults to None.
 
     Returns:
@@ -149,6 +156,7 @@ def contentstore_vector_search(
         "limit": max_results,
         "score_lower_bound": min_score,
         "sort": "RELEVANCY_DESC",
+        "languages": languages,
     }
     response = api.post("item-service/items/_vector-search", body=body)
 
@@ -166,10 +174,12 @@ def contentstore_text_search(
     item_type: str,
     search_result: BaseModel,
     max_results: int = 50,
+    offset: int = 0,
+    languages: List[str] = None,
     recency_weight: float = None,
 ):
     """
-    Perform a contentstore text search using the specified query and item type.
+    Perform a contentstore text search using the specified query and item type. If the query is None, the search will be sorted by publication date.
 
     Args:
 
@@ -178,26 +188,31 @@ def contentstore_text_search(
         item_type (str): The type of items to search for.
         search_result (BaseModel): The model used to parse the search results.
         max_results (int, optional): The maximum number of results to return. Defaults to 50.
+        offset (int, optional): The offset to start the search from. Defaults to 0.
+        languages (List[str], optional): The languages to search for. Defaults to None.
         recency_weight (float, optional): The weight assigned to recency in result ranking. Defaults to None.
 
     Returns:
 
         List[BaseModel]: The re-ranked search results.
     """
-    assert query is not None, "Query must be provided."
-    assert len(query) >= 1, "Query must be at least 2 characters."
     assert 0 < max_results <= 100, "Maximum results must be between 1 and 100."
     assert (
         recency_weight is None or 0 <= recency_weight <= 1
     ), "Recency weight must be between 0 and 1."
+
+    # force proper empty search
+    if query is not None and len(query.strip()) == 0:
+        query = None
 
     body = {
         "query": query,
         "source_items_type": item_type,
         "content_restrictions": "NONE",
         "limit": max_results,
-        "offset": 0,
-        "sort": "RELEVANCY_DESC",
+        "offset": offset,
+        "sort": "RELEVANCY_DESC" if query is not None else "PUBLISHED_AT_DESC",
+        "languages": languages,
     }
     response = api.post("item-service/items/_text-search", body=body)
 

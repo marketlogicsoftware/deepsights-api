@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.0.2 (15-May-2024)
+
+- Added language filtering for search
+- Expose text and vector search for content store
+
+
 ## v1.0.1 (14-May-2024)
 
 - Added date range filtering for content store searches

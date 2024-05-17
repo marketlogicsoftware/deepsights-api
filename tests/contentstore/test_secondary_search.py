@@ -37,14 +37,14 @@ def test_secondary_text_search():
     """
     Test case for performing a text search on secondary content.
 
-    This function tests the `_secondary_text_search` method of the `ContentStore` class.
+    This function tests the `text_search` method of the `ContentStore` class.
     It verifies that the search results contain the expected number of items,
     and that each result has a valid ID and source. It also checks that the rank
     of each result is greater than the rank of the previous result.
 
     Note: This test assumes the existence of a `test_query` variable.
     """
-    results = ds.contentstore.secondary._text_search(
+    results = ds.contentstore.secondary.text_search(
         query=test_query,
         max_results=5,
     )
@@ -56,6 +56,60 @@ def test_secondary_text_search():
 
         if ix > 0:
             assert result.rank > results[ix - 1].rank
+
+def test_secondary_text_empty_search():
+    """
+    """
+    results = ds.contentstore.secondary.text_search(
+        query="",
+        max_results=50,
+    )
+
+    assert len(results) == 50
+    for ix, result in enumerate(results):
+        assert result.id is not None
+        assert result.source is not None
+
+        if ix > 0:
+            assert result.publication_date <= results[ix - 1].publication_date
+
+
+def test_secondary_text_search_offset():
+    """
+    Test the secondary text search function with an offset.
+    """
+    results = ds.contentstore.secondary.text_search(
+        query=test_query,
+        max_results=5,
+    )
+    offset_results = ds.contentstore.secondary.text_search(
+        query=test_query,
+        max_results=4,
+        offset=1,
+    )
+    for ix, result in enumerate(offset_results):
+        assert result.id == results[ix + 1].id
+
+
+def test_secondary_text_search_language():
+    """
+    Test the secondary text search function with a language filter.
+    """
+    results = ds.contentstore.secondary.text_search(
+        query=test_query,
+        max_results=5,
+        languages=["en"],
+    )
+    assert len(results) == 5
+    for result in results:
+        assert result.language == "en"
+
+    results = ds.contentstore.secondary.text_search(
+        query=test_query,
+        max_results=5,
+        languages=["zz"],
+    )
+    assert len(results) == 0
 
 
 def test_secondary_text_search_with_recency_low():
@@ -70,7 +124,7 @@ def test_secondary_text_search_with_recency_low():
     Note: This test assumes the existence of a `test_query` variable.
     """
 
-    results = ds.contentstore.secondary._text_search(
+    results = ds.contentstore.secondary.text_search(
         query=test_query,
         max_results=10,
         recency_weight=0.00001,
@@ -93,7 +147,7 @@ def test_secondary_text_search_with_recency_high():
 
     Note: This test assumes the existence of a `test_query` variable.
     """
-    results = ds.contentstore.secondary._text_search(
+    results = ds.contentstore.secondary.text_search(
         query=test_query,
         max_results=10,
         recency_weight=0.99999,
@@ -114,7 +168,7 @@ def test_secondary_vector_search():
 
     Note: This test assumes the existence of a `test_embedding` variable.
     """
-    results = ds.contentstore.secondary._vector_search(
+    results = ds.contentstore.secondary.vector_search(
         test_embedding,
         max_results=5,
     )
@@ -137,7 +191,7 @@ def test_secondary_vector_search_with_recency_low():
 
     Note: This test assumes the existence of a `test_embedding` variable.
     """
-    results = ds.contentstore.secondary._vector_search(
+    results = ds.contentstore.secondary.vector_search(
         test_embedding,
         max_results=10,
         recency_weight=0.00001,
@@ -159,7 +213,7 @@ def test_secondary_vector_search_with_recency_high():
 
     Note: This test assumes the existence of a `test_embedding` variable.
     """
-    results = ds.contentstore.secondary._vector_search(
+    results = ds.contentstore.secondary.vector_search(
         test_embedding,
         max_results=10,
         recency_weight=0.99999,
@@ -188,7 +242,7 @@ def test_secondary_hybrid_search_only_vector():
         recency_weight=0.0,
     )
 
-    vector_results = ds.contentstore.secondary._vector_search(
+    vector_results = ds.contentstore.secondary.vector_search(
         test_embedding,
         max_results=5,
     )
@@ -215,7 +269,7 @@ def test_secondary_hybrid_search_only_text():
         recency_weight=0.0,
     )
 
-    text_results = ds.contentstore.secondary._text_search(
+    text_results = ds.contentstore.secondary.text_search(
         query=test_query,
         max_results=5,
         recency_weight=0.0,
@@ -242,12 +296,12 @@ def test_secondary_hybrid_search():
         max_results=10,
     )
 
-    vector_results = ds.contentstore.secondary._vector_search(
+    vector_results = ds.contentstore.secondary.vector_search(
         query_embedding=test_embedding,
         max_results=10,
     )
 
-    text_results = ds.contentstore.secondary._text_search(
+    text_results = ds.contentstore.secondary.text_search(
         query=test_query,
         max_results=10,
     )
@@ -310,7 +364,7 @@ def test_secondary_hybrid_search_with_vector_high():
         recency_weight=0.0,
     )
 
-    vector_results = ds.contentstore.secondary._vector_search(
+    vector_results = ds.contentstore.secondary.vector_search(
         query_embedding=test_embedding,
         max_results=10,
     )
@@ -334,7 +388,7 @@ def test_secondary_hybrid_search_with_vector_low():
         recency_weight=0.0,
     )
 
-    text_results = ds.contentstore.secondary._text_search(
+    text_results = ds.contentstore.secondary.text_search(
         query=test_query,
         max_results=10,
     )
