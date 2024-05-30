@@ -112,6 +112,41 @@ def test_secondary_text_search_language():
     assert len(results) == 0
 
 
+def test_secondary_text_search_with_date():
+    """
+    Test case for text secondary search with date.
+
+    This test case performs a text secondary search with a specified date range.
+    """
+    start = datetime.fromisoformat("2024-01-01T00:00:00+00:00").astimezone(timezone.utc)
+    end = datetime.fromisoformat("2024-03-01T00:00:00+00:00").astimezone(timezone.utc)
+
+    text_results = ds.contentstore.secondary.text_search(
+        query=test_query,
+        max_results=10,
+        search_from_timestamp=start,
+    )
+    for result in text_results:
+        assert result.publication_date >= start
+
+    text_results = ds.contentstore.secondary.text_search(
+        query=test_query,
+        max_results=10,
+        search_to_timestamp=end,
+    )
+    for result in text_results:
+        assert result.publication_date <= end
+
+    text_results = ds.contentstore.secondary.text_search(
+        query=test_query,
+        max_results=10,
+        search_from_timestamp=start,
+        search_to_timestamp=end,
+    )
+    for result in text_results:
+        assert result.publication_date <= end and result.publication_date >= start
+
+
 def test_secondary_text_search_with_recency_low():
     """
     Test the secondary text search function with a low recency weight.
@@ -179,6 +214,43 @@ def test_secondary_vector_search():
 
         if ix > 0:
             assert result.rank > results[ix - 1].rank
+
+
+
+def test_secondary_vector_search_with_date():
+    """
+    Test case for vector secondary search with date.
+
+    This test case performs a vector secondary search with a specified date range.
+    """
+    start = datetime.fromisoformat("2024-01-01T00:00:00+00:00").astimezone(timezone.utc)
+    end = datetime.fromisoformat("2024-03-01T00:00:00+00:00").astimezone(timezone.utc)
+
+    vector_results = ds.contentstore.secondary.vector_search(
+        test_embedding,
+        max_results=10,
+        search_from_timestamp=start,
+    )
+    for result in vector_results:
+        assert result.publication_date >= start
+
+    vector_results = ds.contentstore.secondary.vector_search(
+        test_embedding,
+        max_results=10,
+        search_to_timestamp=end,
+    )
+    for result in vector_results:
+        assert result.publication_date <= end
+
+    vector_results = ds.contentstore.secondary.vector_search(
+        test_embedding,
+        max_results=10,
+        search_from_timestamp=start,
+        search_to_timestamp=end,
+    )
+    for result in vector_results:
+        assert result.publication_date <= end and result.publication_date >= start
+
 
 
 def test_secondary_vector_search_with_recency_low():

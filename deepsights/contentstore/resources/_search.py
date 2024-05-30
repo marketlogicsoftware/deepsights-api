@@ -27,6 +27,30 @@ from deepsights.utils import (
 
 
 #################################################
+def _get_time_filter(search_from_timestamp: datetime, search_to_timestamp: datetime):
+    """
+    Returns a time filter dictionary based on the provided search_from_timestamp and search_to_timestamp.
+
+    Args:
+        search_from_timestamp (datetime): The starting timestamp for the search.
+        search_to_timestamp (datetime): The ending timestamp for the search.
+
+    Returns:
+        dict: A time filter dictionary with "from" and "to" keys representing the search range.
+              The values are ISO-formatted timestamps or None if the corresponding input is None.
+    """
+    time_filter = None
+    if search_from_timestamp or search_to_timestamp:
+        time_filter = {
+            "from": (
+                search_from_timestamp.isoformat() if search_from_timestamp else None
+            ),
+            "to": search_to_timestamp.isoformat() if search_to_timestamp else None,
+        }
+    return time_filter
+
+
+#################################################
 def contentstore_hybrid_search(
     api: API,
     query: str,
@@ -74,15 +98,6 @@ def contentstore_hybrid_search(
         recency_weight is None or 0 <= recency_weight <= 1
     ), "Recency weight must be between 0 and 1."
 
-    time_filter = None
-    if search_from_timestamp or search_to_timestamp:
-        time_filter = {
-            "from": (
-                search_from_timestamp.isoformat() if search_from_timestamp else None
-            ),
-            "to": search_to_timestamp.isoformat() if search_to_timestamp else None,
-        }
-
     body = {
         "query": query,
         "source_items_type": item_type,
@@ -93,7 +108,7 @@ def contentstore_hybrid_search(
         "beta": 1.0 - recency_weight,
         "text_search_fraction": 1.0 - vector_fraction,
         "k": 60,
-        "published_at": time_filter,
+        "published_at": _get_time_filter(search_from_timestamp, search_to_timestamp),
         "languages": languages,
     }
     response = api.post("item-service/items/_hybrid-search", body=body)
@@ -122,6 +137,8 @@ def contentstore_vector_search(
     max_results: int = 50,
     languages: List[str] = None,
     recency_weight: float = None,
+    search_from_timestamp: datetime = None,
+    search_to_timestamp: datetime = None,
 ):
     """
     Perform a contentstore vector search using the provided query embedding.
@@ -136,6 +153,8 @@ def contentstore_vector_search(
         max_results (int, optional): The maximum number of search results to return. Defaults to 50.
         languages (List[str], optional): The languages to search for. Defaults to None.
         recency_weight (float, optional): The weight to apply to recency in result ranking. Defaults to None.
+        search_from_timestamp (datetime, optional): The start timestamp for the search. Defaults to None.
+        search_to_timestamp (datetime, optional): The end timestamp for the search. Defaults to None.
 
     Returns:
 
@@ -157,6 +176,7 @@ def contentstore_vector_search(
         "score_lower_bound": min_score,
         "sort": "RELEVANCY_DESC",
         "languages": languages,
+        "published_at": _get_time_filter(search_from_timestamp, search_to_timestamp),
     }
     response = api.post("item-service/items/_vector-search", body=body)
 
@@ -177,6 +197,8 @@ def contentstore_text_search(
     offset: int = 0,
     languages: List[str] = None,
     recency_weight: float = None,
+    search_from_timestamp: datetime = None,
+    search_to_timestamp: datetime = None,
 ):
     """
     Perform a contentstore text search using the specified query and item type. If the query is None, the search will be sorted by publication date.
@@ -191,6 +213,8 @@ def contentstore_text_search(
         offset (int, optional): The offset to start the search from. Defaults to 0.
         languages (List[str], optional): The languages to search for. Defaults to None.
         recency_weight (float, optional): The weight assigned to recency in result ranking. Defaults to None.
+        search_from_timestamp (datetime, optional): The start timestamp for the search. Defaults to None.
+        search_to_timestamp (datetime, optional): The end timestamp for the search. Defaults to None.
 
     Returns:
 
@@ -213,6 +237,7 @@ def contentstore_text_search(
         "offset": offset,
         "sort": "RELEVANCY_DESC" if query is not None else "PUBLISHED_AT_DESC",
         "languages": languages,
+        "published_at": _get_time_filter(search_from_timestamp, search_to_timestamp),
     }
     response = api.post("item-service/items/_text-search", body=body)
 

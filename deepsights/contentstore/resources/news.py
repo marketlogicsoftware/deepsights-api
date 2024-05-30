@@ -50,6 +50,8 @@ class NewsResource(APIResource):
         max_results: int = 30,
         languages: List[str] = None,
         recency_weight: float = None,
+        search_from_timestamp: datetime = None,
+        search_to_timestamp: datetime = None,
     ):
         """
         Perform a vector-based search for news articles.
@@ -61,6 +63,8 @@ class NewsResource(APIResource):
             max_results (int, optional): The maximum number of search results to return. Defaults to 30.
             languages (List[str], optional): The list of languages to search for. Defaults to None.
             recency_weight (float, optional): The weight to apply to recency in the search ranking. Defaults to None.
+            search_from_timestamp (datetime, optional): The start timestamp for the search. Defaults to None.
+            search_to_timestamp (datetime, optional): The end timestamp for the search. Defaults to None.
 
         Returns:
 
@@ -78,6 +82,8 @@ class NewsResource(APIResource):
             max_results=max_results,
             recency_weight=recency_weight,
             languages=languages,
+            search_from_timestamp=search_from_timestamp,
+            search_to_timestamp=search_to_timestamp,
         )
 
     #################################################
@@ -88,6 +94,8 @@ class NewsResource(APIResource):
         offset: int = 0,
         languages: List[str] = None,
         recency_weight: float = None,
+        search_from_timestamp: datetime = None,
+        search_to_timestamp: datetime = None,
     ):
         """
         Perform a text search for news articles in the DeepSights content store.
@@ -99,6 +107,8 @@ class NewsResource(APIResource):
             offset (int, optional): The offset to start the search from. Defaults to 0.
             languages (List[str], optional): The list of languages to search for. Defaults to None.
             recency_weight (float, optional): The weight to assign to recency in the search ranking. Defaults to None.
+            search_from_timestamp (datetime, optional): The start timestamp for the search. Defaults to None.
+            search_to_timestamp (datetime, optional): The end timestamp for the search. Defaults to None.
 
         Returns:
 
@@ -115,6 +125,8 @@ class NewsResource(APIResource):
             recency_weight=recency_weight,
             languages=languages,
             offset=offset,
+            search_from_timestamp=search_from_timestamp,
+            search_to_timestamp=search_to_timestamp,
         )
 
     #################################################

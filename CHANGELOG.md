@@ -2,6 +2,11 @@
 
 <!--next-version-placeholder-->
 
+## v1.0.3 (30-May-2024)
+
+- Added time filters for content store text & vector search
+
+
 ## v1.0.2 (15-May-2024)
 
 - Added language filtering for search
