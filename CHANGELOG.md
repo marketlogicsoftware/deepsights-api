@@ -2,6 +2,11 @@
 
 <!--next-version-placeholder-->
 
+## v1.0.4 (05-Jun-2024)
+
+- Added match paragraphs results for contentstore search
+
+
 ## v1.0.3 (30-May-2024)
 
 - Added time filters for content store text & vector search

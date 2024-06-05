@@ -16,10 +16,32 @@
 This module contains the base models for the content store.
 """
 
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 from pydantic import Field
-from deepsights.utils import DeepSightsIdTitleModel
+from deepsights.utils import DeepSightsIdTitleModel, DeepSightsBaseModel
+
+
+#################################################
+class ContentStoreSearchMatch(DeepSightsBaseModel):
+    """
+    Represents a match paragraph in the content store search results.
+
+    Attributes:
+        type (str): The type of the match paragraph.
+        page_number (int): The page number of the match paragraph.
+        text (str): The text of the match paragraph.
+        score (float): The score of the match paragraph.
+    """
+
+    type: str = Field(description="The type of the match paragraph.")
+    page_number: Optional[int] = Field(
+        description="The page number of the match paragraph.", default=None
+    )
+    text: str = Field(description="The text of the match paragraph.")
+    score: Optional[float] = Field(
+        description="The score of the match paragraph.", default=None
+    )
 
 
 #################################################
@@ -56,4 +78,7 @@ class ContentStoreSearchResult(DeepSightsIdTitleModel):
     )
     rank: Optional[int] = Field(
         default=None, description="The final rank of the item in the search results."
+    )
+    paragraphs: Optional[List[ContentStoreSearchMatch]] = Field(
+        description="The match paragraphs in the item; may be None.", default=[]
     )
