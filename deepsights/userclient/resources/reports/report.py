@@ -19,7 +19,6 @@ This module contains the functions to retrieve reports from the DeepSights self.
 import time
 from ratelimit import sleep_and_retry, limits
 from deepsights.api import APIResource
-from deepsights.userclient.minions._minions import minion_wait_for_completion
 from deepsights.userclient.resources.reports._model import Report
 
 
@@ -53,7 +52,7 @@ class ReportResource(APIResource):
         return response["desk_research"]["minion_job"]["id"]
 
     #################################################
-    def wait_for_report(self, report_id: str, timeout=600):
+    def wait_for_report(self, report_id: str, timeout=600) -> Report:
         """
         Waits for the completion of a report.
 
@@ -61,6 +60,10 @@ class ReportResource(APIResource):
 
             report_id (str): The ID of the report.
             timeout (int, optional): The maximum time to wait for the report to complete, in seconds. Defaults to 600.
+
+        Returns:
+
+            Report: The completed report.
 
         Raises:
 
@@ -77,13 +80,13 @@ class ReportResource(APIResource):
                 time.sleep(2)
             elif response["status"].startswith("FAILED"):
                 raise ValueError(
-                    f"Answer set {report_id} failed to complete: {response['error_reason']}"
+                    f"Report {report_id} failed to complete: {response['error_reason']}"
                 )
             else:
-                return
+                return self.get(report_id)
 
         raise ValueError(
-            f"Answer set {report_id} failed to complete within {timeout} seconds."
+            f"Report {report_id} failed to complete within {timeout} seconds."
         )
 
     #################################################
@@ -111,6 +114,7 @@ class ReportResource(APIResource):
                     topic="n/a",
                     summary="n/a",
                     document_sources=[],
+                    secondary_sources=[],
                     news_sources=[],
                 )
             )
@@ -125,9 +129,14 @@ class ReportResource(APIResource):
                     summary=response["desk_research"]["context"]["summary"],
                     document_sources=response["desk_research"]["context"][
                         "artifact_vector_search_results"
-                    ],
+                    ] or [],
+                    secondary_sources=response["desk_research"]["context"][
+                        "scs_report_search_results"
+                    ]
+                    or [],
                     news_sources=response["desk_research"]["context"][
                         "scs_news_search_results"
-                    ],
+                    ]
+                    or [],
                 )
             )

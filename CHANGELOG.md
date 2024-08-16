@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v1.1.0 (16-Aug-2024)
+
+- Deprecating answer endpoint, replacing with answersV2
+
 ## v1.0.4 (05-Jun-2024)
 
 - Added match paragraphs results for contentstore search

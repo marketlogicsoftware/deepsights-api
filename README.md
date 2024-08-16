@@ -84,10 +84,10 @@ ds = deepsights.DeepSights()
 uc = ds.get_userclient("john.doe@acme.com")
 
 # obtain an answer
-response = uc.answers.create_and_wait("What are emerging food consumption moments for Gen Z?")
+response = uc.answersV2.create_and_wait("What are emerging food consumption moments for Gen Z?")
 
 # returned data are pydantic objects
-print(response.answers[0].text)
+print(response.answer)
 
 # you can retrieve the supported properties via schema_human()
 print(response.schema_human())

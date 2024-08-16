@@ -113,7 +113,7 @@ print(hybrid_results_promote[0].title)
 uc = ds.get_userclient("john.doe@acme.com")
 
 # obtain an answer set
-answer_set = uc.answers.create_and_wait(
+answer = uc.answersV2.create_and_wait(
     question=test_question,
 )
-print(answer_set.answers[0].text)
+print(answer.answer)

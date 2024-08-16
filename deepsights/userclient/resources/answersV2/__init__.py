@@ -12,10 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 """
-This module contains the resource to retrieve answers from the DeepSights API.
+This module contains the resource to retrieve answers v2 from the DeepSights API.
 """
 
-from deepsights.userclient.resources.answers import AnswerResource
-from deepsights.userclient.resources.answersV2 import AnswerV2Resource
-from deepsights.userclient.resources.reports import ReportResource
+from deepsights.userclient.resources.answersV2.answerV2 import AnswerV2Resource

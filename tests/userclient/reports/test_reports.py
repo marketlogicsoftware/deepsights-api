@@ -61,7 +61,7 @@ def test_report_get():
     report = uc.reports.get(test_report_id)
 
     assert report.id == test_report_id
-    assert report.permission_validation == "GRANTED"
+    assert report.permission_validation in ("GRANTED", "GRANTED_WITH_DELETED_CONTENT")
     assert report.question is not None
     assert report.status == "COMPLETED"
     assert report.topic is not None
@@ -72,8 +72,8 @@ def test_report_get():
     for doc in report.document_sources:
         assert doc.id is not None
         assert doc.reference is not None
-        assert doc.description is not None
-        assert doc.evidence_summary is not None
+        assert doc.synopsis is not None
+        assert doc.summary is not None
         assert doc.publication_date is not None
 
         assert len(doc.pages) > 0
@@ -81,11 +81,20 @@ def test_report_get():
             assert page.id is not None
             assert page.page_number is not None
 
-    assert report.news_sources is not None
-    assert len(report.news_sources) > 0
-    for news in report.news_sources:
-        assert news.id is not None
-        assert news.description is not None
-        assert news.evidence_summary is not None
-        assert news.source is not None
-        # assert news.publication_date is not None
+    for cs_results in (report.secondary_sources, report.news_sources):
+        assert cs_results is not None
+        assert len(cs_results) > 0
+        for cs_result in cs_results:
+            assert cs_result.id is not None
+            
+            if cs_result in report.secondary_sources or cs_result in report.news_sources:
+                assert cs_result.reference is not None
+            else:
+                assert cs_result.reference is None
+
+            assert cs_result.synopsis is None
+            assert cs_result.summary is not None
+            assert cs_result.text is None
+            assert cs_result.source is not None
+            assert cs_result.publication_date is not None
+

@@ -52,7 +52,7 @@ class ContentStoreSearchResult(DeepSightsIdTitleModel):
     Attributes:
 
         description (str): The description of the item.
-        image_url (str): The URL of the item's image.
+        image_url (Optional[str], optional): The URL of the item's image. Defaults to None.
         url (str): The URL of the item.
         language (Optional[str], optional): The language of the item. Defaults to None.
         publication_date (Optional[datetime], optional): The publication_date of the item's publication. Defaults to None.
@@ -61,7 +61,9 @@ class ContentStoreSearchResult(DeepSightsIdTitleModel):
     """
 
     description: str = Field(description="The description of the item.")
-    image_url: str = Field(description="The URL of the item's thumbnail image.")
+    image_url: Optional[str] = Field(
+        description="The URL of the item's thumbnail image.", default=None
+    )
     url: str = Field(description="The URL of the item.")
     language: Optional[str] = Field(
         description="The language of the item; may be None.", default=None

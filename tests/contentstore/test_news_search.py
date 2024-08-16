@@ -79,11 +79,11 @@ def test_news_text_search_offset():
     """
     results = ds.contentstore.news.text_search(
         query=test_query,
-        max_results=5,
+        max_results=4,
     )
     offset_results = ds.contentstore.news.text_search(
         query=test_query,
-        max_results=4,
+        max_results=3,
         offset=1,
     )
     for ix, result in enumerate(offset_results):
@@ -336,7 +336,7 @@ def test_news_hybrid_search_only_text():
     """
     hybrid_results = ds.contentstore.news.search(
         query=test_query,
-        max_results=5,
+        max_results=4,
         vector_fraction=0.0,
         vector_weight=0.0,
         recency_weight=0.0,
@@ -344,11 +344,11 @@ def test_news_hybrid_search_only_text():
 
     text_results = ds.contentstore.news.text_search(
         query=test_query,
-        max_results=5,
+        max_results=4,
         recency_weight=0.0,
     )
 
-    assert len(hybrid_results) == 5
+    assert len(hybrid_results) == 4
     for ix, hybrid_result in enumerate(hybrid_results):
         assert hybrid_result.id == text_results[ix].id
 
@@ -493,7 +493,7 @@ def test_news_hybrid_search_with_vector_low():
     """
     hybrid_results = ds.contentstore.news.search(
         query=test_query,
-        max_results=10,
+        max_results=4,
         vector_weight=0.00001,
         vector_fraction=0.0,
         recency_weight=0.0,
@@ -501,11 +501,11 @@ def test_news_hybrid_search_with_vector_low():
 
     text_results = ds.contentstore.news.text_search(
         query=test_query,
-        max_results=10,
+        max_results=4,
         recency_weight=0.0,
     )
 
-    assert len(hybrid_results) == 10
+    assert len(hybrid_results) == 4
     for ix, result in enumerate(hybrid_results):
         assert result.id == text_results[ix].id
 

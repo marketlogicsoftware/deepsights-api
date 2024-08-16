@@ -30,6 +30,14 @@ class AnswerResource(APIResource):
     Represents a resource for retrieving answer sets from the DeepSights API.
     """
 
+    _has_warned = False
+
+    def _deprecation_warning(self):
+        if not self._has_warned:
+            self._has_warned = True
+            print("\n=== DEPRECATION WARNING ===\nThe answers endpoint is deprecated, please use answersV2.\n\n")
+
+
     #################################################
     def create(self, question: str) -> str:
         """
@@ -43,6 +51,7 @@ class AnswerResource(APIResource):
 
             str: The ID of the created answer's minion job.
         """
+        self._deprecation_warning()
 
         body = {"input": question}
         response = self.api.post(
@@ -99,6 +108,8 @@ class AnswerResource(APIResource):
 
             DocumentAnswerSet: The answer set.
         """
+        self._deprecation_warning()
+
         response = self.api.get(f"end-user-gateway-service/answer-sets/{answer_set_id}")
 
         return DocumentAnswerSet(
