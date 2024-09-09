@@ -56,7 +56,7 @@ class Document(DeepSightsIdTitleModel):
         description (str, optional): The description of the document.
         publication_date (datetime, optional): The publication date of the document.
         creation_date (datetime, optional): The creation date of the document.§
-        page_ids (List[DocumentPage], optional): The list of page IDs in the document.
+        page_ids (List[str], optional): The list of page IDs in the document.
         number_of_pages (int, optional): The total number of pages in the document.
     """
 
@@ -83,7 +83,7 @@ class Document(DeepSightsIdTitleModel):
         default=None,
         description="The creation date of the document.",
     )
-    page_ids: List[DocumentPage] = Field(
+    page_ids: List[str] = Field(
         default=None, description="The list of page IDs in the document."
     )
     number_of_pages: Optional[int] = Field(

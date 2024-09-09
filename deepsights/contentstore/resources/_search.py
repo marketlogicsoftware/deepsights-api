@@ -65,6 +65,7 @@ def contentstore_hybrid_search(
     promote_exact_match: bool = False,
     search_from_timestamp: datetime = None,
     search_to_timestamp: datetime = None,
+    search_only_ai_allowed_content: bool = True,
 ):
     """
     Perform a contentstore hybrid search using the provided query.
@@ -84,6 +85,7 @@ def contentstore_hybrid_search(
         promote_exact_match (bool, optional): Whether to promote exact matches to the top of the results. Defaults to False.
         search_from_timestamp (datetime, optional): The start timestamp for the search. Defaults to None.
         search_to_timestamp (datetime, optional): The end timestamp for the search. Defaults to None.
+        search_only_ai_allowed_content (bool, optional): Whether to search only AI-allowed content. Defaults to True.
 
     Returns:
 
@@ -110,6 +112,9 @@ def contentstore_hybrid_search(
         "k": 60,
         "published_at": _get_time_filter(search_from_timestamp, search_to_timestamp),
         "languages": languages,
+        "content_restrictions": (
+            "ALLOWED_FOR_AI_SUMMARIZATION" if search_only_ai_allowed_content else "NONE"
+        ),
     }
     response = api.post("item-service/items/_hybrid-search", body=body)
 
@@ -139,6 +144,7 @@ def contentstore_vector_search(
     recency_weight: float = None,
     search_from_timestamp: datetime = None,
     search_to_timestamp: datetime = None,
+    search_only_ai_allowed_content: bool = True,
 ):
     """
     Perform a contentstore vector search using the provided query embedding.
@@ -155,6 +161,7 @@ def contentstore_vector_search(
         recency_weight (float, optional): The weight to apply to recency in result ranking. Defaults to None.
         search_from_timestamp (datetime, optional): The start timestamp for the search. Defaults to None.
         search_to_timestamp (datetime, optional): The end timestamp for the search. Defaults to None.
+        search_only_ai_allowed_content (bool, optional): Whether to search only AI-allowed content. Defaults to True.
 
     Returns:
 
@@ -177,6 +184,9 @@ def contentstore_vector_search(
         "sort": "RELEVANCY_DESC",
         "languages": languages,
         "published_at": _get_time_filter(search_from_timestamp, search_to_timestamp),
+        "content_restrictions": (
+            "ALLOWED_FOR_AI_SUMMARIZATION" if search_only_ai_allowed_content else "NONE"
+        ),
     }
     response = api.post("item-service/items/_vector-search", body=body)
 
@@ -199,6 +209,7 @@ def contentstore_text_search(
     recency_weight: float = None,
     search_from_timestamp: datetime = None,
     search_to_timestamp: datetime = None,
+    search_only_ai_allowed_content: bool = True,
 ):
     """
     Perform a contentstore text search using the specified query and item type. If the query is None, the search will be sorted by publication date.
@@ -215,6 +226,7 @@ def contentstore_text_search(
         recency_weight (float, optional): The weight assigned to recency in result ranking. Defaults to None.
         search_from_timestamp (datetime, optional): The start timestamp for the search. Defaults to None.
         search_to_timestamp (datetime, optional): The end timestamp for the search. Defaults to None.
+        search_only_ai_allowed_content (bool, optional): Whether to search only AI-allowed content. Defaults to True.
 
     Returns:
 
@@ -238,6 +250,9 @@ def contentstore_text_search(
         "sort": "RELEVANCY_DESC" if query is not None else "PUBLISHED_AT_DESC",
         "languages": languages,
         "published_at": _get_time_filter(search_from_timestamp, search_to_timestamp),
+        "content_restrictions": (
+            "ALLOWED_FOR_AI_SUMMARIZATION" if search_only_ai_allowed_content else "NONE"
+        ),
     }
     response = api.post("item-service/items/_text-search", body=body)
 

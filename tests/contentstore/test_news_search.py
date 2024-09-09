@@ -79,11 +79,11 @@ def test_news_text_search_offset():
     """
     results = ds.contentstore.news.text_search(
         query=test_query,
-        max_results=4,
+        max_results=2,
     )
     offset_results = ds.contentstore.news.text_search(
         query=test_query,
-        max_results=3,
+        max_results=1,
         offset=1,
     )
     for ix, result in enumerate(offset_results):
@@ -334,9 +334,10 @@ def test_news_hybrid_search_only_text():
 
     Note: This test assumes the existence of a `test_query` variable.
     """
+    results = 3
     hybrid_results = ds.contentstore.news.search(
         query=test_query,
-        max_results=4,
+        max_results=results,
         vector_fraction=0.0,
         vector_weight=0.0,
         recency_weight=0.0,
@@ -344,11 +345,11 @@ def test_news_hybrid_search_only_text():
 
     text_results = ds.contentstore.news.text_search(
         query=test_query,
-        max_results=4,
+        max_results=results,
         recency_weight=0.0,
     )
 
-    assert len(hybrid_results) == 4
+    assert len(hybrid_results) == results
     for ix, hybrid_result in enumerate(hybrid_results):
         assert hybrid_result.id == text_results[ix].id
 
@@ -491,9 +492,10 @@ def test_news_hybrid_search_with_vector_low():
 
     Note: This test assumes the existence of `test_embedding` and `test_query` variables.
     """
+    results = 3
     hybrid_results = ds.contentstore.news.search(
         query=test_query,
-        max_results=4,
+        max_results=results,
         vector_weight=0.00001,
         vector_fraction=0.0,
         recency_weight=0.0,
@@ -501,11 +503,11 @@ def test_news_hybrid_search_with_vector_low():
 
     text_results = ds.contentstore.news.text_search(
         query=test_query,
-        max_results=4,
+        max_results=results,
         recency_weight=0.0,
     )
 
-    assert len(hybrid_results) == 4
+    assert len(hybrid_results) == results
     for ix, result in enumerate(hybrid_results):
         assert result.id == text_results[ix].id
 
@@ -517,7 +519,7 @@ def test_news_text_search_with_title_promotion():
     This test case verifies that the hybrid search function returns the expected results
     when searching for news articles based on a query with title promotion enabled.
     """
-    query = "gen x candy"
+    query = "gen candy"
 
     # first find top 10 results without title promotion and hard recency weight
     hybrid_results_no_promotion = ds.contentstore.news.search(
