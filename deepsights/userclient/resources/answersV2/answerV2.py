@@ -52,14 +52,14 @@ class AnswerV2Resource(APIResource):
         return response["answer_v2"]["minion_job"]["id"]
 
     #################################################
-    def wait_for_answer(self, answer_id: str, timeout=60) -> AnswerV2:
+    def wait_for_answer(self, answer_id: str, timeout=90) -> AnswerV2:
         """
         Waits for the completion of an answer.
 
         Args:
 
             answer_id (str): The ID of the answer.
-            timeout (int, optional): The maximum time to wait for the answer to complete, in seconds. Defaults to 60.
+            timeout (int, optional): The maximum time to wait for the answer to complete, in seconds. Defaults to 90.
 
         Returns:
 
