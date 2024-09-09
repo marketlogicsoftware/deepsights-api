@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v1.1.1 (09-Sep-2024)
+
+- Force contentstore search to retrieve only AI eligible content 
+
 ## v1.1.0 (16-Aug-2024)
 
 - Deprecating answer endpoint, replacing with answersV2
