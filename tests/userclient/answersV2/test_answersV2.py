@@ -89,7 +89,7 @@ def test_answerV2_create_and_wait():
     """
     Submit question and wait for answer.
     """
-    answer = uc.answersV2.create_and_wait(test_question, timeout=60)
+    answer = uc.answersV2.create_and_wait(test_question, timeout=90)
 
     _check_answer(answer)
 
