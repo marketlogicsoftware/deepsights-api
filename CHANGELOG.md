@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.2.0 (02-Oct-2024)
+
+- Compatibility with visual extraction
+- Removed answers V1 
+
+
 ## v1.1.1 (09-Sep-2024)
 
 - Force contentstore search to retrieve only AI eligible content 

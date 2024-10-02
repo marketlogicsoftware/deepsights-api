@@ -98,11 +98,17 @@ def segment_landscape_page(page_structure: Dict) -> List[Dict]:
             for element in section["semantic_section_elements"]:
                 text = element["text_value"]["text"].strip()
 
-                font_size = 2 * int(
-                    500
-                    * float(element["normalized_layout"]["height"])
-                    / len(text.split("\n"))
-                )
+                if (
+                    element.get("normalized_layout", None)
+                    and "height" in element["normalized_layout"]
+                ):
+                    font_size = 2 * int(
+                        500
+                        * float(element["normalized_layout"]["height"])
+                        / len(text.split("\n"))
+                    )
+                else:
+                    font_size = 16
 
                 content.append((font_size, text))
 

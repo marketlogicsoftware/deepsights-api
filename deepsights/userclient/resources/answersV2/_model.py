@@ -18,7 +18,6 @@ This module contains the model classes for answers.
 """
 
 from typing import Optional, List
-from datetime import datetime
 from pydantic import Field
 from deepsights.utils import DeepSightsIdModel
 from deepsights.userclient.resources._model import (
