@@ -25,6 +25,7 @@ jobs:
 
       # install all dependencies (including pdoc)
       - run: |
+          mv pyproject.toml pyproject.toml.bak
           pip install -e .
           pip install pdoc
       # build documentation into docs/.
