@@ -109,66 +109,59 @@ def documents_load(
         len(document_ids) < get_document_cache_size()
     ), "Cannot load more documents than the cache size."
 
-    # touch cached documents
-    if not force_load:
-        for doc_id in document_ids:
-            get_document(doc_id)
+    # Identify documents that need loading or page loading
+    docs_to_load = []
+    docs_to_load_pages = []
 
-    # filter uncached documents
-    uncached_document_ids = [
-        doc_id for doc_id in document_ids if force_load or not has_document(doc_id)
-    ]
+    for doc_id in document_ids:
+        if force_load or not has_document(doc_id):
+            docs_to_load.append(doc_id)
+        elif load_pages and not get_document(doc_id).page_ids:
+            docs_to_load_pages.append(doc_id)
 
-    # load uncached documents
+    # Load uncached documents
     def _load_document(document_id: str):
         result = resource.api.get(
             f"/artifact-service/artifacts/{document_id}", timeout=5
         )
 
-        # capitalze the first letter of the summary
+        # capitalize the first letter of the summary
         result["summary"] = result["summary"][0].upper() + result["summary"][1:]
 
         # map the document
         return Document.model_validate(result)
 
-    uncached_documents = run_in_parallel(
-        _load_document, uncached_document_ids, max_workers=5
+    newly_loaded_docs = run_in_parallel(
+        _load_document, docs_to_load, max_workers=5
     )
 
-    # set in cache
-    for doc in uncached_documents:
-        set_document(doc.id, doc)
-
-    # load pages if desired
+    # Load pages if requested
     if load_pages:
-        # collect docs that need page loading
-        document_ids_to_load_pages = [
-            doc_id for doc_id in document_ids if not get_document(doc_id).page_ids
-        ]
-
-        # load pages
-        def _load_pages(document_id: str):
-            document = get_document(document_id)
-
-            # load page ids
-            result = resource.api.get(
-                f"/artifact-service/artifacts/{document_id}/page-ids", timeout=5
-            )
-
-            # set page ids
-            document.page_ids = result["ids"]
-
+        all_docs_needing_pages = newly_loaded_docs + [get_document(doc_id) for doc_id in docs_to_load_pages]
+        
+        def _load_pages(document: Document):
+            if not document.page_ids:
+                result = resource.api.get(
+                    f"/artifact-service/artifacts/{document.id}/page-ids", timeout=5
+                )
+                document.page_ids = result["ids"]
             return document.page_ids
 
-        page_ids = run_in_parallel(
-            _load_pages, document_ids_to_load_pages, max_workers=5
+        all_page_ids = run_in_parallel(
+            _load_pages, all_docs_needing_pages, max_workers=5
         )
 
-        # flatten page ids
-        page_ids = [page_id for page_ids in page_ids for page_id in page_ids]
+        # Flatten page ids
+        flat_page_ids = [page_id for page_ids in all_page_ids for page_id in page_ids]
 
-        # now load actual pages
-        document_pages_load(resource, page_ids)
+        # Load actual pages
+        document_pages_load(resource, flat_page_ids)
 
-    # collect results
+    # Update cache with newly loaded documents and documents with newly loaded pages
+    for doc in newly_loaded_docs:
+        set_document(doc.id, doc)
+    for doc_id in docs_to_load_pages:
+        set_document(doc_id, get_document(doc_id))
+
+    # Collect results
     return [get_document(doc_id) for doc_id in document_ids]

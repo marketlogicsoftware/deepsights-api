@@ -2,6 +2,11 @@
 
 <!--next-version-placeholder-->
 
+## v1.2.1 (04-Oct-2024)
+
+- Fix for concurrency issue in document loading
+
+
 ## v1.2.0 (02-Oct-2024)
 
 - Compatibility with visual extraction
