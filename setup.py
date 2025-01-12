@@ -12,47 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-This module defines the packaging of deepsights-api.
-"""
+"""Minimal setup.py for development installs."""
 
-import io
-import os
+from setuptools import setup
 
-from setuptools import find_packages, setup
-
-package_root = os.path.abspath(os.path.dirname(__file__))
-
-readme_filename = os.path.join(package_root, "README.md")
-with io.open(readme_filename, encoding="utf-8") as readme_file:
-    readme = readme_file.read()
-
-reqs_filename = os.path.join(package_root, "requirements.txt")
-with io.open(reqs_filename, encoding="utf-8") as reqs_file:
-    reqs = reqs_file.read().splitlines()
-
-setup(
-    name="deepsights-api",
-    version="1.2.2",
-    author="Market Logic Software",
-    author_email="info@marketlogicsoftware.com",
-    description="Python library for the DeepSights APIs",
-    long_description=readme,
-    long_description_content_type="text/markdown",
-    url="https://github.com/marketlogicsoftware/deepsights-api",
-    packages=find_packages(exclude=["tests", "tests.*"]),
-    include_package_data=True,
-    install_requires=reqs,
-    license="Apache 2.0",
-    classifiers=[
-        "Intended Audience :: Developers",
-        "License :: OSI Approved :: Apache Software License",
-        "Programming Language :: Python :: 3.10",
-        "Programming Language :: Python :: 3.11",
-        "Programming Language :: Python :: 3.12",
-    ],
-    python_requires=">=3.10",
-    project_urls={
-        "Documentation": "https://marketlogicsoftware.github.io/deepsights-api/"
-    },
-)
+setup()
