@@ -18,8 +18,8 @@ This module defines the packaging of deepsights-api.
 
 import io
 import os
-from setuptools import setup, find_packages
 
+from setuptools import find_packages, setup
 
 package_root = os.path.abspath(os.path.dirname(__file__))
 
@@ -33,7 +33,7 @@ with io.open(reqs_filename, encoding="utf-8") as reqs_file:
 
 setup(
     name="deepsights-api",
-    version="1.2.1",
+    version="1.2.2",
     author="Market Logic Software",
     author_email="info@marketlogicsoftware.com",
     description="Python library for the DeepSights APIs",

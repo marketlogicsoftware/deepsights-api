@@ -2,6 +2,11 @@
 
 <!--next-version-placeholder-->
 
+## v1.2.2 (12-Jan-2025)
+
+- Add AI generated title to model 
+
+
 ## v1.2.1 (04-Oct-2024)
 
 - Fix for concurrency issue in document loading
