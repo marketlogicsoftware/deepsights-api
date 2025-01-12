@@ -17,7 +17,8 @@ This module contains the base classes for all DeepSights models.
 """
 
 from typing import Optional
-from pydantic import BaseModel, Field, AliasChoices
+
+from pydantic import AliasChoices, BaseModel, Field
 
 
 #################################################
@@ -79,11 +80,18 @@ class DeepSightsIdTitleModel(DeepSightsIdModel):
     Attributes:
 
         title (Optional[str]): The human-readable title of the item.
+        ai_generated_title (Optional[str]): The AI-generated title of the item.
     """
 
     title: Optional[str] = Field(
-        validation_alias=AliasChoices("ai_generated_title", "title"),
+        validation_alias=AliasChoices("title"),
         description="The human-readable title of the item.",
+    )
+
+    ai_generated_title: Optional[str] = Field(
+        validation_alias=AliasChoices("ai_generated_title"),
+        description="The AI-generated title of the item.",
+        default=None,
     )
 
     #############################################

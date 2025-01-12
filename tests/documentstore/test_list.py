@@ -36,5 +36,5 @@ def test_document_list():
 
     for document in documents:
         assert document.id is not None
-        assert document.title is not None
+        assert document.title is not None or document.ai_generated_title is not None
         assert document.status is not None

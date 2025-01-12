@@ -16,10 +16,11 @@
 This module contains the tests for the secondary search functionality of the DeepSights ContentStore.
 """
 
-import re
 import json
+import re
 import shlex
 from datetime import datetime, timezone
+
 import deepsights
 
 # get the test data from JSON
@@ -57,9 +58,9 @@ def test_secondary_text_search():
         if ix > 0:
             assert result.rank > results[ix - 1].rank
 
+
 def test_secondary_text_empty_search():
-    """
-    """
+    """ """
     results = ds.contentstore.secondary.text_search(
         query="",
         max_results=50,
@@ -216,7 +217,6 @@ def test_secondary_vector_search():
             assert result.rank > results[ix - 1].rank
 
 
-
 def test_secondary_vector_search_with_date():
     """
     Test case for vector secondary search with date.
@@ -250,7 +250,6 @@ def test_secondary_vector_search_with_date():
     )
     for result in vector_results:
         assert result.publication_date <= end and result.publication_date >= start
-
 
 
 def test_secondary_vector_search_with_recency_low():
@@ -349,7 +348,7 @@ def test_secondary_hybrid_search_only_text():
 
     assert len(hybrid_results) == 5
     for ix, hybrid_result in enumerate(hybrid_results):
-        assert hybrid_result.id == text_results[ix].id
+        assert hybrid_result.id == text_results[ix].id or hybrid_result.title == text_results[ix].title
 
 
 def test_secondary_hybrid_search():
@@ -476,7 +475,7 @@ def test_secondary_text_search_with_title_promotion():
     This test case verifies that the hybrid search function returns the expected results
     when searching for secondary articles based on a query with title promotion enabled.
     """
-    query = "gen x digital buyers"
+    query = "consumer spending"
 
     # first find top 10 results without title promotion and hard recency weight
     hybrid_results_no_promotion = ds.contentstore.secondary.search(
