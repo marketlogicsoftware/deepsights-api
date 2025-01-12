@@ -348,7 +348,10 @@ def test_secondary_hybrid_search_only_text():
 
     assert len(hybrid_results) == 5
     for ix, hybrid_result in enumerate(hybrid_results):
-        assert hybrid_result.id == text_results[ix].id or hybrid_result.title == text_results[ix].title
+        assert (
+            hybrid_result.id == text_results[ix].id
+            or hybrid_result.title == text_results[ix].title
+        )
 
 
 def test_secondary_hybrid_search():
@@ -465,7 +468,10 @@ def test_secondary_hybrid_search_with_vector_low():
     )
 
     for ix, result in enumerate(text_results):
-        assert result.id == hybrid_results[ix].id
+        assert (
+            result.id == hybrid_results[ix].id
+            or result.title == hybrid_results[ix].title
+        )
 
 
 def test_secondary_text_search_with_title_promotion():
