@@ -16,10 +16,11 @@
 This module contains the tests for the DeepSights ContentStore news search functionality.
 """
 
-import re
 import json
+import re
 import shlex
 from datetime import datetime, timezone
+
 import deepsights
 
 # get the test data from JSON
@@ -30,6 +31,11 @@ with open("tests/data/test_data.json", "rt", encoding="utf-8") as f:
 
 # set up the API client
 ds = deepsights.DeepSights()
+
+
+def equal_results(result, other):
+    # Need to allow for same title due to duplicate content sources
+    return result.id == other.id or result.title == other.title
 
 
 def test_news_text_search():
@@ -77,19 +83,17 @@ def test_news_text_search_offset():
     """
     Test the news text search function with an offset.
     """
-    # temporary skip test due to test data issue
-    if False:
-        results = ds.contentstore.news.text_search(
-            query=test_query,
-            max_results=2,
-        )
-        offset_results = ds.contentstore.news.text_search(
-            query=test_query,
-            max_results=1,
-            offset=1,
-        )
-        for ix, result in enumerate(offset_results):
-            assert result.id == results[ix + 1].id
+    results = ds.contentstore.news.text_search(
+        query=test_query,
+        max_results=2,
+    )
+    offset_results = ds.contentstore.news.text_search(
+        query=test_query,
+        max_results=1,
+        offset=1,
+    )
+    for ix, result in enumerate(offset_results):
+        assert equal_results(result, results[ix + 1])
 
 
 def test_news_text_search_language():
@@ -321,7 +325,7 @@ def test_news_hybrid_search_only_vector():
 
     assert len(hybrid_results) == 5
     for ix, hybrid_result in enumerate(hybrid_results):
-        assert hybrid_result.id == vector_results[ix].id
+        assert equal_results(hybrid_result, vector_results[ix])
 
 
 def test_news_hybrid_search_only_text():
@@ -334,26 +338,25 @@ def test_news_hybrid_search_only_text():
 
     Note: This test assumes the existence of a `test_query` variable.
     """
-    # temporary skip test due to test data issue
-    if False:
-        results = 3
-        hybrid_results = ds.contentstore.news.search(
-            query=test_query,
-            max_results=results,
-            vector_fraction=0.0,
-            vector_weight=0.0,
-            recency_weight=0.0,
-        )
 
-        text_results = ds.contentstore.news.text_search(
-            query=test_query,
-            max_results=results,
-            recency_weight=0.0,
-        )
+    results = 3
+    hybrid_results = ds.contentstore.news.search(
+        query=test_query,
+        max_results=results,
+        vector_fraction=0.0,
+        vector_weight=0.0,
+        recency_weight=0.0,
+    )
 
-        assert len(hybrid_results) == results
-        for ix, hybrid_result in enumerate(hybrid_results):
-            assert hybrid_result.id == text_results[ix].id
+    text_results = ds.contentstore.news.text_search(
+        query=test_query,
+        max_results=results,
+        recency_weight=0.0,
+    )
+
+    assert len(hybrid_results) == results
+    for ix, hybrid_result in enumerate(hybrid_results):
+        assert equal_results(hybrid_result, text_results[ix])
 
 
 def test_news_hybrid_search():
@@ -383,40 +386,6 @@ def test_news_hybrid_search():
     )
 
     assert len(hybrid_results) == 10
-
-    hybrid_ids = [result.id for result in hybrid_results]
-
-    contrib_ids = [result.id for result in vector_results]
-    contrib_ids += [result.id for result in text_results]
-
-    assert all([result in contrib_ids for result in hybrid_ids])
-
-
-def test_news_hybrid_search():
-    """
-    Test case for hybrid news search.
-
-    This function tests the hybrid news search functionality by performing a search using both
-    query embeddings and text queries. It compares the results from the hybrid search with the
-    results from vector search and text search, ensuring that all the results from the hybrid
-    search are present in the results from vector search and text search.
-
-    Note: This test assumes the existence of `test_embedding` and `test_query` variables.
-    """
-    hybrid_results = ds.contentstore.news.search(
-        query=test_query,
-        max_results=10,
-    )
-
-    vector_results = ds.contentstore.news.vector_search(
-        query_embedding=test_embedding,
-        max_results=10,
-    )
-
-    text_results = ds.contentstore.news.text_search(
-        query=test_query,
-        max_results=10,
-    )
 
     hybrid_ids = [result.id for result in hybrid_results]
 
@@ -484,7 +453,7 @@ def test_news_hybrid_search_with_vector_high():
 
     assert len(hybrid_results) == 10
     for ix, result in enumerate(hybrid_results):
-        assert result.id == vector_results[ix].id
+        assert equal_results(result, vector_results[ix])
 
 
 def test_news_hybrid_search_with_vector_low():
@@ -494,26 +463,25 @@ def test_news_hybrid_search_with_vector_low():
 
     Note: This test assumes the existence of `test_embedding` and `test_query` variables.
     """
-    # temporary skip test due to test data issue
-    if False:
-        results = 3
-        hybrid_results = ds.contentstore.news.search(
-            query=test_query,
-            max_results=results,
-            vector_weight=0.00001,
-            vector_fraction=0.0,
-            recency_weight=0.0,
-        )
 
-        text_results = ds.contentstore.news.text_search(
-            query=test_query,
-            max_results=results,
-            recency_weight=0.0,
-        )
+    results = 3
+    hybrid_results = ds.contentstore.news.search(
+        query=test_query,
+        max_results=results,
+        vector_weight=0.00001,
+        vector_fraction=0.0,
+        recency_weight=0.0,
+    )
 
-        assert len(hybrid_results) == results
-        for ix, result in enumerate(hybrid_results):
-            assert result.id == text_results[ix].id
+    text_results = ds.contentstore.news.text_search(
+        query=test_query,
+        max_results=results,
+        recency_weight=0.0,
+    )
+
+    assert len(hybrid_results) == results
+    for ix, result in enumerate(hybrid_results):
+        assert equal_results(result, text_results[ix])
 
 
 def test_news_text_search_with_title_promotion():
@@ -566,5 +534,5 @@ def test_news_text_search_with_title_promotion():
         recency_weight=0.99,
     )
 
-    assert hybrid_results[0].id == hybrid_results_no_promotion[ix].id
+    assert equal_results(hybrid_results[0], hybrid_results_no_promotion[ix])
     assert matches(query, hybrid_results[0])

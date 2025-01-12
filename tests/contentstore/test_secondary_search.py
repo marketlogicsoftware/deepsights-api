@@ -34,6 +34,11 @@ with open("tests/data/test_data.json", "rt", encoding="utf-8") as f:
 ds = deepsights.DeepSights()
 
 
+def equal_results(result, other):
+    # Need to allow for same title due to duplicate content sources
+    return result.id == other.id or result.title == other.title
+
+
 def test_secondary_text_search():
     """
     Test case for performing a text search on secondary content.
@@ -89,7 +94,7 @@ def test_secondary_text_search_offset():
         offset=1,
     )
     for ix, result in enumerate(offset_results):
-        assert result.id == results[ix + 1].id
+        assert equal_results(result, results[ix + 1])
 
 
 def test_secondary_text_search_language():
@@ -320,7 +325,7 @@ def test_secondary_hybrid_search_only_vector():
 
     assert len(hybrid_results) == 5
     for ix, hybrid_result in enumerate(hybrid_results):
-        assert hybrid_result.id == vector_results[ix].id
+        assert equal_results(hybrid_result, vector_results[ix])
 
 
 def test_secondary_hybrid_search_only_text():
@@ -348,10 +353,7 @@ def test_secondary_hybrid_search_only_text():
 
     assert len(hybrid_results) == 5
     for ix, hybrid_result in enumerate(hybrid_results):
-        assert (
-            hybrid_result.id == text_results[ix].id
-            or hybrid_result.title == text_results[ix].title
-        )
+        assert equal_results(hybrid_result, text_results[ix])
 
 
 def test_secondary_hybrid_search():
@@ -444,7 +446,7 @@ def test_secondary_hybrid_search_with_vector_high():
     )
 
     for ix, result in enumerate(vector_results):
-        assert hybrid_results[ix].id == result.id
+        assert equal_results(hybrid_results[ix], result)
 
 
 def test_secondary_hybrid_search_with_vector_low():
@@ -468,10 +470,7 @@ def test_secondary_hybrid_search_with_vector_low():
     )
 
     for ix, result in enumerate(text_results):
-        assert (
-            result.id == hybrid_results[ix].id
-            or result.title == hybrid_results[ix].title
-        )
+        assert equal_results(result, hybrid_results[ix])
 
 
 def test_secondary_text_search_with_title_promotion():
@@ -524,5 +523,5 @@ def test_secondary_text_search_with_title_promotion():
         recency_weight=0.99,
     )
 
-    assert hybrid_results[0].id == hybrid_results_no_promotion[ix].id
+    assert equal_results(hybrid_results[0], hybrid_results_no_promotion[ix])
     assert matches(query, hybrid_results[0])
