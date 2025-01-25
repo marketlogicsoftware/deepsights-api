@@ -491,7 +491,7 @@ def test_secondary_text_search_with_title_promotion():
     This test case verifies that the hybrid search function returns the expected results
     when searching for secondary articles based on a query with title promotion enabled.
     """
-    query = "consumer spending"
+    query = "shopping consumer"
 
     # first find top 10 results without title promotion and hard recency weight
     hybrid_results_no_promotion = ds.contentstore.secondary.search(
