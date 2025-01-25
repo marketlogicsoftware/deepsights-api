@@ -2,6 +2,11 @@
 
 <!--next-version-placeholder-->
 
+## v1.2.3 (25-Jan-2025)
+
+- Support item text download from content store
+
+
 ## v1.2.2 (12-Jan-2025)
 
 - Add AI generated title to model 

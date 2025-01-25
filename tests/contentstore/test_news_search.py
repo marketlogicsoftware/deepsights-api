@@ -79,6 +79,17 @@ def test_news_text_empty_search():
             assert result.publication_date <= results[ix - 1].publication_date
 
 
+def test_news_download():
+    """ """
+    results = ds.contentstore.news.text_search(
+        query="",
+        max_results=1,
+    )
+
+    content = ds.contentstore.news.download(results[0].id)
+    assert len(content) > 0
+
+
 def test_news_text_search_offset():
     """
     Test the news text search function with an offset.

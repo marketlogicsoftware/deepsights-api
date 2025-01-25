@@ -16,17 +16,17 @@
 This module defines the resource to retrieve news content from the DeepSights API.
 """
 
-from typing import List
 from datetime import datetime
+from typing import List
 
 from deepsights.api import APIResource
+from deepsights.contentstore.resources._download import contentstore_download
 from deepsights.contentstore.resources._model import ContentStoreSearchResult
 from deepsights.contentstore.resources._search import (
+    contentstore_hybrid_search,
     contentstore_text_search,
     contentstore_vector_search,
-    contentstore_hybrid_search,
 )
-
 
 
 #################################################
@@ -41,6 +41,12 @@ class NewsResource(APIResource):
     """
     Represents a resource for retrieving news articles from the DeepSights content store.
     """
+
+    def download(self, item_id: str) -> str:
+        """
+        Download the extracted text content of an item from the ContentStore.
+        """
+        return contentstore_download(self, item_id)
 
     #################################################
     def vector_search(

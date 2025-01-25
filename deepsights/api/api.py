@@ -16,18 +16,19 @@
 This module contains base API client classes.
 """
 
-import os
 import logging
+import os
 from typing import Dict
-from tenacity import (
-    retry,
-    stop_after_attempt,
-    wait_random_exponential,
-    retry_if_exception_type,
-)
+
+from ratelimit import limits, sleep_and_retry
 from requests import Session
 from requests.exceptions import Timeout
-from ratelimit import limits, sleep_and_retry
+from tenacity import (
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_random_exponential,
+)
 
 
 #################################################
@@ -106,6 +107,50 @@ class API:
             response.raise_for_status()
 
         return response.json()
+
+    #######################################
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_random_exponential(max=5),
+        retry=retry_if_exception_type(Timeout),
+    )
+    @sleep_and_retry
+    @limits(calls=1000, period=60)
+    def get_content(
+        self, path: str, params: Dict = None, timeout=15, expected_statuscodes=[]
+    ) -> bytes:
+        """
+        Sends a GET request to the specified path and returns the raw response content.
+
+        This method is similar to get() but returns the raw response content instead of parsing it as JSON.
+        Useful for downloading binary data like files or images.
+
+        Args:
+            path (str): The path to send the GET request to.
+            params (Dict, optional): Optional parameters to include in the request. Defaults to None.
+            timeout (int, optional): The timeout in seconds for the request. Defaults to 15.
+            expected_statuscodes (List[int], optional): List of expected status codes. Defaults to an empty list.
+
+        Returns:
+            bytes: The raw content of the server's response.
+
+        Raises:
+            HTTPError: If the GET request fails with a non-200 status code and not in the expected_statuscodes list.
+        """
+        response = self._session.get(
+            self._endpoint(path), params=params, timeout=timeout
+        )
+
+        if (
+            response.status_code != 200
+            and not response.status_code in expected_statuscodes
+        ):
+            logging.error(
+                "GET %s failed with status code %s", path, response.status_code
+            )
+            response.raise_for_status()
+
+        return response.content.decode("utf-8")
 
     #######################################
     @retry(
@@ -208,9 +253,9 @@ class APIKeyAPI(API):
         super().__init__(endpoint_base)
 
         # set api key
-        assert (
-            api_key or api_key_env_var
-        ), "Must provide either API key or environment variable"
+        assert api_key or api_key_env_var, (
+            "Must provide either API key or environment variable"
+        )
         if not api_key:
             api_key = os.environ.get(api_key_env_var)
         self._api_key = api_key

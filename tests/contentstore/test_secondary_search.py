@@ -80,6 +80,17 @@ def test_secondary_text_empty_search():
             assert result.publication_date <= results[ix - 1].publication_date
 
 
+def test_news_download():
+    """ """
+    results = ds.contentstore.secondary.text_search(
+        query="",
+        max_results=1,
+    )
+
+    content = ds.contentstore.secondary.download(results[0].id)
+    assert len(content) > 0
+
+
 def test_secondary_text_search_offset():
     """
     Test the secondary text search function with an offset.
