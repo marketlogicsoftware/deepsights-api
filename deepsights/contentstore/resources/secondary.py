@@ -99,7 +99,7 @@ class SecondaryResource(APIResource):
         max_results: int = 50,
         offset: int = 0,
         languages: List[str] = None,
-        recency_weight: float = None,
+        sort_descending: bool = True,
         search_from_timestamp: datetime = None,
         search_to_timestamp: datetime = None,
     ):
@@ -112,7 +112,7 @@ class SecondaryResource(APIResource):
             max_results (int, optional): The maximum number of search results to return. Defaults to 50.
             offset (int, optional): The offset to start the search from. Defaults to 0.
             languages (List[str], optional): The languages to search for. Defaults to None.
-            recency_weight (float, optional): The weight to assign to recency in the search ranking. Defaults to None.
+            sort_descending (bool, optional): Whether to sort the results in descending order. Defaults to True.
             search_from_timestamp (datetime, optional): The start timestamp for the search. Defaults to None.
             search_to_timestamp (datetime, optional): The end timestamp for the search. Defaults to None.
 
@@ -130,7 +130,7 @@ class SecondaryResource(APIResource):
             max_results=max_results,
             offset=offset,
             languages=languages,
-            recency_weight=recency_weight,
+            sort_descending=sort_descending,
             search_from_timestamp=search_from_timestamp,
             search_to_timestamp=search_to_timestamp,
         )

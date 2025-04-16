@@ -164,51 +164,43 @@ def test_secondary_text_search_with_date():
         assert result.publication_date <= end and result.publication_date >= start
 
 
-def test_secondary_text_search_with_recency_low():
+def test_secondary_text_search_descending():
     """
-    Test the secondary text search function with a low recency weight.
-
-    This test verifies that the secondary text search function returns results
-    when the recency weight is set to a low value. It checks that the
-    returned results have valid IDs, ranks, score ranks, and age ranks,
-    and that the final rank is identical to the score rank.
-
-    Note: This test assumes the existence of a `test_query` variable.
+    Test secondary text search with descending publication date sort order.
+    Verifies results have valid IDs, sequential ranks, and descending dates.
     """
-
     results = ds.contentstore.secondary.text_search(
-        query=test_query,
+        query=None,
         max_results=10,
-        recency_weight=0.00001,
+        sort_descending=True,
     )
 
     assert len(results) > 0
     for ix, result in enumerate(results):
         assert result.id is not None
         assert result.rank == ix + 1
+        if ix < len(results) - 1:
+            assert result.publication_date >= results[ix + 1].publication_date
 
 
-def test_secondary_text_search_with_recency_high():
+def test_secondary_text_search_ascending():
     """
-    Test the secondary text search function with a high recency weight.
-
-    This test verifies that the secondary text search function returns results
-    when the recency weight is set to a high value. It checks that the
-    returned results have valid IDs, ranks, score ranks, and age ranks,
-    and that the final rank is identical to the age rank.
-
-    Note: This test assumes the existence of a `test_query` variable.
+    Test secondary text search with ascending publication date sort order.
+    Verifies results have valid IDs, sequential ranks, and ascending dates.
     """
+
     results = ds.contentstore.secondary.text_search(
-        query=test_query,
+        query=None,
         max_results=10,
-        recency_weight=0.99999,
+        sort_descending=False,
     )
 
     assert len(results) > 0
     for ix, result in enumerate(results):
         assert result.id is not None
         assert result.rank == ix + 1
+        if ix < len(results) - 1:
+            assert result.publication_date <= results[ix + 1].publication_date
 
 
 def test_secondary_vector_search():
@@ -359,7 +351,6 @@ def test_secondary_hybrid_search_only_text():
     text_results = ds.contentstore.secondary.text_search(
         query=test_query,
         max_results=5,
-        recency_weight=0.0,
     )
 
     assert len(hybrid_results) == 5

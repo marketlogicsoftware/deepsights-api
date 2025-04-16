@@ -99,7 +99,7 @@ class NewsResource(APIResource):
         max_results: int = 30,
         offset: int = 0,
         languages: List[str] = None,
-        recency_weight: float = None,
+        sort_descending: bool = True,
         search_from_timestamp: datetime = None,
         search_to_timestamp: datetime = None,
     ):
@@ -112,7 +112,7 @@ class NewsResource(APIResource):
             max_results (int, optional): The maximum number of search results to return. Defaults to 30.
             offset (int, optional): The offset to start the search from. Defaults to 0.
             languages (List[str], optional): The list of languages to search for. Defaults to None.
-            recency_weight (float, optional): The weight to assign to recency in the search ranking. Defaults to None.
+            sort_descending (bool, optional): Whether to sort the results in descending order. Defaults to True.
             search_from_timestamp (datetime, optional): The start timestamp for the search. Defaults to None.
             search_to_timestamp (datetime, optional): The end timestamp for the search. Defaults to None.
 
@@ -128,7 +128,7 @@ class NewsResource(APIResource):
             ),
             query=query,
             max_results=max_results,
-            recency_weight=recency_weight,
+            sort_descending=sort_descending,
             languages=languages,
             offset=offset,
             search_from_timestamp=search_from_timestamp,

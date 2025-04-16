@@ -2,10 +2,13 @@
 
 <!--next-version-placeholder-->
 
+## v1.2.4 (16-Arp-2025)
+
+- Sort order in SCS text search
+
 ## v1.2.3 (25-Jan-2025)
 
-- Support item text download from content store
-
+- Support item text download from cont
 
 ## v1.2.2 (12-Jan-2025)
 

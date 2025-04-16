@@ -16,9 +16,11 @@
 This module contains the base functions to search the ContentStore.
 """
 
-from typing import List
 from datetime import datetime
+from typing import List
+
 from pydantic import BaseModel
+
 from deepsights.api import API
 from deepsights.utils import (
     promote_exact_matches,
@@ -96,9 +98,9 @@ def contentstore_hybrid_search(
     assert 0 <= vector_fraction <= 1, "Vector fraction must be between 0 and 1"
     assert 0 <= vector_weight <= 1, "Vector weught must be between 0 and 1"
     assert 0 < max_results <= 250, "Maximum results must be between 1 and 250."
-    assert (
-        recency_weight is None or 0 <= recency_weight <= 1
-    ), "Recency weight must be between 0 and 1."
+    assert recency_weight is None or 0 <= recency_weight <= 1, (
+        "Recency weight must be between 0 and 1."
+    )
 
     body = {
         "query": query,
@@ -171,9 +173,9 @@ def contentstore_vector_search(
     assert len(query_embedding) == 1536, "The 'query_embedding' must be of length 1536."
     assert 0 <= min_score <= 1, "Minimum score must be between 0 and 1."
     assert 0 < max_results <= 100, "Maximum results must be between 1 and 100."
-    assert (
-        recency_weight is None or 0 <= recency_weight <= 1
-    ), "Recency weight must be between 0 and 1."
+    assert recency_weight is None or 0 <= recency_weight <= 1, (
+        "Recency weight must be between 0 and 1."
+    )
 
     body = {
         "vector": query_embedding,
@@ -206,7 +208,7 @@ def contentstore_text_search(
     max_results: int = 50,
     offset: int = 0,
     languages: List[str] = None,
-    recency_weight: float = None,
+    sort_descending: bool = True,
     search_from_timestamp: datetime = None,
     search_to_timestamp: datetime = None,
     search_only_ai_allowed_content: bool = True,
@@ -223,7 +225,7 @@ def contentstore_text_search(
         max_results (int, optional): The maximum number of results to return. Defaults to 50.
         offset (int, optional): The offset to start the search from. Defaults to 0.
         languages (List[str], optional): The languages to search for. Defaults to None.
-        recency_weight (float, optional): The weight assigned to recency in result ranking. Defaults to None.
+        most_recent_first (bool, optional): Whether to sort results by most recent first. Defaults to True.
         search_from_timestamp (datetime, optional): The start timestamp for the search. Defaults to None.
         search_to_timestamp (datetime, optional): The end timestamp for the search. Defaults to None.
         search_only_ai_allowed_content (bool, optional): Whether to search only AI-allowed content. Defaults to True.
@@ -233,13 +235,16 @@ def contentstore_text_search(
         List[BaseModel]: The re-ranked search results.
     """
     assert 0 < max_results <= 100, "Maximum results must be between 1 and 100."
-    assert (
-        recency_weight is None or 0 <= recency_weight <= 1
-    ), "Recency weight must be between 0 and 1."
 
     # force proper empty search
     if query is not None and len(query.strip()) == 0:
         query = None
+
+    # determine sort order
+    if query is not None:
+        sort_order = "RELEVANCY_DESC" if sort_descending else "RELEVANCY_ASC"
+    else:
+        sort_order = "PUBLISHED_AT_DESC" if sort_descending else "PUBLISHED_AT_ASC"
 
     body = {
         "query": query,
@@ -247,7 +252,7 @@ def contentstore_text_search(
         "content_restrictions": "NONE",
         "limit": max_results,
         "offset": offset,
-        "sort": "RELEVANCY_DESC" if query is not None else "PUBLISHED_AT_DESC",
+        "sort": sort_order,
         "languages": languages,
         "published_at": _get_time_filter(search_from_timestamp, search_to_timestamp),
         "content_restrictions": (
@@ -259,5 +264,8 @@ def contentstore_text_search(
     # parse
     results = [search_result(i) for i in response["items"]]
 
-    # re-rank
-    return rerank_by_recency(results, recency_weight=recency_weight)
+    # record rank
+    for rank, result in enumerate(results):
+        result.rank = rank + 1
+
+    return results
