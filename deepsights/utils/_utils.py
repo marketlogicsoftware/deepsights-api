@@ -17,12 +17,14 @@ This module contains threading utility functions used by the DeepSights API.
 """
 
 import concurrent.futures
+import logging
+from typing import Any, Callable, Iterable, List
 
 
 #################################################
-def run_in_parallel(fun, args, max_workers=5):
+def run_in_parallel(fun: Callable[[Any], Any], args: Iterable[Any], max_workers: int = 5) -> List[Any]:
     """
-    Executes the given function in parallel using multiple threads.
+    Executes the given function in parallel using multiple threads, preserving input order.
 
     Args:
 
@@ -32,14 +34,24 @@ def run_in_parallel(fun, args, max_workers=5):
 
     Returns:
     
-        list: A list of results returned by the function for each argument.
+        list: A list of results returned by the function for each argument, in the same order as input.
+        
+    Raises:
+    
+        Exception: If any of the parallel tasks fail, the first exception encountered is raised.
     """
-    results = []
-
+    args_list = list(args)
+    results = [None] * len(args_list)
+    
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-        futures = [executor.submit(fun, arg) for arg in args]
-        results = [
-            future.result() for future in concurrent.futures.as_completed(futures)
-        ]
+        future_to_index = {executor.submit(fun, arg): i for i, arg in enumerate(args_list)}
+        
+        for future in concurrent.futures.as_completed(future_to_index):
+            index = future_to_index[future]
+            try:
+                results[index] = future.result()
+            except Exception as exc:
+                logging.error("Task %d failed with exception: %s", index, exc)
+                raise exc
 
     return results
