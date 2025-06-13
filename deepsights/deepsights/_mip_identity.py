@@ -17,6 +17,7 @@ This module contains the API client to authenticate against MIP users.
 """
 
 import re
+from typing import Optional
 from requests.exceptions import HTTPError
 from deepsights.api.api import APIKeyAPI
 
@@ -28,7 +29,7 @@ class MIPIdentityResolver(APIKeyAPI):
     """
 
     #######################################
-    def __init__(self, api_key: str = None) -> None:
+    def __init__(self, api_key: Optional[str] = None) -> None:
         """
         Initializes the API client.
 
@@ -43,7 +44,7 @@ class MIPIdentityResolver(APIKeyAPI):
         )
 
     #################################################
-    def _check_email(self, email):
+    def _check_email(self, email: str) -> None:
         """
         Check if the given email address is valid.
 
@@ -53,12 +54,13 @@ class MIPIdentityResolver(APIKeyAPI):
         Raises:
             ValueError: If the email address is invalid.
         """
-        pattern = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
-        if not bool(re.match(pattern, email)):
+        # More robust email validation pattern
+        pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9][a-zA-Z0-9.-]*[a-zA-Z0-9]\.[a-zA-Z]{2,}$"
+        if not email or not re.match(pattern, email):
             raise ValueError(f"Invalid email address: {email}")
 
     #################################################
-    def get_oauth_token(self, email) -> str:
+    def get_oauth_token(self, email: str) -> Optional[str]:
         """
         Retrieves an oauth token to be used to impersonate the given user.
 
@@ -66,7 +68,7 @@ class MIPIdentityResolver(APIKeyAPI):
             email (str): The email of the user to impersonate.
 
         Returns:
-            str: The oauth token of the user, or None if not found
+            Optional[str]: The oauth token of the user, or None if not found
 
         Raises:
             ValueError: If the provided email address is invalid.
@@ -83,6 +85,8 @@ class MIPIdentityResolver(APIKeyAPI):
         except HTTPError as e:
             if e.response.status_code == 404:
                 return None
+            # Let other HTTP errors (500, 503, 429, etc.) bubble up
+            # as they should be handled by the base API retry logic
             raise
 
         return response["access_token"]

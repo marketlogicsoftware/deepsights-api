@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-This module contains the client for the ContentStore API.
+This module contains the main DeepSights API client.
 """
 
 from deepsights.deepsights.deepsights import DeepSights

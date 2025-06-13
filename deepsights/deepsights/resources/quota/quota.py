@@ -31,12 +31,7 @@ class QuotaResource(APIResource):
         """
         Retrieves the API profile from the DeepSights API.
 
-        Args:
-
-            api (ds.DeepSights): The DeepSights API instance.
-
         Returns:
-
             APIProfile: The parsed API profile.
         """
         response = self.api.get("/static-resolver/api-key-attributes")
@@ -47,12 +42,7 @@ class QuotaResource(APIResource):
         """
         Get the quota status from the DeepSights API.
 
-        Args:
-
-            api (API): The DeepSights API object.
-
         Returns:
-
             QuotaStatus: The validated quota status response.
         """
         response = self.api.get("/static-resolver/quota")

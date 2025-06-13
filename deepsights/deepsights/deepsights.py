@@ -16,6 +16,8 @@
 This module contains the DeepSights client.
 """
 
+import threading
+from typing import Optional
 from cachetools import TTLCache
 from deepsights.api.api import APIKeyAPI
 from deepsights.documentstore import DocumentStore
@@ -38,9 +40,9 @@ class DeepSights(APIKeyAPI):
     #######################################
     def __init__(
             self,
-            ds_api_key: str = None,
-            cs_api_key: str = None,
-            mip_api_key: str = None,
+            ds_api_key: Optional[str] = None,
+            cs_api_key: Optional[str] = None,
+            mip_api_key: Optional[str] = None,
         ) -> None:
             """
             Initializes the DeepSights API client.
@@ -62,6 +64,7 @@ class DeepSights(APIKeyAPI):
             self._mip_identity_resolver = MIPIdentityResolver(mip_api_key)
 
             self.userclients = TTLCache(maxsize=100, ttl=240)
+            self._userclients_lock = threading.RLock()
 
     #######################################
     def get_userclient(self, user_email: str) -> UserClient:
@@ -81,12 +84,14 @@ class DeepSights(APIKeyAPI):
         # normalize the email
         user_email = user_email.lower().strip()
 
-        # create the user client if it doesn't exist
-        if user_email not in self.userclients:
-            oauth_token = self._mip_identity_resolver.get_oauth_token(user_email)
-            if not oauth_token:
-                raise ValueError(f"User not found: {user_email}")
+        # thread-safe cache access
+        with self._userclients_lock:
+            # create the user client if it doesn't exist
+            if user_email not in self.userclients:
+                oauth_token = self._mip_identity_resolver.get_oauth_token(user_email)
+                if not oauth_token:
+                    raise ValueError(f"User not found: {user_email}")
 
-            self.userclients[user_email] = UserClient(oauth_token)
+                self.userclients[user_email] = UserClient(oauth_token)
 
-        return self.userclients[user_email]
+            return self.userclients[user_email]
