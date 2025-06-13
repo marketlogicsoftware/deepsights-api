@@ -1,4 +1,4 @@
-# Copyright 2024 Market Logic Software AG. All Rights Reserved.
+# Copyright 2024-2025 Market Logic Software AG. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,9 @@ This module contains the functions to upload documents to the DeepSights API.
 
 import os
 import time
+
 import requests
+
 from deepsights.api import APIResource
 from deepsights.documentstore.resources.documents._load import documents_load
 
@@ -51,7 +53,7 @@ def document_upload(resource: APIResource, document_filename: str) -> str:
     }
 
     # check proper file extension: must be PDF, PPT, PPTX, DOC, DOCX
-    if not any (document_filename.lower().endswith(extension) for extension in mime_map):
+    if not any(document_filename.lower().endswith(extension) for extension in mime_map):
         raise ValueError(
             f"Document {document_filename} is not a valid file type. Only supporting {', '.join(mime_map)}."
         )
@@ -95,7 +97,9 @@ def document_upload(resource: APIResource, document_filename: str) -> str:
 
 
 #################################################
-def document_wait_for_upload(resource: APIResource, document_id: str, timeout: int = 300):
+def document_wait_for_upload(
+    resource: APIResource, document_id: str, timeout: int = 300
+):
     """
     Wait for the document to be processed and completed.
 
@@ -117,12 +121,12 @@ def document_wait_for_upload(resource: APIResource, document_id: str, timeout: i
         response = resource.api.get(f"/artifact-service/artifacts/{document_id}")
         if response["status"] == "COMPLETED":
             break
-        
+
         if response["status"].startswith("FAILED"):
             raise ValueError(
                 f"Document {document_id} failed to process: {response['error_message']}"
             )
-        
+
         time.sleep(2)
 
     # timeout?

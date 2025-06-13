@@ -1,4 +1,4 @@
-# Copyright 2024 Market Logic Software AG. All Rights Reserved.
+# Copyright 2024-2025 Market Logic Software AG. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,24 +17,29 @@ This module contains the functions to load documents from the DeepSights API.
 """
 
 from typing import List
+
 from deepsights.api import APIResource
-from deepsights.utils import run_in_parallel
 from deepsights.documentstore.resources.documents._cache import (
     get_document,
     get_document_cache_size,
-    has_document,
-    set_document,
     get_document_page,
     get_document_page_cache_size,
+    has_document,
     has_document_page,
+    set_document,
     set_document_page,
 )
 from deepsights.documentstore.resources.documents._model import Document, DocumentPage
-from deepsights.documentstore.resources.documents._segmenter import segment_landscape_page
+from deepsights.documentstore.resources.documents._segmenter import (
+    segment_landscape_page,
+)
+from deepsights.utils import run_in_parallel
 
 
 #################################################
-def document_pages_load(resource: APIResource, page_ids: List[str]) -> List[DocumentPage]:
+def document_pages_load(
+    resource: APIResource, page_ids: List[str]
+) -> List[DocumentPage]:
     """
     Load document pages from the cache or fetch them from the API if not cached.
 
@@ -48,9 +53,9 @@ def document_pages_load(resource: APIResource, page_ids: List[str]) -> List[Docu
         List[DocumentPage]: A list of loaded document pages.
     """
 
-    assert (
-        len(page_ids) < get_document_page_cache_size()
-    ), "Cannot load more document pages than the cache size."
+    assert len(page_ids) < get_document_page_cache_size(), (
+        "Cannot load more document pages than the cache size."
+    )
 
     # touch cached document pages
     for page_id in page_ids:
@@ -105,9 +110,9 @@ def documents_load(
 
         List[Document]: A list of loaded documents.
     """
-    assert (
-        len(document_ids) < get_document_cache_size()
-    ), "Cannot load more documents than the cache size."
+    assert len(document_ids) < get_document_cache_size(), (
+        "Cannot load more documents than the cache size."
+    )
 
     # Identify documents that need loading or page loading
     docs_to_load = []
@@ -132,14 +137,14 @@ def documents_load(
         # map the document
         return Document.model_validate(result)
 
-    newly_loaded_docs = run_in_parallel(
-        _load_document, docs_to_load, max_workers=5
-    )
+    newly_loaded_docs = run_in_parallel(_load_document, docs_to_load, max_workers=5)
 
     # Load pages if requested
     if load_pages:
-        all_docs_needing_pages = newly_loaded_docs + [get_document(doc_id) for doc_id in docs_to_load_pages]
-        
+        all_docs_needing_pages = newly_loaded_docs + [
+            get_document(doc_id) for doc_id in docs_to_load_pages
+        ]
+
         def _load_pages(document: Document):
             if not document.page_ids:
                 result = resource.api.get(

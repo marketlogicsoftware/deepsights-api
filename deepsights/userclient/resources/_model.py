@@ -1,4 +1,4 @@
-# Copyright 2024 Market Logic Software AG. All Rights Reserved.
+# Copyright 2024-2025 Market Logic Software AG. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,9 +17,11 @@
 This module contains the model classes for answers.
 """
 
-from typing import Optional, List
 from datetime import datetime
+from typing import List, Optional
+
 from pydantic import Field
+
 from deepsights.utils import (
     DeepSightsBaseModel,
     DeepSightsIdModel,
@@ -45,7 +47,7 @@ class Evidence(DeepSightsIdTitleModel):
         alias="artifact_summary",
         description="The synopsis of the evidence; may be None.",
         default=None,
-    )  
+    )
 
     summary: Optional[str] = Field(
         alias="summary",

@@ -1,4 +1,4 @@
-# Copyright 2024 Market Logic Software AG. All Rights Reserved.
+# Copyright 2024-2025 Market Logic Software AG. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,12 +18,9 @@ Test the documents_list function
 
 import deepsights
 
-# set up the API client
-ds = deepsights.DeepSights()
 
-
-def test_document_list():
-    number_of_results, documents = ds.documentstore.documents.list(
+def test_document_list(ds_client):
+    number_of_results, documents = ds_client.documentstore.documents.list(
         page_size=10,
         page_number=0,
         sort_order=deepsights.SortingOrder.DESCENDING,

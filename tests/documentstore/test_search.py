@@ -1,4 +1,4 @@
-# Copyright 2024 Market Logic Software AG. All Rights Reserved.
+# Copyright 2024-2025 Market Logic Software AG. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,19 +16,15 @@
 Test the documents_search and document_pages_search functions
 """
 
-import json
-import deepsights
-
-# get the test embedding from JSON
-with open("tests/data/test_data.json", "rt", encoding="utf-8") as f:
-    test_embedding = json.load(f)["embedding"]
-
-
-# set up the API client
-ds = deepsights.DeepSights()
+from tests.helpers.validation import (
+    assert_descending_scores,
+    assert_ranked_results,
+    assert_valid_document_page_result,
+    assert_valid_document_result,
+)
 
 
-def test_document_pages_search_plain():
+def test_document_pages_search_plain(ds_client, test_data):
     """
     Test the document pages search function with plain text.
 
@@ -36,60 +32,52 @@ def test_document_pages_search_plain():
     It asserts that the search results are not empty and that each result has a document ID, an ID, and a score greater than 0.
     Additionally, it checks that the scores are sorted in descending order.
     """
-    results = ds.documentstore.documents.search_pages(
-        test_embedding,
+    results = ds_client.documentstore.documents.search_pages(
+        test_data["embedding"],
     )
 
     assert len(results) > 0
-    for ix, result in enumerate(results):
-        assert result.document_id is not None
-        assert result.id is not None
-        assert result.score > 0
-
-        if ix > 0:
-            assert result.score <= results[ix - 1].score
+    for result in results:
+        assert_valid_document_page_result(result)
+    assert_descending_scores(results)
 
 
-def test_document_pages_search_cutoff():
+def test_document_pages_search_cutoff(ds_client, test_data):
     """
     Test case for the `document_pages_search` function with a high score cutoff.
 
     This test verifies that when the `document_pages_search` function is called with a high score cutoff (0.9999),
     it returns an empty list of results.
     """
-    results = ds.documentstore.documents.search_pages(
-        test_embedding, min_score=0.9999
+    results = ds_client.documentstore.documents.search_pages(
+        test_data["embedding"], min_score=0.9999
     )
 
     assert len(results) == 0
 
 
-def test_document_pages_search_with_loading():
+def test_document_pages_search_with_loading(ds_client, test_data):
     """
     Test the document pages search function with loading.
 
     This function tests the `deepsights.document_pages_search` function by performing a search
     with loading of pages. It asserts that the returned results meet certain criteria.
     """
-    results = ds.documentstore.documents.search_pages(
-        test_embedding,
+    results = ds_client.documentstore.documents.search_pages(
+        test_data["embedding"],
         max_results=10,
         load_pages=True,
     )
 
     assert len(results) == 10
-    for ix, result in enumerate(results):
-        assert result.document_id is not None
-        assert result.id is not None
-        assert result.score > 0
+    for result in results:
+        assert_valid_document_page_result(result)
         assert result.text is not None
         assert result.page_number is not None
-
-        if ix > 0:
-            assert result.score <= results[ix - 1].score
+    assert_descending_scores(results)
 
 
-def test_documents_search_plain():
+def test_documents_search_plain(ds_client, test_data):
     """
     Test the search functionality for plain documents.
 
@@ -100,21 +88,17 @@ def test_documents_search_plain():
 
     Note: This test assumes the existence of a `test_embedding` variable.
     """
-    results = ds.documentstore.documents.search(
-        query_embedding=test_embedding,
+    results = ds_client.documentstore.documents.search(
+        query_embedding=test_data["embedding"],
     )
 
     assert len(results) > 0
-    for ix, result in enumerate(results):
-        assert result.id is not None
-        assert result.page_matches is not None
-        assert len(result.page_matches) > 0
-        for page in result.page_matches:
-            assert page.id is not None
-        assert result.rank == ix + 1
+    for result in results:
+        assert_valid_document_result(result, expect_document=False)
+    assert_ranked_results(results)
 
 
-def test_documents_search_with_recency_low():
+def test_documents_search_with_recency_low(ds_client, test_data):
     """
     Test the `documents_search` function with a low recency weight.
 
@@ -123,24 +107,20 @@ def test_documents_search_with_recency_low():
 
     Note: This test assumes the existence of a `test_embedding` variable.
     """
-    results = ds.documentstore.documents.search(
-        query_embedding=test_embedding,
+    results = ds_client.documentstore.documents.search(
+        query_embedding=test_data["embedding"],
         max_results=10,
         recency_weight=0.00001,
     )
 
     assert len(results) > 0
-    for ix, result in enumerate(results):
-        assert result.id is not None
+    for result in results:
+        assert_valid_document_result(result)
         assert result.document is not None
-        assert result.page_matches is not None
-        assert len(result.page_matches) > 0
-        for page in result.page_matches:
-            assert page.id is not None
-        assert result.rank == ix + 1
+    assert_ranked_results(results)
 
 
-def test_documents_search_with_recency_high():
+def test_documents_search_with_recency_high(ds_client, test_data):
     """
     Test the `documents_search` function with a high recency weight.
 
@@ -149,40 +129,33 @@ def test_documents_search_with_recency_high():
 
     Note: This test assumes the existence of a `test_embedding` variable.
     """
-    results = ds.documentstore.documents.search(
-        query_embedding=test_embedding,
+    results = ds_client.documentstore.documents.search(
+        query_embedding=test_data["embedding"],
         max_results=10,
         recency_weight=0.99999,
     )
 
     assert len(results) > 0
-    for ix, result in enumerate(results):
-        assert result.id is not None
+    for result in results:
+        assert_valid_document_result(result)
         assert result.document is not None
-        assert result.page_matches is not None
-        assert len(result.page_matches) > 0
-        for page in result.page_matches:
-            assert page.id is not None
-        assert result.rank == ix + 1
+    assert_ranked_results(results)
 
 
-def test_documents_search_with_loading():
+def test_documents_search_with_loading(ds_client, test_data):
     """
     Test the `documents_search` function with loading enabled.
     """
-    results = ds.documentstore.documents.search(
-        query_embedding=test_embedding,
+    results = ds_client.documentstore.documents.search(
+        query_embedding=test_data["embedding"],
         max_results=10,
         load_documents=True,
     )
 
     assert len(results) > 0
-    for ix, result in enumerate(results):
-        assert result.id is not None
+    for result in results:
+        assert_valid_document_result(result)
         assert result.document is not None
-        assert result.page_matches is not None
-        assert len(result.page_matches) > 0
         for page in result.page_matches:
-            assert page.id is not None
             assert page.text is not None
-        assert result.rank == ix + 1
+    assert_ranked_results(results)

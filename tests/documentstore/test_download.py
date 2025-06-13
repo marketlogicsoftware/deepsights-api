@@ -1,4 +1,4 @@
-# Copyright 2024 Market Logic Software AG. All Rights Reserved.
+# Copyright 2024-2025 Market Logic Software AG. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,27 +17,21 @@ Test the documents_download function
 """
 
 import os
-import json
 import tempfile
+
 import pytest
 import requests
+
 import deepsights
 
-# get the test doc from JSON
-with open("tests/data/test_data.json", "rt", encoding="utf-8") as f:
-    test_data = json.load(f)
-    test_document_id = test_data["document_id"]
 
-# set up the API client
-ds = deepsights.DeepSights()
-
-def test_document_download_404():
+def test_document_download_404(ds_client: deepsights.DeepSights):
     """
     Test case for document download with a non-existing document ID.
     It verifies that the function raises an HTTPError with a status code of 404.
     """
     with pytest.raises(requests.exceptions.HTTPError) as exc:
-        ds.documentstore.documents.download(
+        ds_client.documentstore.documents.download(
             "non_existing_document_id",
             tempfile.gettempdir(),
         )
@@ -45,19 +39,19 @@ def test_document_download_404():
     assert exc.value.response.status_code == 404
 
 
-def test_document_download_no_path():
+def test_document_download_no_path(ds_client: deepsights.DeepSights):
     """
     Test case to verify that a FileNotFoundError is raised when attempting to download a document
     with a non-existing path.
     """
     with pytest.raises(FileNotFoundError):
-        ds.documentstore.documents.download(
+        ds_client.documentstore.documents.download(
             "non_existing_document_id",
             "/does_not_exist",
         )
 
 
-def test_document_download():
+def test_document_download(ds_client: deepsights.DeepSights, test_data: os.Any):
     """
     Test case for the document_download function.
 
@@ -65,8 +59,8 @@ def test_document_download():
     using a DeepSights instance and verifying the existence of the downloaded file.
 
     """
-    local_filename = ds.documentstore.documents.download(
-        test_document_id,
+    local_filename = ds_client.documentstore.documents.download(
+        test_data["document_id"],
         tempfile.gettempdir(),
     )
 

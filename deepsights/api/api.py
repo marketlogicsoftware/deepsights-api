@@ -1,4 +1,4 @@
-# Copyright 2024 Market Logic Software AG. All Rights Reserved.
+# Copyright 2024-2025 Market Logic Software AG. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,21 +16,42 @@
 This module contains base API client classes.
 """
 
-import logging
 import os
 from typing import Dict
 
 from ratelimit import limits, sleep_and_retry
 from requests import Session
 from requests.adapters import HTTPAdapter
-from requests.exceptions import HTTPError, ConnectionError, Timeout
+from requests.exceptions import ConnectionError, HTTPError, Timeout
 from tenacity import (
     retry,
-    retry_if_exception_type,
     stop_after_attempt,
     wait_random_exponential,
 )
 from urllib3.util.retry import Retry
+
+
+def _should_retry_http_error(exception: Exception) -> bool:
+    """
+    Determines if an HTTPError should be retried.
+
+    Only retries server errors (5xx) and specific rate limiting errors.
+    Client errors (4xx) like 404, 400, 401, 403 are not retried.
+
+    Args:
+        exception: The exception to check
+
+    Returns:
+        bool: True if the error should be retried, False otherwise
+    """
+    if isinstance(exception, HTTPError):
+        if hasattr(exception, "response") and exception.response is not None:
+            status_code = exception.response.status_code
+            # Only retry server errors (5xx) and rate limiting (429)
+            return status_code >= 500 or status_code == 429
+        return False
+    # Always retry connection and timeout errors
+    return isinstance(exception, (ConnectionError, Timeout))
 
 
 #################################################
@@ -40,7 +61,13 @@ class API:
     """
 
     #######################################
-    def __init__(self, endpoint_base: str, pool_connections: int = 10, pool_maxsize: int = 20, default_timeout: int = 15) -> None:
+    def __init__(
+        self,
+        endpoint_base: str,
+        pool_connections: int = 10,
+        pool_maxsize: int = 20,
+        default_timeout: int = 15,
+    ) -> None:
         """
         Initializes the API client.
 
@@ -56,34 +83,33 @@ class API:
         self._endpoint_base = endpoint_base
         if not self._endpoint_base.endswith("/"):
             self._endpoint_base += "/"
-        
+
         # setup session with connection pooling
         self._session = Session()
-        
+
         # configure retry strategy for connection-level retries
         retry_strategy = Retry(
             total=3,
             status_forcelist=[429, 500, 502, 503, 504],
             backoff_factor=1,
-            allowed_methods=["HEAD", "GET", "OPTIONS", "POST", "DELETE"]
+            allowed_methods=["HEAD", "GET", "OPTIONS", "POST", "DELETE"],
         )
-        
+
         # setup adapters with connection pooling
         adapter = HTTPAdapter(
             pool_connections=pool_connections,
             pool_maxsize=pool_maxsize,
-            max_retries=retry_strategy
+            max_retries=retry_strategy,
         )
-        
+
         self._session.mount("https://", adapter)
         self._session.mount("http://", adapter)
-        
+
         # set keep-alive headers
-        self._session.headers.update({
-            'Connection': 'keep-alive',
-            'User-Agent': 'deepsights-api/1.2.4'
-        })
-        
+        self._session.headers.update(
+            {"Connection": "keep-alive", "User-Agent": "deepsights-api/1.2.4"}
+        )
+
         # store default timeout
         self._default_timeout = default_timeout
 
@@ -106,7 +132,7 @@ class API:
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_random_exponential(max=5),
-        retry=retry_if_exception_type((Timeout, ConnectionError, HTTPError)),
+        retry=_should_retry_http_error,
     )
     @sleep_and_retry
     @limits(calls=1000, period=60)
@@ -129,21 +155,18 @@ class API:
             HTTPError: If the GET request fails with a non-200 status code and not in the expected_statuscodes list.
         """
         timeout = timeout or self._default_timeout
-        logging.debug("GET %s with params: %s", self._endpoint(path), params)
         response = self._session.get(
             self._endpoint(path), params=params, timeout=timeout
         )
-        logging.debug("GET %s returned status: %s", path, response.status_code)
 
         if (
             response.status_code not in [200, 201, 202]
             and response.status_code not in expected_statuscodes
         ):
-            logging.error(
-                "GET %s failed with status code %s: %s", path, response.status_code, response.text
-            )
             if response.status_code in [429, 502, 503]:
-                raise HTTPError(f"Retriable error {response.status_code}", response=response)
+                raise HTTPError(
+                    f"Retriable error {response.status_code}", response=response
+                )
             response.raise_for_status()
 
         return response.json()
@@ -152,7 +175,7 @@ class API:
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_random_exponential(max=5),
-        retry=retry_if_exception_type((Timeout, ConnectionError, HTTPError)),
+        retry=_should_retry_http_error,
     )
     @sleep_and_retry
     @limits(calls=1000, period=60)
@@ -178,21 +201,18 @@ class API:
             HTTPError: If the GET request fails with a non-200 status code and not in the expected_statuscodes list.
         """
         timeout = timeout or self._default_timeout
-        logging.debug("GET_CONTENT %s with params: %s", self._endpoint(path), params)
         response = self._session.get(
             self._endpoint(path), params=params, timeout=timeout
         )
-        logging.debug("GET_CONTENT %s returned status: %s", path, response.status_code)
 
         if (
             response.status_code not in [200, 201, 202]
             and response.status_code not in expected_statuscodes
         ):
-            logging.error(
-                "GET_CONTENT %s failed with status code %s", path, response.status_code
-            )
             if response.status_code in [429, 502, 503]:
-                raise HTTPError(f"Retriable error {response.status_code}", response=response)
+                raise HTTPError(
+                    f"Retriable error {response.status_code}", response=response
+                )
             response.raise_for_status()
 
         return response.content
@@ -201,7 +221,7 @@ class API:
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_random_exponential(max=5),
-        retry=retry_if_exception_type((Timeout, ConnectionError, HTTPError)),
+        retry=_should_retry_http_error,
     )
     @sleep_and_retry
     @limits(calls=100, period=60)
@@ -227,21 +247,18 @@ class API:
             Dict: The JSON body of the server's response to the request.
         """
         timeout = timeout or self._default_timeout
-        logging.debug("POST %s with body: %s, params: %s", self._endpoint(path), body, params)
         response = self._session.post(
             self._endpoint(path), params=params, json=body, timeout=timeout
         )
-        logging.debug("POST %s returned status: %s", path, response.status_code)
 
         if (
             response.status_code not in [200, 201, 202]
             and response.status_code not in expected_statuscodes
         ):
-            logging.error(
-                "POST %s failed with status code %s: %s", path, response.status_code, response.text
-            )
             if response.status_code in [429, 502, 503]:
-                raise HTTPError(f"Retriable error {response.status_code}", response=response)
+                raise HTTPError(
+                    f"Retriable error {response.status_code}", response=response
+                )
             response.raise_for_status()
 
         return response.json()
@@ -250,7 +267,7 @@ class API:
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_random_exponential(max=5),
-        retry=retry_if_exception_type((Timeout, ConnectionError, HTTPError)),
+        retry=_should_retry_http_error,
     )
     @sleep_and_retry
     @limits(calls=1000, period=60)
@@ -268,19 +285,16 @@ class API:
             HTTPError: If the DELETE request fails with a non-200 status code.
         """
         timeout = timeout or self._default_timeout
-        logging.debug("DELETE %s", self._endpoint(path))
         response = self._session.delete(self._endpoint(path), timeout=timeout)
-        logging.debug("DELETE %s returned status: %s", path, response.status_code)
 
         if (
             response.status_code not in [200, 204]
             and response.status_code not in expected_statuscodes
         ):
-            logging.error(
-                "DELETE %s failed with status code %s: %s", path, response.status_code, response.text
-            )
             if response.status_code in [429, 502, 503]:
-                raise HTTPError(f"Retriable error {response.status_code}", response=response)
+                raise HTTPError(
+                    f"Retriable error {response.status_code}", response=response
+                )
             response.raise_for_status()
 
 

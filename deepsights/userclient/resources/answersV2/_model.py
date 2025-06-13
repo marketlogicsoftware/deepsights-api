@@ -1,4 +1,4 @@
-# Copyright 2024 Market Logic Software AG. All Rights Reserved.
+# Copyright 2024-2025 Market Logic Software AG. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,13 +17,15 @@
 This module contains the model classes for answers.
 """
 
-from typing import Optional, List
+from typing import List, Optional
+
 from pydantic import Field
-from deepsights.utils import DeepSightsIdModel
+
 from deepsights.userclient.resources._model import (
-    DocumentEvidence,
     ContentStoreEvidence,
+    DocumentEvidence,
 )
+from deepsights.utils import DeepSightsIdModel
 
 
 #################################################
@@ -68,12 +70,14 @@ class AnswerV2(DeepSightsIdModel):
         default=[], description="List of evidence from news sources used in the answer."
     )
     document_suggestions: List[DocumentEvidence] = Field(
-        default=[], description="List of suggestions from documents as further reading for the question."
+        default=[],
+        description="List of suggestions from documents as further reading for the question.",
     )
     secondary_suggestions: List[ContentStoreEvidence] = Field(
         default=[],
         description="List of suggestions from secondary sources as further reading for the question.",
     )
     news_suggestions: List[ContentStoreEvidence] = Field(
-        default=[], description="List of suggestions from news sources as further reading for the question."
+        default=[],
+        description="List of suggestions from news sources as further reading for the question.",
     )

@@ -1,4 +1,4 @@
-# Copyright 2024 Market Logic Software AG. All Rights Reserved.
+# Copyright 2024-2025 Market Logic Software AG. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,9 @@ This module contains the API client to authenticate against MIP users.
 
 import re
 from typing import Optional
+
 from requests.exceptions import HTTPError
+
 from deepsights.api.api import APIKeyAPI
 
 
@@ -55,7 +57,9 @@ class MIPIdentityResolver(APIKeyAPI):
             ValueError: If the email address is invalid.
         """
         # More robust email validation pattern
-        pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9][a-zA-Z0-9.-]*[a-zA-Z0-9]\.[a-zA-Z]{2,}$"
+        pattern = (
+            r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9][a-zA-Z0-9.-]*[a-zA-Z0-9]\.[a-zA-Z]{2,}$"
+        )
         if not email or not re.match(pattern, email):
             raise ValueError(f"Invalid email address: {email}")
 

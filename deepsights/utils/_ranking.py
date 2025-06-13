@@ -1,4 +1,4 @@
-# Copyright 2024 Market Logic Software AG. All Rights Reserved.
+# Copyright 2024-2025 Market Logic Software AG. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ This module contains utility functions for ranking search results.
 import re
 import shlex
 from datetime import datetime, timezone
-from typing import List, Callable, Optional, Any
+from typing import Any, Callable, List, Optional
 
 
 #################################################
@@ -104,33 +104,32 @@ def promote_exact_matches(query: str, results: List[Any]) -> List[Any]:
     """
     if not query.strip() or not results:
         return results
-        
+
     # determine terms in the query
     terms = shlex.split(query.lower())  # Convert to lowercase once
     if not terms:
         return results
-    
+
     # compile regex patterns once for better performance
     exact_patterns = [
         re.compile(rf"(?:\b|\s|^){re.escape(term)}(?:\b|\s|$|\W)", re.IGNORECASE)
         for term in terms
     ]
     substring_patterns = [
-        re.compile(rf"(?:\b|\s|^){re.escape(term)}", re.IGNORECASE)
-        for term in terms
+        re.compile(rf"(?:\b|\s|^){re.escape(term)}", re.IGNORECASE) for term in terms
     ]
-    
+
     exact_matches = set()
     substring_matches = set()
-    
+
     # single pass through results to categorize matches
     for item in results:
-        if not hasattr(item, 'title') or not item.title:
+        if not hasattr(item, "title") or not item.title:
             continue
-            
+
         title = item.title
         item_id = item.id
-        
+
         # check for exact matches
         if all(pattern.search(title) for pattern in exact_patterns):
             exact_matches.add(item_id)
@@ -146,7 +145,7 @@ def promote_exact_matches(query: str, results: List[Any]) -> List[Any]:
             return 1
         else:
             return 2
-    
+
     return sorted(results, key=sort_key)
 
 
@@ -157,7 +156,7 @@ def rerank_by_recency(
 ) -> List[Any]:
     """
     Reranks the search results based on recency weight. If recency weight is None, the results are not reranked.
-    Assumes the items in the results have a "publication_date" attribute. 
+    Assumes the items in the results have a "publication_date" attribute.
 
     Args:
 
@@ -165,25 +164,25 @@ def rerank_by_recency(
         recency_weight (Optional[float]): The weight assigned to recency in the reranking process.
 
     Returns:
-    
+
         List[Any]: The reranked search results.
     """
     if not results:
         return results
-        
+
     # record score rank
     score_ranks = {result.id: rank for rank, result in enumerate(results)}
 
     # apply recency weight
     if recency_weight and 0 < recency_weight <= 1:
         current_time = datetime.now(timezone.utc)
-        
+
         # calculate age in days, filtering out items without publication_date
         valid_items = []
         age_by_item_id = {}
-        
+
         for r in results:
-            if hasattr(r, 'publication_date') and r.publication_date is not None:
+            if hasattr(r, "publication_date") and r.publication_date is not None:
                 try:
                     age_days = (current_time - r.publication_date).days
                     # Handle negative ages (future dates) by setting to 0
@@ -192,14 +191,14 @@ def rerank_by_recency(
                 except (TypeError, AttributeError):
                     # Skip items with invalid publication_date
                     continue
-        
+
         if not valid_items:
             # No valid publication dates found, skip reranking
             for rank, result in enumerate(results):
-                if hasattr(result, 'rank'):
+                if hasattr(result, "rank"):
                     result.rank = rank + 1
             return results
-        
+
         # sort by age and create age ranks
         sorted_ages = sorted(age_by_item_id.items(), key=lambda x: x[1])
         age_ranks = {item_id: rank for rank, (item_id, _) in enumerate(sorted_ages)}
@@ -207,13 +206,16 @@ def rerank_by_recency(
         # apply reciprocal rank fusion only to items with valid dates
         results = rrf_merge_single(
             results,
-            ranks=lambda x: (score_ranks[x.id] + 1, age_ranks.get(x.id, len(results)) + 1),
+            ranks=lambda x: (
+                score_ranks[x.id] + 1,
+                age_ranks.get(x.id, len(results)) + 1,
+            ),
             weights=(1 - recency_weight, recency_weight),
         )
 
     # record rank
     for rank, result in enumerate(results):
-        if hasattr(result, 'rank') or hasattr(result.__class__, 'rank'):
+        if hasattr(result, "rank") or hasattr(result.__class__, "rank"):
             result.rank = rank + 1
 
     return results

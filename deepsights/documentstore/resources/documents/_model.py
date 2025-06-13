@@ -1,4 +1,4 @@
-# Copyright 2024 Market Logic Software AG. All Rights Reserved.
+# Copyright 2024-2025 Market Logic Software AG. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,11 +16,16 @@
 This module contains the model classes for documents.
 """
 
-from typing import List, Optional
 from datetime import datetime
+from typing import List, Optional
+
 from pydantic import Field
+
+from deepsights.documentstore.resources.documents._cache import (
+    get_document,
+    get_document_page,
+)
 from deepsights.utils import DeepSightsIdModel, DeepSightsIdTitleModel
-from deepsights.documentstore.resources.documents._cache import get_document_page, get_document
 
 
 #################################################
@@ -99,7 +104,7 @@ class Document(DeepSightsIdTitleModel):
     @property
     def pages(self) -> List[DocumentPage]:
         return [get_document_page(page_id) for page_id in self.page_ids]
-    
+
 
 #################################################
 class DocumentPageSearchResult(DeepSightsIdModel):

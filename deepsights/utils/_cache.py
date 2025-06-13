@@ -1,4 +1,4 @@
-# Copyright 2024 Market Logic Software AG. All Rights Reserved.
+# Copyright 2024-2025 Market Logic Software AG. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ This module contains caching functions and classes used by the DeepSights API.
 """
 
 import threading
+
 from cachetools import LRUCache
 
 
@@ -31,7 +32,7 @@ def create_global_lru_cache(maxsize):
         maxsize (int): The maximum number of items that can be stored in the cache.
 
     Returns:
-    
+
         tuple: A tuple containing five functions: _setter, _tester, _getter, _remover, and _size.
             - _setter: A function that sets a key-value pair in the cache.
             - _tester: A function that checks if a key exists in the cache.

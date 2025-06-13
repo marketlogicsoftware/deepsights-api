@@ -1,4 +1,4 @@
-# Copyright 2024 Market Logic Software AG. All Rights Reserved.
+# Copyright 2024-2025 Market Logic Software AG. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,9 +16,11 @@
 This module contains the models for the DeepSights API.
 """
 
-from typing import Optional
 from datetime import datetime
+from typing import Optional
+
 from pydantic import Field
+
 from deepsights.utils import DeepSightsBaseModel
 
 
@@ -83,7 +85,7 @@ class QuotaStatus(DeepSightsBaseModel):
     Represents the quota status for the API.
 
     Attributes:
-    
+
         day_quota (QuotaInfo): The daily quota limit and status.
         minute_quota (QuotaInfo): The minute quota limit and status.
     """

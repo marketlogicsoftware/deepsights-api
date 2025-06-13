@@ -1,4 +1,4 @@
-# Copyright 2024 Market Logic Software AG. All Rights Reserved.
+# Copyright 2024-2025 Market Logic Software AG. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,37 +13,24 @@
 # limitations under the License.
 
 """
-This module contains the tests for the user client acccess.
+This module contains the tests for the user client access.
 """
 
-import os
 import pytest
-import deepsights
-
-# set up the API client
-ds = deepsights.DeepSights()
-
-def get_valid_email():
-    """
-    Retrieves the valid email from the environment variable MIP_IDENTITY_VALID_EMAIL.
-
-    Returns:
-        str: The valid email address.
-    """
-    return os.environ["MIP_IDENTITY_VALID_EMAIL"]
 
 
-def test_user_client_unknown_email():
+def test_user_client_unknown_email(ds_client):
     """
     Test case to verify that the user client raises an exception if the email is unknown.
     """
     with pytest.raises(ValueError):
-        uc = ds.get_userclient("foo@bar.de")
+        uc = ds_client.get_userclient("foo@bar.de")
 
-def test_user_token_known_email():
+
+def test_user_token_known_email(ds_client, valid_email):
     """
     Test case to verify the retrieval of a user client for a known email address.
     """
-    uc = ds.get_userclient(get_valid_email())
+    uc = ds_client.get_userclient(valid_email)
 
     assert uc is not None

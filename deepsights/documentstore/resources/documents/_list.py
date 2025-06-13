@@ -1,4 +1,4 @@
-# Copyright 2024 Market Logic Software AG. All Rights Reserved.
+# Copyright 2024-2025 Market Logic Software AG. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,9 +17,10 @@ This module contains the functions to list documents from the DeepSights API.
 """
 
 from typing import List
+
 from deepsights.api import APIResource
-from deepsights.documentstore.resources.documents._model import Document
 from deepsights.documentstore.resources.documents._cache import set_document
+from deepsights.documentstore.resources.documents._model import Document
 
 
 #################################################
@@ -84,7 +85,7 @@ def documents_list(
     body = {
         "size": page_size,
         "page": page_number,
-        "sorting": {"field_name": sort_field, "sorting_direction": sort_order}
+        "sorting": {"field_name": sort_field, "sorting_direction": sort_order},
     }
     if status_filter:
         body["statuses"] = status_filter

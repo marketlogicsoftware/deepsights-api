@@ -1,4 +1,4 @@
-# Copyright 2024 Market Logic Software AG. All Rights Reserved.
+# Copyright 2024-2025 Market Logic Software AG. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,28 +17,26 @@ This module contains the resource to interact with documents via the DeepSights 
 """
 
 from deepsights.api import APIResource
-
+from deepsights.documentstore.resources.documents._delete import (
+    document_wait_for_deletion,
+    documents_delete,
+)
+from deepsights.documentstore.resources.documents._download import document_download
+from deepsights.documentstore.resources.documents._list import (
+    documents_list,
+)
+from deepsights.documentstore.resources.documents._load import (
+    document_pages_load,
+    documents_load,
+)
+from deepsights.documentstore.resources.documents._search import (
+    document_pages_search,
+    documents_search,
+)
 from deepsights.documentstore.resources.documents._upload import (
     document_upload,
     document_wait_for_upload,
 )
-from deepsights.documentstore.resources.documents._download import document_download
-from deepsights.documentstore.resources.documents._delete import (
-    documents_delete,
-    document_wait_for_deletion,
-)
-from deepsights.documentstore.resources.documents._load import (
-    documents_load,
-    document_pages_load,
-)
-from deepsights.documentstore.resources.documents._search import (
-    documents_search,
-    document_pages_search,
-)
-from deepsights.documentstore.resources.documents._list import (
-    documents_list,
-)
-
 
 
 #################################################

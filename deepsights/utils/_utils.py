@@ -1,4 +1,4 @@
-# Copyright 2024 Market Logic Software AG. All Rights Reserved.
+# Copyright 2024-2025 Market Logic Software AG. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,11 +20,14 @@ import concurrent.futures
 import logging
 import time
 from typing import Any, Callable, Dict, Iterable, List, Optional
+
 import requests
 
 
 #################################################
-def run_in_parallel(fun: Callable[[Any], Any], args: Iterable[Any], max_workers: int = 5) -> List[Any]:
+def run_in_parallel(
+    fun: Callable[[Any], Any], args: Iterable[Any], max_workers: int = 5
+) -> List[Any]:
     """
     Executes the given function in parallel using multiple threads, preserving input order.
 
@@ -35,19 +38,21 @@ def run_in_parallel(fun: Callable[[Any], Any], args: Iterable[Any], max_workers:
         max_workers (int, optional): The maximum number of worker threads to use. Defaults to 5.
 
     Returns:
-    
+
         list: A list of results returned by the function for each argument, in the same order as input.
-        
+
     Raises:
-    
+
         Exception: If any of the parallel tasks fail, the first exception encountered is raised.
     """
     args_list = list(args)
     results = [None] * len(args_list)
-    
+
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-        future_to_index = {executor.submit(fun, arg): i for i, arg in enumerate(args_list)}
-        
+        future_to_index = {
+            executor.submit(fun, arg): i for i, arg in enumerate(args_list)
+        }
+
         for future in concurrent.futures.as_completed(future_to_index):
             index = future_to_index[future]
             try:
@@ -62,11 +67,13 @@ def run_in_parallel(fun: Callable[[Any], Any], args: Iterable[Any], max_workers:
 #################################################
 class PollingTimeoutError(Exception):
     """Raised when polling operation times out."""
+
     pass
 
 
 class PollingFailedError(Exception):
     """Raised when polling operation fails."""
+
     pass
 
 
@@ -83,7 +90,7 @@ def poll_for_completion(
 ) -> Any:
     """
     Generic polling utility for waiting on asynchronous operations to complete.
-    
+
     Args:
         get_status_func: Function that takes resource_id and returns status response dict
         resource_id: ID of the resource being polled
@@ -93,10 +100,10 @@ def poll_for_completion(
         failure_status_prefix: Prefix indicating failure status
         success_status: Specific status indicating success (if None, any non-pending/non-failed is success)
         get_final_result_func: Optional function to get final result after success
-        
+
     Returns:
         Final result from get_final_result_func if provided, otherwise status response
-        
+
     Raises:
         PollingTimeoutError: If operation doesn't complete within timeout
         PollingFailedError: If operation fails
@@ -104,13 +111,13 @@ def poll_for_completion(
     """
     if pending_statuses is None:
         pending_statuses = ["CREATED", "STARTED", "DELETING", "SCHEDULED_FOR_DELETING"]
-    
+
     start_time = time.time()
-    
+
     while time.time() - start_time < timeout:
         try:
             response = get_status_func(resource_id)
-            
+
             # Extract status from response (handle different response structures)
             status = None
             if isinstance(response, dict):
@@ -119,42 +126,55 @@ def poll_for_completion(
                     status = response["status"]
                 elif "minion_job" in response and "status" in response["minion_job"]:
                     status = response["minion_job"]["status"]
-                elif "desk_research" in response and "minion_job" in response["desk_research"]:
+                elif (
+                    "desk_research" in response
+                    and "minion_job" in response["desk_research"]
+                ):
                     status = response["desk_research"]["minion_job"]["status"]
                 elif "answer_v2" in response and "minion_job" in response["answer_v2"]:
                     status = response["answer_v2"]["minion_job"]["status"]
-            
+
             if status is None:
-                raise PollingFailedError(f"Could not extract status from response for {resource_id}")
-            
+                raise PollingFailedError(
+                    f"Could not extract status from response for {resource_id}"
+                )
+
             # Check if operation is still pending
             if status in pending_statuses:
                 time.sleep(polling_interval)
                 continue
-                
+
             # Check if operation failed
             if status.startswith(failure_status_prefix):
-                error_message = response.get("error_reason") or response.get("error_message") or "Unknown error"
-                raise PollingFailedError(f"Operation failed for {resource_id}: {error_message}")
-            
+                error_message = (
+                    response.get("error_reason")
+                    or response.get("error_message")
+                    or "Unknown error"
+                )
+                raise PollingFailedError(
+                    f"Operation failed for {resource_id}: {error_message}"
+                )
+
             # Check if we have a specific success status requirement
             if success_status is not None and status != success_status:
                 time.sleep(polling_interval)
                 continue
-                
+
             # Operation completed successfully
             if get_final_result_func:
                 return get_final_result_func(resource_id)
             else:
                 return response
-                
+
         except requests.exceptions.HTTPError as e:
             # Handle 404 for deletion scenarios
             if e.response.status_code == 404:
                 raise e
             # Re-raise other HTTP errors
             raise e
-    
+
     # Timeout reached
     elapsed_time = time.time() - start_time
-    raise PollingTimeoutError(f"Operation for {resource_id} did not complete within {timeout} seconds (elapsed: {elapsed_time:.1f}s)")
+    raise PollingTimeoutError(
+        f"Operation for {resource_id} did not complete within {timeout} seconds (elapsed: {elapsed_time:.1f}s)"
+    )

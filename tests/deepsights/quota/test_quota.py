@@ -1,4 +1,4 @@
-# Copyright 2024 Market Logic Software AG. All Rights Reserved.
+# Copyright 2024-2025 Market Logic Software AG. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,16 +18,14 @@ This module contains the tests for the DeepSights API.
 
 import pytest
 import requests
-import deepsights
 
-# set up the API client
-ds = deepsights.DeepSights()
-
-# set up an unauthorized API client
-unauthorized_ds = deepsights.DeepSights("2344234")
+from tests.helpers.validation import (
+    assert_valid_quota_profile,
+    assert_valid_quota_status,
+)
 
 
-def test_ds_api_authentication():
+def test_ds_api_authentication(unauthorized_client):
     """
     Test case for DeepSights API authentication.
 
@@ -36,22 +34,21 @@ def test_ds_api_authentication():
 
     """
     with pytest.raises(requests.exceptions.HTTPError) as exc:
-        unauthorized_ds.quota.get_profile()
+        unauthorized_client.quota.get_profile()
 
     assert exc.value.response.status_code == 401
 
 
-def test_ds_api_profile():
+def test_ds_api_profile(ds_client):
     """
     Test case to verify the profile of the DeepSights API response.
     """
-    r = ds.quota.get_profile()
+    profile = ds_client.quota.get_profile()
 
-    assert r.app is not None
-    assert r.tenant is not None
+    assert_valid_quota_profile(profile)
 
 
-def test_ds_quota_info():
+def test_ds_quota_info(ds_client):
     """
     Test case for checking the quota information of DeepSights API.
 
@@ -59,12 +56,6 @@ def test_ds_quota_info():
     It checks the day quota and minute quota, ensuring that they are not None,
     and that the quota reset time and quota usage are valid.
     """
-    r = ds.quota.get_status()
+    status = ds_client.quota.get_status()
 
-    assert r.day_quota is not None
-    assert r.day_quota.quota_reset_at is not None
-    assert r.day_quota.quota_used >= 0
-
-    assert r.minute_quota is not None
-    assert r.minute_quota.quota_reset_at is not None
-    assert r.minute_quota.quota_used >= 0
+    assert_valid_quota_status(status)

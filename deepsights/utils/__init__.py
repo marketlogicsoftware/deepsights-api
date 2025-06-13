@@ -1,4 +1,4 @@
-# Copyright 2024 Market Logic Software AG. All Rights Reserved.
+# Copyright 2024-2025 Market Logic Software AG. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,7 +23,12 @@ from deepsights.utils._ranking import (
     rrf_merge_multi,
     rrf_merge_single,
 )
-from deepsights.utils._utils import run_in_parallel, poll_for_completion, PollingTimeoutError, PollingFailedError
+from deepsights.utils._utils import (
+    PollingFailedError,
+    PollingTimeoutError,
+    poll_for_completion,
+    run_in_parallel,
+)
 from deepsights.utils.model import (
     DeepSightsBaseModel,
     DeepSightsIdModel,

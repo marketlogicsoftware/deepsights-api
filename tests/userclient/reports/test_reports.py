@@ -1,4 +1,4 @@
-# Copyright 2024 Market Logic Software AG. All Rights Reserved.
+# Copyright 2024-2025 Market Logic Software AG. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,85 +16,47 @@
 This module contains the tests for the report retrieval functions.
 """
 
-import os
-import json
 import pytest
-import deepsights
 
-# get the test data from JSON
-with open("tests/data/test_data.json", "rt", encoding="utf-8") as f:
-    data = json.load(f)
-    test_question = data["question"]
-    test_report_id = data["report_id"]
-
-
-# set up the API client
-uc = deepsights.DeepSights().get_userclient(os.environ["MIP_IDENTITY_VALID_EMAIL"])
+from deepsights.utils import PollingTimeoutError
+from tests.helpers.validation import (
+    assert_valid_report_contentstore_sources,
+    assert_valid_report_document_sources,
+    assert_valid_report_result,
+)
 
 
-def _test_report_create_and_wait_briefly():
+def _test_report_create_and_wait_briefly(user_client, test_data):
     """
     Test function to check the behavior of the report_wait_for_completion function.
 
     Very expensive, only run when necessary.
     """
-    report_id = uc.reports.create(test_question)
+    report_id = user_client.reports.create(test_data["question"])
 
-    with pytest.raises(ValueError):
-        uc.reports.wait_for_report(report_id, timeout=3)
+    with pytest.raises(PollingTimeoutError):
+        user_client.reports.wait_for_report(report_id, timeout=3)
 
 
-def test_report_wait_for_completion():
+def test_report_wait_for_completion(user_client, test_data):
     """
     Test function to check the behavior of the report_wait_for_completion function.
     """
-    uc.reports.wait_for_report(test_report_id)
+    user_client.reports.wait_for_report(test_data["report_id"])
 
 
-def test_report_get():
+def test_report_get(user_client, test_data):
     """
     Test case for the report_get function.
 
     This test verifies that the report retrieved from the deepsights.report_get function
     has the expected attributes and properties.
     """
-    report = uc.reports.get(test_report_id)
+    report = user_client.reports.get(test_data["report_id"])
 
-    assert report.id == test_report_id
-    assert report.permission_validation in ("GRANTED", "GRANTED_WITH_DELETED_CONTENT")
-    assert report.question is not None
-    assert report.status == "COMPLETED"
-    assert report.topic is not None
-    assert report.summary is not None
-
-    assert report.document_sources is not None
-    assert len(report.document_sources) > 0
-    for doc in report.document_sources:
-        assert doc.id is not None
-        assert doc.reference is not None
-        assert doc.synopsis is not None
-        assert doc.summary is not None
-        assert doc.publication_date is not None
-
-        assert len(doc.pages) > 0
-        for page in doc.pages:
-            assert page.id is not None
-            assert page.page_number is not None
-
-    for cs_results in (report.secondary_sources, report.news_sources):
-        assert cs_results is not None
-        assert len(cs_results) > 0
-        for cs_result in cs_results:
-            assert cs_result.id is not None
-            
-            if cs_result in report.secondary_sources or cs_result in report.news_sources:
-                assert cs_result.reference is not None
-            else:
-                assert cs_result.reference is None
-
-            assert cs_result.synopsis is None
-            assert cs_result.summary is not None
-            assert cs_result.text is None
-            assert cs_result.source is not None
-            assert cs_result.publication_date is not None
-
+    assert report is not None
+    assert report.id == test_data["report_id"]
+    assert_valid_report_result(report)
+    assert_valid_report_document_sources(report.document_sources)
+    assert_valid_report_contentstore_sources(report.secondary_sources)
+    assert_valid_report_contentstore_sources(report.news_sources)

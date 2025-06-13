@@ -1,4 +1,4 @@
-# Copyright 2024 Market Logic Software AG. All Rights Reserved.
+# Copyright 2024-2025 Market Logic Software AG. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,7 +16,8 @@
 This module contains the base functions to download content from the ContentStore.
 """
 
-from requests.exceptions import HTTPError, ConnectionError, Timeout
+from requests.exceptions import ConnectionError, HTTPError, Timeout
+
 from deepsights.api import APIResource
 
 
@@ -53,4 +54,6 @@ def contentstore_download(resource: APIResource, item_id: str) -> str:
     except (HTTPError, ConnectionError, Timeout) as e:
         raise ValueError(f"Failed to download content for item {item_id}: {e}")
     except Exception as e:
-        raise ValueError(f"Unexpected error downloading content for item {item_id}: {e}")
+        raise ValueError(
+            f"Unexpected error downloading content for item {item_id}: {e}"
+        )

@@ -1,4 +1,4 @@
-# Copyright 2024 Market Logic Software AG. All Rights Reserved.
+# Copyright 2024-2025 Market Logic Software AG. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,17 +16,22 @@
 This module contains the functions to retrieve reports from the DeepSights self.
 """
 
-from ratelimit import sleep_and_retry, limits
-from requests.exceptions import HTTPError, ConnectionError, Timeout
+from ratelimit import limits, sleep_and_retry
+from requests.exceptions import ConnectionError, HTTPError, Timeout
 from tenacity import (
     retry,
     retry_if_exception_type,
     stop_after_attempt,
     wait_random_exponential,
 )
+
 from deepsights.api import APIResource
 from deepsights.userclient.resources.answersV2._model import AnswerV2
-from deepsights.utils import poll_for_completion, PollingTimeoutError, PollingFailedError
+from deepsights.utils import (
+    PollingFailedError,
+    PollingTimeoutError,
+    poll_for_completion,
+)
 
 
 #################################################
@@ -57,9 +62,7 @@ class AnswerV2Resource(APIResource):
         """
 
         body = {"input": question}
-        response = self.api.post(
-            "/end-user-gateway-service/answers-v2", body=body
-        )
+        response = self.api.post("/end-user-gateway-service/answers-v2", body=body)
 
         return response["answer_v2"]["minion_job"]["id"]
 
@@ -82,22 +85,27 @@ class AnswerV2Resource(APIResource):
             PollingTimeoutError: If the answer fails to complete within timeout.
             PollingFailedError: If the answer fails to complete.
         """
+
         def get_status(resource_id: str):
             return self.api.get(f"end-user-gateway-service/answers-v2/{resource_id}")
-        
+
         try:
             poll_for_completion(
                 get_status_func=get_status,
                 resource_id=answer_id,
                 timeout=timeout,
                 pending_statuses=["CREATED", "STARTED"],
-                get_final_result_func=lambda rid: self.get(rid)
+                get_final_result_func=lambda rid: self.get(rid),
             )
             return self.get(answer_id)
         except PollingTimeoutError as e:
-            raise PollingTimeoutError(f"Answer {answer_id} failed to complete within {timeout} seconds.") from e
+            raise PollingTimeoutError(
+                f"Answer {answer_id} failed to complete within {timeout} seconds."
+            ) from e
         except PollingFailedError as e:
-            raise PollingFailedError(f"Answer {answer_id} failed to complete: {str(e)}") from e
+            raise PollingFailedError(
+                f"Answer {answer_id} failed to complete: {str(e)}"
+            ) from e
 
     #################################################
     def get(self, answer_id: str) -> AnswerV2:
@@ -137,7 +145,7 @@ class AnswerV2Resource(APIResource):
             minion_job = answer_data.get("minion_job", {})
             context = answer_data.get("context", {})
             summary = context.get("summary", {})
-            
+
             return AnswerV2(
                 **dict(
                     permission_validation=response.get("permission_validation_result"),
@@ -154,7 +162,7 @@ class AnswerV2Resource(APIResource):
                     news_suggestions=context.get("sns_suggestions") or [],
                 )
             )
-        
+
     #################################################
     def create_and_wait(self, question: str, timeout=90) -> AnswerV2:
         """
@@ -168,9 +176,9 @@ class AnswerV2Resource(APIResource):
         Returns:
 
             AnswerV2: The answer.
-            
+
         Raises:
-        
+
             PollingTimeoutError: If the answer fails to complete within timeout.
             PollingFailedError: If the answer fails to complete.
         """

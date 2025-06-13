@@ -1,4 +1,4 @@
-# Copyright 2024 Market Logic Software AG. All Rights Reserved.
+# Copyright 2024-2025 Market Logic Software AG. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,9 @@ This module contains the functions to delete documents from the DeepSights API.
 
 import time
 from typing import List
+
 import requests
+
 from deepsights.api import APIResource
 from deepsights.documentstore.resources.documents._cache import remove_document
 

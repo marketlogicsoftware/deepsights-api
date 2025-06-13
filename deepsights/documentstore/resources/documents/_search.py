@@ -1,4 +1,4 @@
-# Copyright 2024 Market Logic Software AG. All Rights Reserved.
+# Copyright 2024-2025 Market Logic Software AG. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,16 +17,17 @@ This module contains the functions to search for documents and document pages ba
 """
 
 from typing import List
+
 from deepsights.api import APIResource
-from deepsights.utils import rerank_by_recency, promote_exact_matches
+from deepsights.documentstore.resources.documents._load import (
+    document_pages_load,
+    documents_load,
+)
 from deepsights.documentstore.resources.documents._model import (
     DocumentPageSearchResult,
     DocumentSearchResult,
 )
-from deepsights.documentstore.resources.documents._load import (
-    documents_load,
-    document_pages_load,
-)
+from deepsights.utils import promote_exact_matches, rerank_by_recency
 
 
 #################################################
@@ -133,7 +134,9 @@ def documents_search(
     if recency_weight is not None and not (0 <= recency_weight <= 1):
         raise ValueError("Recency weight must be between 0 and 1.")
     if query is not None and not promote_exact_match:
-        raise ValueError("The 'query' argument is only used when 'promote_exact_match' is set to True.")
+        raise ValueError(
+            "The 'query' argument is only used when 'promote_exact_match' is set to True."
+        )
 
     # get the page matches
     page_matches = document_pages_search(
