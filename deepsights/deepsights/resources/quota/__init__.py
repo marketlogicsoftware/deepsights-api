@@ -16,5 +16,7 @@
 This module contains to inquire quota information from the DeepSights API.
 """
 
-from deepsights.deepsights.resources.quota.quota import QuotaResource
 from deepsights.deepsights.resources.quota._model import APIProfile, QuotaStatus
+from deepsights.deepsights.resources.quota.quota import QuotaResource
+
+__all__ = ["QuotaResource", "APIProfile", "QuotaStatus"]

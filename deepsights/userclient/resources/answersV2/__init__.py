@@ -18,3 +18,5 @@ This module contains the resource to retrieve answers v2 from the DeepSights API
 """
 
 from deepsights.userclient.resources.answersV2.answerV2 import AnswerV2Resource
+
+__all__ = ["AnswerV2Resource"]

@@ -16,16 +16,28 @@
 This module contains utility functions and classes used by the DeepSights API.
 """
 
-from deepsights.utils._utils import run_in_parallel
 from deepsights.utils._cache import create_global_lru_cache
 from deepsights.utils._ranking import (
+    promote_exact_matches,
+    rerank_by_recency,
     rrf_merge_multi,
     rrf_merge_single,
-    rerank_by_recency,
-    promote_exact_matches,
 )
+from deepsights.utils._utils import run_in_parallel
 from deepsights.utils.model import (
     DeepSightsBaseModel,
     DeepSightsIdModel,
     DeepSightsIdTitleModel,
 )
+
+__all__ = [
+    "run_in_parallel",
+    "create_global_lru_cache",
+    "rrf_merge_multi",
+    "rrf_merge_single",
+    "rerank_by_recency",
+    "promote_exact_matches",
+    "DeepSightsBaseModel",
+    "DeepSightsIdModel",
+    "DeepSightsIdTitleModel",
+]

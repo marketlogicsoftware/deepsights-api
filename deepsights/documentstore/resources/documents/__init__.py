@@ -16,5 +16,10 @@
 This module contains the resource to interact with documents via the DeepSights API.
 """
 
+from deepsights.documentstore.resources.documents._list import (
+    SortingField,
+    SortingOrder,
+)
 from deepsights.documentstore.resources.documents.documents import DocumentResource
-from deepsights.documentstore.resources.documents._list import SortingField, SortingOrder
+
+__all__ = ["DocumentResource", "SortingField", "SortingOrder"]

@@ -18,3 +18,5 @@ This module contains the model and resources to retrieve content from the Conten
 
 from deepsights.contentstore.resources.news import NewsResource
 from deepsights.contentstore.resources.secondary import SecondaryResource
+
+__all__ = ["NewsResource", "SecondaryResource"]

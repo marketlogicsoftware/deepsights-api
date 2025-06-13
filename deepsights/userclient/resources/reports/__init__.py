@@ -18,3 +18,5 @@ This module contains the resource to retrieve reports from the DeepSights API.
 """
 
 from deepsights.userclient.resources.reports.report import ReportResource
+
+__all__ = ["ReportResource"]

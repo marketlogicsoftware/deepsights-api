@@ -17,3 +17,5 @@ This module contains the client for the ContentStore API.
 """
 
 from deepsights.deepsights.deepsights import DeepSights
+
+__all__ = ["DeepSights"]

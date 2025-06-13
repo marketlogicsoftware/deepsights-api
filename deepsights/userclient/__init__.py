@@ -17,3 +17,5 @@ This module contains the resource to retrieve answers from the DeepSights API.
 """
 
 from deepsights.userclient.userclient import UserClient
+
+__all__ = ["UserClient"]
