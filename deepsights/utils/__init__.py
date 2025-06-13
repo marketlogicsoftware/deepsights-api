@@ -23,7 +23,7 @@ from deepsights.utils._ranking import (
     rrf_merge_multi,
     rrf_merge_single,
 )
-from deepsights.utils._utils import run_in_parallel
+from deepsights.utils._utils import run_in_parallel, poll_for_completion, PollingTimeoutError, PollingFailedError
 from deepsights.utils.model import (
     DeepSightsBaseModel,
     DeepSightsIdModel,
@@ -32,6 +32,9 @@ from deepsights.utils.model import (
 
 __all__ = [
     "run_in_parallel",
+    "poll_for_completion",
+    "PollingTimeoutError",
+    "PollingFailedError",
     "create_global_lru_cache",
     "rrf_merge_multi",
     "rrf_merge_single",

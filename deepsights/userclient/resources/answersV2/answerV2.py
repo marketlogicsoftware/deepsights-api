@@ -16,10 +16,17 @@
 This module contains the functions to retrieve reports from the DeepSights self.
 """
 
-import time
 from ratelimit import sleep_and_retry, limits
+from requests.exceptions import HTTPError, ConnectionError, Timeout
+from tenacity import (
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_random_exponential,
+)
 from deepsights.api import APIResource
 from deepsights.userclient.resources.answersV2._model import AnswerV2
+from deepsights.utils import poll_for_completion, PollingTimeoutError, PollingFailedError
 
 
 #################################################
@@ -29,6 +36,11 @@ class AnswerV2Resource(APIResource):
     """
 
     #################################################
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_random_exponential(max=5),
+        retry=retry_if_exception_type((Timeout, ConnectionError, HTTPError)),
+    )
     @sleep_and_retry
     @limits(calls=3, period=60)
     def create(self, question: str) -> str:
@@ -46,7 +58,7 @@ class AnswerV2Resource(APIResource):
 
         body = {"input": question}
         response = self.api.post(
-            "/end-user-gateway-service/answers-v2", body=body, timeout=5
+            "/end-user-gateway-service/answers-v2", body=body
         )
 
         return response["answer_v2"]["minion_job"]["id"]
@@ -67,27 +79,25 @@ class AnswerV2Resource(APIResource):
 
         Raises:
 
-            ValueError: If the answer fails to complete.
+            PollingTimeoutError: If the answer fails to complete within timeout.
+            PollingFailedError: If the answer fails to complete.
         """
-        # wait for completion
-        start = time.time()
-        while time.time() - start < timeout:
-            response = self.api.get(f"end-user-gateway-service/answers-v2/{answer_id}")[
-                "answer_v2"
-            ]["minion_job"]
-
-            if response["status"] in ("CREATED", "STARTED"):
-                time.sleep(2)
-            elif response["status"].startswith("FAILED"):
-                raise ValueError(
-                    f"Answer {answer_id} failed to complete: {response['error_reason']}"
-                )
-            else:
-                return self.get(answer_id)
-
-        raise ValueError(
-            f"Answer {answer_id} failed to complete within {timeout} seconds."
-        )
+        def get_status(resource_id: str):
+            return self.api.get(f"end-user-gateway-service/answers-v2/{resource_id}")
+        
+        try:
+            poll_for_completion(
+                get_status_func=get_status,
+                resource_id=answer_id,
+                timeout=timeout,
+                pending_statuses=["CREATED", "STARTED"],
+                get_final_result_func=lambda rid: self.get(rid)
+            )
+            return self.get(answer_id)
+        except PollingTimeoutError as e:
+            raise PollingTimeoutError(f"Answer {answer_id} failed to complete within {timeout} seconds.") from e
+        except PollingFailedError as e:
+            raise PollingFailedError(f"Answer {answer_id} failed to complete: {str(e)}") from e
 
     #################################################
     def get(self, answer_id: str) -> AnswerV2:
@@ -104,13 +114,14 @@ class AnswerV2Resource(APIResource):
         """
         response = self.api.get(f"end-user-gateway-service/answers-v2/{answer_id}")
 
-        if response["permission_validation_result"] == "RESTRICTED":
+        if response.get("permission_validation_result") == "RESTRICTED":
+            restricted_data = response.get("restricted_answer_v2", {})
             return AnswerV2(
                 **dict(
-                    permission_validation=response["permission_validation_result"],
-                    id=response["restricted_answer_v2"]["answer_v2_id"],
+                    permission_validation=response.get("permission_validation_result"),
+                    id=restricted_data.get("answer_v2_id"),
                     status="n/a",
-                    question=response["restricted_answer_v2"]["input"],
+                    question=restricted_data.get("input"),
                     answer="n/a",
                     watchouts="n/a",
                     document_sources=[],
@@ -122,45 +133,45 @@ class AnswerV2Resource(APIResource):
                 )
             )
         else:
+            answer_data = response.get("answer_v2", {})
+            minion_job = answer_data.get("minion_job", {})
+            context = answer_data.get("context", {})
+            summary = context.get("summary", {})
+            
             return AnswerV2(
                 **dict(
-                    permission_validation=response["permission_validation_result"],
-                    id=response["answer_v2"]["minion_job"]["id"],
-                    status=response["answer_v2"]["minion_job"]["status"],
-                    question=response["answer_v2"]["context"]["input"],
-                    answer=response["answer_v2"]["context"]["summary"]["answer"],
-                    watchouts=response["answer_v2"]["context"]["summary"]["watchouts"],
-                    document_sources=response["answer_v2"]["context"]["avs_results"]
-                    or [],
-                    secondary_sources=response["answer_v2"]["context"]["srs_results"]
-                    or [],
-                    news_sources=response["answer_v2"]["context"]["sns_results"] or [],
-                    document_suggestions=response["answer_v2"]["context"][
-                        "avs_suggestions"
-                    ]
-                    or [],
-                    secondary_suggestions=response["answer_v2"]["context"][
-                        "srs_suggestions"
-                    ]
-                    or [],
-                    news_suggestions=response["answer_v2"]["context"]["sns_suggestions"]
-                    or [],
+                    permission_validation=response.get("permission_validation_result"),
+                    id=minion_job.get("id"),
+                    status=minion_job.get("status"),
+                    question=context.get("input"),
+                    answer=summary.get("answer"),
+                    watchouts=summary.get("watchouts"),
+                    document_sources=context.get("avs_results") or [],
+                    secondary_sources=context.get("srs_results") or [],
+                    news_sources=context.get("sns_results") or [],
+                    document_suggestions=context.get("avs_suggestions") or [],
+                    secondary_suggestions=context.get("srs_suggestions") or [],
+                    news_suggestions=context.get("sns_suggestions") or [],
                 )
             )
         
     #################################################
-    def create_and_wait(self, question: str, timeout=60) -> AnswerV2:
+    def create_and_wait(self, question: str, timeout=90) -> AnswerV2:
         """
         Submits a question to the DeepSights API and waits for the answer to complete.
 
         Args:
 
-            api (API): An instance of the DeepSights API client.
             question (str): The question to be submitted for the answers.
-            timeout (int, optional): The maximum time to wait for the answer to complete, in seconds. Defaults to 60.
+            timeout (int, optional): The maximum time to wait for the answer to complete, in seconds. Defaults to 90.
 
         Returns:
 
             AnswerV2: The answer.
+            
+        Raises:
+        
+            PollingTimeoutError: If the answer fails to complete within timeout.
+            PollingFailedError: If the answer fails to complete.
         """
         return self.wait_for_answer(self.create(question), timeout=timeout)

@@ -16,10 +16,17 @@
 This module contains the functions to retrieve reports from the DeepSights self.
 """
 
-import time
 from ratelimit import sleep_and_retry, limits
+from requests.exceptions import HTTPError, ConnectionError, Timeout
+from tenacity import (
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_random_exponential,
+)
 from deepsights.api import APIResource
 from deepsights.userclient.resources.reports._model import Report
+from deepsights.utils import poll_for_completion, PollingTimeoutError, PollingFailedError
 
 
 #################################################
@@ -29,6 +36,11 @@ class ReportResource(APIResource):
     """
 
     #################################################
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_random_exponential(max=5),
+        retry=retry_if_exception_type((Timeout, ConnectionError, HTTPError)),
+    )
     @sleep_and_retry
     @limits(calls=3, period=60)
     def create(self, question: str) -> str:
@@ -46,7 +58,7 @@ class ReportResource(APIResource):
 
         body = {"input": question}
         response = self.api.post(
-            "/end-user-gateway-service/desk-researches", body=body, timeout=5
+            "/end-user-gateway-service/desk-researches", body=body
         )
 
         return response["desk_research"]["minion_job"]["id"]
@@ -67,27 +79,25 @@ class ReportResource(APIResource):
 
         Raises:
 
-            ValueError: If the report fails to complete.
+            PollingTimeoutError: If the report fails to complete within timeout.
+            PollingFailedError: If the report fails to complete.
         """
-        # wait for completion
-        start = time.time()
-        while time.time() - start < timeout:
-            response = self.api.get(
-                f"end-user-gateway-service/desk-researches/{report_id}"
-            )["desk_research"]["minion_job"]
-
-            if response["status"] in ("CREATED", "STARTED"):
-                time.sleep(2)
-            elif response["status"].startswith("FAILED"):
-                raise ValueError(
-                    f"Report {report_id} failed to complete: {response['error_reason']}"
-                )
-            else:
-                return self.get(report_id)
-
-        raise ValueError(
-            f"Report {report_id} failed to complete within {timeout} seconds."
-        )
+        def get_status(resource_id: str):
+            return self.api.get(f"end-user-gateway-service/desk-researches/{resource_id}")
+        
+        try:
+            poll_for_completion(
+                get_status_func=get_status,
+                resource_id=report_id,
+                timeout=timeout,
+                pending_statuses=["CREATED", "STARTED"],
+                get_final_result_func=lambda rid: self.get(rid)
+            )
+            return self.get(report_id)
+        except PollingTimeoutError as e:
+            raise PollingTimeoutError(f"Report {report_id} failed to complete within {timeout} seconds.") from e
+        except PollingFailedError as e:
+            raise PollingFailedError(f"Report {report_id} failed to complete: {str(e)}") from e
 
     #################################################
     def get(self, report_id: str) -> Report:
@@ -104,13 +114,14 @@ class ReportResource(APIResource):
         """
         response = self.api.get(f"end-user-gateway-service/desk-researches/{report_id}")
 
-        if response["permission_validation_result"] == "RESTRICTED":
+        if response.get("permission_validation_result") == "RESTRICTED":
+            restricted_data = response.get("restricted_desk_research", {})
             return Report(
                 **dict(
-                    permission_validation=response["permission_validation_result"],
-                    id=response["restricted_desk_research"]["desk_research_id"],
+                    permission_validation=response.get("permission_validation_result"),
+                    id=restricted_data.get("desk_research_id"),
                     status="n/a",
-                    question=response["restricted_desk_research"]["input"],
+                    question=restricted_data.get("input"),
                     topic="n/a",
                     summary="n/a",
                     document_sources=[],
@@ -119,24 +130,20 @@ class ReportResource(APIResource):
                 )
             )
         else:
+            desk_research = response.get("desk_research", {})
+            minion_job = desk_research.get("minion_job", {})
+            context = desk_research.get("context", {})
+            
             return Report(
                 **dict(
-                    permission_validation=response["permission_validation_result"],
-                    id=response["desk_research"]["minion_job"]["id"],
-                    status=response["desk_research"]["minion_job"]["status"],
-                    question=response["desk_research"]["context"]["input"],
-                    topic=response["desk_research"]["context"]["topic"],
-                    summary=response["desk_research"]["context"]["summary"],
-                    document_sources=response["desk_research"]["context"][
-                        "artifact_vector_search_results"
-                    ] or [],
-                    secondary_sources=response["desk_research"]["context"][
-                        "scs_report_search_results"
-                    ]
-                    or [],
-                    news_sources=response["desk_research"]["context"][
-                        "scs_news_search_results"
-                    ]
-                    or [],
+                    permission_validation=response.get("permission_validation_result"),
+                    id=minion_job.get("id"),
+                    status=minion_job.get("status"),
+                    question=context.get("input"),
+                    topic=context.get("topic"),
+                    summary=context.get("summary"),
+                    document_sources=context.get("artifact_vector_search_results") or [],
+                    secondary_sources=context.get("scs_report_search_results") or [],
+                    news_sources=context.get("scs_news_search_results") or [],
                 )
             )
