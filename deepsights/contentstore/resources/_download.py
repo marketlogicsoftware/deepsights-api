@@ -16,10 +16,6 @@
 This module contains the base functions to download content from the ContentStore.
 """
 
-import os
-import tempfile
-import urllib.request
-
 from deepsights.api import APIResource
 
 
@@ -47,5 +43,5 @@ def contentstore_download(resource: APIResource, item_id: str) -> str:
     return str(
         resource.api.get_content(
             f"/item-service/items/{item_id}/_download-content-extracted-text",
-        )
+        ).decode("utf-8")
     )

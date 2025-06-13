@@ -22,13 +22,15 @@ from typing import Dict
 
 from ratelimit import limits, sleep_and_retry
 from requests import Session
-from requests.exceptions import Timeout
+from requests.adapters import HTTPAdapter
+from requests.exceptions import HTTPError, ConnectionError, Timeout
 from tenacity import (
     retry,
     retry_if_exception_type,
     stop_after_attempt,
     wait_random_exponential,
 )
+from urllib3.util.retry import Retry
 
 
 #################################################
@@ -38,19 +40,52 @@ class API:
     """
 
     #######################################
-    def __init__(self, endpoint_base: str) -> None:
+    def __init__(self, endpoint_base: str, pool_connections: int = 10, pool_maxsize: int = 20, default_timeout: int = 15) -> None:
         """
         Initializes the API client.
 
         Args:
 
             endpoint_base (str): The base URL of the API endpoint.
+            pool_connections (int): Number of connection pools to cache.
+            pool_maxsize (int): Maximum number of connections to save in the pool.
+            default_timeout (int): Default timeout for all requests in seconds.
         """
 
         # record endpoint base
         self._endpoint_base = endpoint_base
         if not self._endpoint_base.endswith("/"):
             self._endpoint_base += "/"
+        
+        # setup session with connection pooling
+        self._session = Session()
+        
+        # configure retry strategy for connection-level retries
+        retry_strategy = Retry(
+            total=3,
+            status_forcelist=[429, 500, 502, 503, 504],
+            backoff_factor=1,
+            allowed_methods=["HEAD", "GET", "OPTIONS", "POST", "DELETE"]
+        )
+        
+        # setup adapters with connection pooling
+        adapter = HTTPAdapter(
+            pool_connections=pool_connections,
+            pool_maxsize=pool_maxsize,
+            max_retries=retry_strategy
+        )
+        
+        self._session.mount("https://", adapter)
+        self._session.mount("http://", adapter)
+        
+        # set keep-alive headers
+        self._session.headers.update({
+            'Connection': 'keep-alive',
+            'User-Agent': 'deepsights-api/1.2.4'
+        })
+        
+        # store default timeout
+        self._default_timeout = default_timeout
 
     #######################################
     def _endpoint(self, path: str) -> str:
@@ -71,12 +106,12 @@ class API:
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_random_exponential(max=5),
-        retry=retry_if_exception_type(Timeout),
+        retry=retry_if_exception_type((Timeout, ConnectionError, HTTPError)),
     )
     @sleep_and_retry
     @limits(calls=1000, period=60)
     def get(
-        self, path: str, params: Dict = None, timeout=15, expected_statuscodes=[]
+        self, path: str, params: Dict = None, timeout=None, expected_statuscodes=[]
     ) -> Dict:
         """
         Sends a GET request to the specified path with optional parameters.
@@ -93,17 +128,22 @@ class API:
         Raises:
             HTTPError: If the GET request fails with a non-200 status code and not in the expected_statuscodes list.
         """
+        timeout = timeout or self._default_timeout
+        logging.debug("GET %s with params: %s", self._endpoint(path), params)
         response = self._session.get(
             self._endpoint(path), params=params, timeout=timeout
         )
+        logging.debug("GET %s returned status: %s", path, response.status_code)
 
         if (
-            response.status_code != 200
-            and not response.status_code in expected_statuscodes
+            response.status_code not in [200, 201, 202]
+            and response.status_code not in expected_statuscodes
         ):
             logging.error(
-                "GET %s failed with status code %s", path, response.status_code
+                "GET %s failed with status code %s: %s", path, response.status_code, response.text
             )
+            if response.status_code in [429, 502, 503]:
+                raise HTTPError(f"Retriable error {response.status_code}", response=response)
             response.raise_for_status()
 
         return response.json()
@@ -112,12 +152,12 @@ class API:
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_random_exponential(max=5),
-        retry=retry_if_exception_type(Timeout),
+        retry=retry_if_exception_type((Timeout, ConnectionError, HTTPError)),
     )
     @sleep_and_retry
     @limits(calls=1000, period=60)
     def get_content(
-        self, path: str, params: Dict = None, timeout=15, expected_statuscodes=[]
+        self, path: str, params: Dict = None, timeout=None, expected_statuscodes=[]
     ) -> bytes:
         """
         Sends a GET request to the specified path and returns the raw response content.
@@ -137,26 +177,31 @@ class API:
         Raises:
             HTTPError: If the GET request fails with a non-200 status code and not in the expected_statuscodes list.
         """
+        timeout = timeout or self._default_timeout
+        logging.debug("GET_CONTENT %s with params: %s", self._endpoint(path), params)
         response = self._session.get(
             self._endpoint(path), params=params, timeout=timeout
         )
+        logging.debug("GET_CONTENT %s returned status: %s", path, response.status_code)
 
         if (
-            response.status_code != 200
-            and not response.status_code in expected_statuscodes
+            response.status_code not in [200, 201, 202]
+            and response.status_code not in expected_statuscodes
         ):
             logging.error(
-                "GET %s failed with status code %s", path, response.status_code
+                "GET_CONTENT %s failed with status code %s", path, response.status_code
             )
+            if response.status_code in [429, 502, 503]:
+                raise HTTPError(f"Retriable error {response.status_code}", response=response)
             response.raise_for_status()
 
-        return response.content.decode("utf-8")
+        return response.content
 
     #######################################
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_random_exponential(max=5),
-        retry=retry_if_exception_type(Timeout),
+        retry=retry_if_exception_type((Timeout, ConnectionError, HTTPError)),
     )
     @sleep_and_retry
     @limits(calls=100, period=60)
@@ -165,7 +210,7 @@ class API:
         path: str,
         body: Dict,
         params: Dict = None,
-        timeout=15,
+        timeout=None,
         expected_statuscodes=[],
     ) -> Dict:
         """
@@ -181,17 +226,22 @@ class API:
         Returns:
             Dict: The JSON body of the server's response to the request.
         """
+        timeout = timeout or self._default_timeout
+        logging.debug("POST %s with body: %s, params: %s", self._endpoint(path), body, params)
         response = self._session.post(
             self._endpoint(path), params=params, json=body, timeout=timeout
         )
+        logging.debug("POST %s returned status: %s", path, response.status_code)
 
         if (
-            response.status_code != 200
-            and not response.status_code in expected_statuscodes
+            response.status_code not in [200, 201, 202]
+            and response.status_code not in expected_statuscodes
         ):
             logging.error(
-                "POST %s failed with status code %s", path, response.status_code
+                "POST %s failed with status code %s: %s", path, response.status_code, response.text
             )
+            if response.status_code in [429, 502, 503]:
+                raise HTTPError(f"Retriable error {response.status_code}", response=response)
             response.raise_for_status()
 
         return response.json()
@@ -200,11 +250,11 @@ class API:
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_random_exponential(max=5),
-        retry=retry_if_exception_type(Timeout),
+        retry=retry_if_exception_type((Timeout, ConnectionError, HTTPError)),
     )
     @sleep_and_retry
     @limits(calls=1000, period=60)
-    def delete(self, path: str, timeout=5):
+    def delete(self, path: str, timeout=None, expected_statuscodes=[]):
         """
         Sends a DELETE request to the specified path.
 
@@ -217,12 +267,20 @@ class API:
 
             HTTPError: If the DELETE request fails with a non-200 status code.
         """
+        timeout = timeout or self._default_timeout
+        logging.debug("DELETE %s", self._endpoint(path))
         response = self._session.delete(self._endpoint(path), timeout=timeout)
+        logging.debug("DELETE %s returned status: %s", path, response.status_code)
 
-        if response.status_code != 200:
+        if (
+            response.status_code not in [200, 204]
+            and response.status_code not in expected_statuscodes
+        ):
             logging.error(
-                "DELETE %s failed with status code %s", path, response.status_code
+                "DELETE %s failed with status code %s: %s", path, response.status_code, response.text
             )
+            if response.status_code in [429, 502, 503]:
+                raise HTTPError(f"Retriable error {response.status_code}", response=response)
             response.raise_for_status()
 
 
@@ -234,7 +292,7 @@ class APIKeyAPI(API):
 
     #######################################
     def __init__(
-        self, endpoint_base: str, api_key: str, api_key_env_var: str = None
+        self, endpoint_base: str, api_key: str, api_key_env_var: str = None, **kwargs
     ) -> None:
         """
         Initializes the API client.
@@ -245,12 +303,13 @@ class APIKeyAPI(API):
             api_key (str): The API key to be used for authentication.
             api_key_env_var (str, optional): The name of the environment variable that contains the API key.
                 If not provided, the API key must be passed directly as an argument. Defaults to None.
+            **kwargs: Additional arguments passed to the base API class.
 
         Raises:
 
             AssertionError: If neither API key nor environment variable is provided.
         """
-        super().__init__(endpoint_base)
+        super().__init__(endpoint_base, **kwargs)
 
         # set api key
         assert api_key or api_key_env_var, (
@@ -260,8 +319,7 @@ class APIKeyAPI(API):
             api_key = os.environ.get(api_key_env_var)
         self._api_key = api_key
 
-        # prepare session
-        self._session = Session()
+        # add api key to session headers
         self._session.headers.update({"X-Api-Key": self._api_key})
 
 
@@ -272,7 +330,7 @@ class OAuthTokenAPI(API):
     """
 
     #######################################
-    def __init__(self, endpoint_base: str, oauth_token: str) -> None:
+    def __init__(self, endpoint_base: str, oauth_token: str, **kwargs) -> None:
         """
         Initializes the API client.
 
@@ -280,12 +338,12 @@ class OAuthTokenAPI(API):
 
             endpoint_base (str): The base URL of the API endpoint.
             oauth_token (str): The OAuth token to be used for authentication.
+            **kwargs: Additional arguments passed to the base API class.
         """
-        super().__init__(endpoint_base)
+        super().__init__(endpoint_base, **kwargs)
 
         # set token
         self._oauth_token = oauth_token
 
-        # prepare session
-        self._session = Session()
+        # add oauth token to session headers
         self._session.headers.update({"Authorization": f"Bearer {self._oauth_token}"})
