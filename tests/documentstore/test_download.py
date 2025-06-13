@@ -18,6 +18,7 @@ Test the documents_download function
 
 import os
 import tempfile
+from typing import Any
 
 import pytest
 import requests
@@ -51,7 +52,7 @@ def test_document_download_no_path(ds_client: deepsights.DeepSights):
         )
 
 
-def test_document_download(ds_client: deepsights.DeepSights, test_data: os.Any):
+def test_document_download(ds_client: deepsights.DeepSights, test_data: Any):
     """
     Test case for the document_download function.
 
