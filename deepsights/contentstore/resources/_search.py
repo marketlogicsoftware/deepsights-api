@@ -17,7 +17,7 @@ This module contains the base functions to search the ContentStore.
 """
 
 from datetime import datetime
-from typing import List
+from typing import Dict, List, Optional
 
 from pydantic import BaseModel
 
@@ -29,7 +29,9 @@ from deepsights.utils import (
 
 
 #################################################
-def _get_time_filter(search_from_timestamp: datetime, search_to_timestamp: datetime):
+def _get_time_filter(
+    search_from_timestamp: datetime, search_to_timestamp: datetime
+) -> Optional[Dict[str, Optional[str]]]:
     """
     Returns a time filter dictionary based on the provided search_from_timestamp and search_to_timestamp.
 
@@ -68,7 +70,7 @@ def contentstore_hybrid_search(
     search_from_timestamp: datetime = None,
     search_to_timestamp: datetime = None,
     search_only_ai_allowed_content: bool = True,
-):
+) -> List[BaseModel]:
     """
     Perform a contentstore hybrid search using the provided query.
 
@@ -93,19 +95,27 @@ def contentstore_hybrid_search(
 
         List[BaseModel]: The re-ranked search results.
     """
-    assert query, "The 'query' argument is required."
-    assert 0 <= min_vector_score <= 1, "Minimum vector score must be between 0 and 1."
-    assert 0 <= vector_fraction <= 1, "Vector fraction must be between 0 and 1"
-    assert 0 <= vector_weight <= 1, "Vector weught must be between 0 and 1"
-    assert 0 < max_results <= 250, "Maximum results must be between 1 and 250."
-    assert recency_weight is None or 0 <= recency_weight <= 1, (
-        "Recency weight must be between 0 and 1."
-    )
+    # Input validation
+    if not isinstance(query, str):
+        raise ValueError("Query must be a string")
+    if len(query.strip()) == 0:
+        raise ValueError("Query cannot be empty")
+    if len(query) > 1000:
+        raise ValueError("Query too long (max 1000 characters)")
+    if not (0 <= min_vector_score <= 1):
+        raise ValueError("Minimum vector score must be between 0 and 1")
+    if not (0 <= vector_fraction <= 1):
+        raise ValueError("Vector fraction must be between 0 and 1")
+    if not (0 <= vector_weight <= 1):
+        raise ValueError("Vector weight must be between 0 and 1")
+    if not (0 < max_results <= 250):
+        raise ValueError("Maximum results must be between 1 and 250")
+    if recency_weight is not None and not (0 <= recency_weight <= 1):
+        raise ValueError("Recency weight must be between 0 and 1")
 
     body = {
         "query": query,
         "source_items_type": item_type,
-        "content_restrictions": "NONE",
         "limit": max_results,
         "vector_search_cut_off_score": min_vector_score,
         "alfa": vector_weight,
@@ -147,7 +157,7 @@ def contentstore_vector_search(
     search_from_timestamp: datetime = None,
     search_to_timestamp: datetime = None,
     search_only_ai_allowed_content: bool = True,
-):
+) -> List[BaseModel]:
     """
     Perform a contentstore vector search using the provided query embedding.
 
@@ -169,18 +179,23 @@ def contentstore_vector_search(
 
         List[BaseModel]: The re-ranked search results.
     """
-    assert query_embedding, "The 'query_embedding' argument is required."
-    assert len(query_embedding) == 1536, "The 'query_embedding' must be of length 1536."
-    assert 0 <= min_score <= 1, "Minimum score must be between 0 and 1."
-    assert 0 < max_results <= 100, "Maximum results must be between 1 and 100."
-    assert recency_weight is None or 0 <= recency_weight <= 1, (
-        "Recency weight must be between 0 and 1."
-    )
+    # Input validation
+    if not isinstance(query_embedding, list):
+        raise ValueError("Query embedding must be a list")
+    if not query_embedding:
+        raise ValueError("Query embedding cannot be empty")
+    if len(query_embedding) != 1536:
+        raise ValueError("Query embedding must be of length 1536")
+    if not (0 <= min_score <= 1):
+        raise ValueError("Minimum score must be between 0 and 1")
+    if not (0 < max_results <= 100):
+        raise ValueError("Maximum results must be between 1 and 100")
+    if recency_weight is not None and not (0 <= recency_weight <= 1):
+        raise ValueError("Recency weight must be between 0 and 1")
 
     body = {
         "vector": query_embedding,
         "source_items_type": item_type,
-        "content_restrictions": "NONE",
         "limit": max_results,
         "score_lower_bound": min_score,
         "sort": "RELEVANCY_DESC",
@@ -212,7 +227,7 @@ def contentstore_text_search(
     search_from_timestamp: datetime = None,
     search_to_timestamp: datetime = None,
     search_only_ai_allowed_content: bool = True,
-):
+) -> List[BaseModel]:
     """
     Perform a contentstore text search using the specified query and item type. If the query is None, the search will be sorted by publication date.
 
@@ -234,7 +249,8 @@ def contentstore_text_search(
 
         List[BaseModel]: The re-ranked search results.
     """
-    assert 0 < max_results <= 100, "Maximum results must be between 1 and 100."
+    if not (0 < max_results <= 100):
+        raise ValueError("Maximum results must be between 1 and 100")
 
     # force proper empty search
     if query is not None and len(query.strip()) == 0:
@@ -249,7 +265,6 @@ def contentstore_text_search(
     body = {
         "query": query,
         "source_items_type": item_type,
-        "content_restrictions": "NONE",
         "limit": max_results,
         "offset": offset,
         "sort": sort_order,

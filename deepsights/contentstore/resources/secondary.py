@@ -53,12 +53,13 @@ class SecondaryResource(APIResource):
         self,
         query_embedding: List,
         min_score: float = 0.7,
-        max_results: int = 50,
+        max_results: int = 100,
         languages: List[str] = None,
         recency_weight: float = None,
         search_from_timestamp: datetime = None,
         search_to_timestamp: datetime = None,
-    ):
+        search_only_ai_allowed_content: bool = True,
+    ) -> List[SecondarySearchResult]:
         """
         Perform a vector-based search for secondary reports.
 
@@ -71,10 +72,11 @@ class SecondaryResource(APIResource):
             recency_weight (float, optional): The weight to apply to recency in the search ranking. Defaults to None.
             search_from_timestamp (datetime, optional): The start timestamp for the search. Defaults to None.
             search_to_timestamp (datetime, optional): The end timestamp for the search. Defaults to None.
+            search_only_ai_allowed_content (bool, optional): Whether to search only AI-allowed content. Defaults to True.
 
         Returns:
 
-            List[SecondaryReportSearchResult]: A list of search results as SecondaryReportSearchResult objects.
+            List[SecondarySearchResult]: A list of search results as SecondarySearchResult objects.
         """
 
         return contentstore_vector_search(
@@ -90,19 +92,21 @@ class SecondaryResource(APIResource):
             languages=languages,
             search_from_timestamp=search_from_timestamp,
             search_to_timestamp=search_to_timestamp,
+            search_only_ai_allowed_content=search_only_ai_allowed_content,
         )
 
     #################################################
     def text_search(
         self,
         query: str,
-        max_results: int = 50,
+        max_results: int = 100,
         offset: int = 0,
         languages: List[str] = None,
         sort_descending: bool = True,
         search_from_timestamp: datetime = None,
         search_to_timestamp: datetime = None,
-    ):
+        search_only_ai_allowed_content: bool = True,
+    ) -> List[SecondarySearchResult]:
         """
         Perform a text search for secondary reports in the DeepSights content store.
 
@@ -115,10 +119,11 @@ class SecondaryResource(APIResource):
             sort_descending (bool, optional): Whether to sort the results in descending order. Defaults to True.
             search_from_timestamp (datetime, optional): The start timestamp for the search. Defaults to None.
             search_to_timestamp (datetime, optional): The end timestamp for the search. Defaults to None.
+            search_only_ai_allowed_content (bool, optional): Whether to search only AI-allowed content. Defaults to True.
 
         Returns:
 
-            List[SecondaryReportSearchResult]: A list of news article search results.
+            List[SecondarySearchResult]: A list of secondary report search results.
         """
         return contentstore_text_search(
             self.api,
@@ -133,6 +138,7 @@ class SecondaryResource(APIResource):
             sort_descending=sort_descending,
             search_from_timestamp=search_from_timestamp,
             search_to_timestamp=search_to_timestamp,
+            search_only_ai_allowed_content=search_only_ai_allowed_content,
         )
 
     #################################################
@@ -148,14 +154,14 @@ class SecondaryResource(APIResource):
         promote_exact_match: bool = False,
         search_from_timestamp: datetime = None,
         search_to_timestamp: datetime = None,
-    ):
+        search_only_ai_allowed_content: bool = True,
+    ) -> List[SecondarySearchResult]:
         """
         Perform a contentstore hybrid search using the provided query.
 
         Args:
 
             query (str): The query.
-            search_result (BaseModel): The model to use for parsing search results.
             max_results (int, optional): The maximum number of search results to return. Defaults to 100.
             languages (List[str], optional): The languages to search for. Defaults to None.
             min_vector_score (float, optional): The minimum score threshold for search results. Defaults to 0.7.
@@ -165,10 +171,11 @@ class SecondaryResource(APIResource):
             promote_exact_match (bool, optional): Whether to promote exact matches in the search ranking. Defaults to False.
             search_from_timestamp (datetime, optional): The start timestamp for the search. Defaults to None.
             search_to_timestamp (datetime, optional): The end timestamp for the search. Defaults to None.
+            search_only_ai_allowed_content (bool, optional): Whether to search only AI-allowed content. Defaults to True.
 
         Returns:
 
-            List[NewsArticleSearchResult]: The search results as a list of NewsArticleSearchResult objects.
+            List[SecondarySearchResult]: The search results as a list of SecondarySearchResult objects.
         """
         return contentstore_hybrid_search(
             self.api,
@@ -186,4 +193,5 @@ class SecondaryResource(APIResource):
             search_from_timestamp=search_from_timestamp,
             search_to_timestamp=search_to_timestamp,
             languages=languages,
+            search_only_ai_allowed_content=search_only_ai_allowed_content,
         )
