@@ -34,7 +34,7 @@ from deepsights.documentstore.resources.documents._segmenter import segment_land
 
 
 #################################################
-def document_pages_load(resource: APIResource, page_ids: List[str]):
+def document_pages_load(resource: APIResource, page_ids: List[str]) -> List[DocumentPage]:
     """
     Load document pages from the cache or fetch them from the API if not cached.
 
@@ -62,7 +62,7 @@ def document_pages_load(resource: APIResource, page_ids: List[str]):
     ]
 
     # load uncached document pages
-    def _load_document_page(page_id: str):
+    def _load_document_page(page_id: str) -> DocumentPage:
         result = resource.api.get(f"/artifact-service/pages/{page_id}", timeout=5)
 
         # map the document page
@@ -90,7 +90,7 @@ def documents_load(
     document_ids: List[str],
     force_load: bool = False,
     load_pages: bool = False,
-):
+) -> List[Document]:
     """
     Load documents from the DeepSights API.
 
@@ -126,7 +126,8 @@ def documents_load(
         )
 
         # capitalize the first letter of the summary
-        result["summary"] = result["summary"][0].upper() + result["summary"][1:]
+        if result.get("summary") and len(result["summary"]) > 0:
+            result["summary"] = result["summary"][0].upper() + result["summary"][1:]
 
         # map the document
         return Document.model_validate(result)

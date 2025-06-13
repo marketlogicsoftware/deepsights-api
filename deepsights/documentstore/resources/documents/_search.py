@@ -35,8 +35,8 @@ def document_pages_search(
     query_embedding: List,
     min_score: float = 0.7,
     max_results: int = 50,
-    load_pages=False,
-):
+    load_pages: bool = False,
+) -> List[DocumentPageSearchResult]:
     """
     Searches for document pages based on their vector embeddings.
 
@@ -52,10 +52,15 @@ def document_pages_search(
 
         List[DocumentPageSearchResult]: The list of DocumentPageSearchResult objects representing the search results.
     """
-    assert query_embedding, "The 'query_embedding' argument is required."
-    assert len(query_embedding) == 1536, "The 'query_embedding' must be of length 1536."
-    assert 0 <= min_score <= 1, "The 'min_score' must be between 0 and 1."
-    assert 0 < max_results <= 100, "Maximum results must be between 1 and 100."
+    # Input validation
+    if not query_embedding:
+        raise ValueError("The 'query_embedding' argument is required.")
+    if len(query_embedding) != 1536:
+        raise ValueError("The 'query_embedding' must be of length 1536.")
+    if not (0 <= min_score <= 1):
+        raise ValueError("The 'min_score' must be between 0 and 1.")
+    if not (0 < max_results <= 100):
+        raise ValueError("Maximum results must be between 1 and 100.")
 
     body = {
         "embeddings": query_embedding,
@@ -96,8 +101,8 @@ def documents_search(
     max_results: int = 50,
     recency_weight: float = None,
     promote_exact_match: bool = False,
-    load_documents=False,
-):
+    load_documents: bool = False,
+) -> List[DocumentSearchResult]:
     """
     Searches for document based on their vector embeddings.
 
@@ -116,16 +121,19 @@ def documents_search(
 
         List: The DocumentSearchResults.
     """
-    assert query_embedding, "The 'query_embedding' argument is required."
-    assert len(query_embedding) == 1536, "The 'query_embedding' must be of length 1536."
-    assert 0 <= min_score <= 1, "The 'min_score' must be between 0 and 1."
-    assert 0 < max_results <= 100, "Maximum results must be between 1 and 100."
-    assert (
-        recency_weight is None or 0 <= recency_weight <= 1
-    ), "Recency weight must be between 0 and 1."
-    assert (
-        query is None or promote_exact_matches
-    ), "The 'query' argument is only used when 'promote_exact_match' is set to True."
+    # Input validation
+    if not query_embedding:
+        raise ValueError("The 'query_embedding' argument is required.")
+    if len(query_embedding) != 1536:
+        raise ValueError("The 'query_embedding' must be of length 1536.")
+    if not (0 <= min_score <= 1):
+        raise ValueError("The 'min_score' must be between 0 and 1.")
+    if not (0 < max_results <= 100):
+        raise ValueError("Maximum results must be between 1 and 100.")
+    if recency_weight is not None and not (0 <= recency_weight <= 1):
+        raise ValueError("Recency weight must be between 0 and 1.")
+    if query is not None and not promote_exact_match:
+        raise ValueError("The 'query' argument is only used when 'promote_exact_match' is set to True.")
 
     # get the page matches
     page_matches = document_pages_search(

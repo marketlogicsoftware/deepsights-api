@@ -18,7 +18,9 @@ This module contains the functions to download documents to the DeepSights API.
 
 import os
 import tempfile
+import urllib.parse
 import urllib.request
+
 from deepsights.api import APIResource
 from deepsights.documentstore.resources.documents._load import documents_load
 
@@ -52,7 +54,9 @@ def document_download(
 
     # obtain real filename
     document = documents_load(resource, [document_id])[0]
-    local_filename = f"{output_dir}/{document.id}-{document.file_name}"
+    # Sanitize filename to prevent path traversal attacks
+    safe_filename = os.path.basename(document.file_name or "unknown")
+    local_filename = os.path.join(output_dir, f"{document.id}-{safe_filename}")
 
     # already downloaded?
     if force_download or not os.path.exists(local_filename):
@@ -61,9 +65,21 @@ def document_download(
             f"/artifact-service/artifacts/{document_id}/gcs-object-link",
         )
 
-        # download via temp file to prevent partial downloads
-        temp_filename = tempfile.mktemp(dir=output_dir)
-        urllib.request.urlretrieve(response["signed_link"], temp_filename)
+        # download via secure temp file to prevent partial downloads and race conditions
+        with tempfile.NamedTemporaryFile(dir=output_dir, delete=False) as temp_file:
+            temp_filename = temp_file.name
+
+        # Validate URL scheme to prevent using local file paths or unexpected protocols
+        parsed_url = urllib.parse.urlparse(response["signed_link"])
+        if parsed_url.scheme not in ("http", "https"):
+            raise ValueError(
+                f"Unsupported URL scheme '{parsed_url.scheme}' in signed link."
+            )
+
+        # The scheme has been validated; the call is considered safe.
+        urllib.request.urlretrieve(  # nosec B310
+            response["signed_link"], temp_filename
+        )
         os.rename(temp_filename, local_filename)
 
     # return the filename
