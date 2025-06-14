@@ -2,9 +2,20 @@
 
 [![PyPI](https://img.shields.io/pypi/v/deepsights-api.svg)](https://pypi.org/project/deepsights-api/) [![Changelog](https://img.shields.io/github/v/release/marketlogicsoftware/deepsights-api?include_prereleases&label=changelog)](https://github.com/marketlogicsoftware/deepsights-api/releases) [![Tests](https://img.shields.io/github/actions/workflow/status/marketlogicsoftware/deepsights-api/run_tests.yml)](https://github.com/marketlogicsoftware/deepsights-api/actions/workflows/run_tests.yml) [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/marketlogicsoftware/deepsights-api/blob/main/LICENSE)
 
-This is the official Python client library for the [DeepSights API](https://apiportal.mlsdevcloud.com/deep-sights). 
+The official Python client library for the [DeepSights API](https://apiportal.mlsdevcloud.com/deep-sights) - the first AI assistant trained specifically for trusted market insights.
 
-The library has been built and tested on Python 3.10 - 3.12. Please channel any feedback or issues via the [github page](https://github.com/marketlogicsoftware/deepsights-api). 
+## Why DeepSights API?
+
+Transform your market research into actionable business intelligence with AI that delivers **60% higher quality responses** than generic alternatives. DeepSights enables data scientists, analysts, and insight teams to:
+
+- **Boost productivity by 70%** with AI-powered market insights
+- **Save 7+ hours per research session** through intelligent automation  
+- **Integrate market intelligence** directly into business systems via AI-to-AI workflows
+- **Trust your results** - only cites verified, trusted sources from your knowledge base
+
+Perfect for B2C brands, enterprises, and research teams who need reliable market insights at scale.
+
+**Requirements:** Python 3.10 - 3.12 | **Support:** [GitHub Issues](https://github.com/marketlogicsoftware/deepsights-api/issues) 
 
 ## Scope
 
@@ -70,32 +81,100 @@ ds = deepsights.DeepSights(
 ```
 
 
-### Hello, world
+### Quick Start Examples
 
-To retrieve an answer from DeepSights:
-
-```Python
+#### AI-Powered Business Questions
+```python
 import deepsights
 
-# with API keys from environment
+# Initialize with API keys from environment
 ds = deepsights.DeepSights()
 
-# obtain the user client; you will need an actual user's email here!
-uc = ds.get_userclient("john.doe@acme.com")
+# Get user client for AI-generated insights
+uc = ds.get_userclient("analyst@company.com")
 
-# obtain an answer
-response = uc.answersV2.create_and_wait("What are emerging food consumption moments for Gen Z?")
+# Ask business questions and get AI answers
+response = uc.answersV2.create_and_wait(
+    "What are emerging food consumption moments for Gen Z?"
+)
 
-# returned data are pydantic objects
 print(response.answer)
-
-# you can retrieve the supported properties via schema_human()
-print(response.schema_human())
+print(f"Sources: {len(response.sources)} documents cited")
 ```
 
-See [main.py](https://github.com/marketlogicsoftware/deepsights-api/blob/main/main.py) for more examples. Note that all non-trivial return value from DeepSights API functions are [pydantic objects](https://docs.pydantic.dev/latest/).
+#### Document Search & Retrieval
+```python
+# Search your document store
+documents = ds.documentstore.documents.search(
+    query="consumer behavior trends 2024",
+    limit=10
+)
+
+for doc in documents.results:
+    print(f"{doc.title} - {doc.upload_date}")
+```
+
+#### Content Store Access
+```python
+# Search third-party content (requires CONTENTSTORE_API_KEY)
+content = ds.contentstore.content.search(
+    query="sustainable packaging innovations",
+    limit=5
+)
+
+for item in content.results:
+    print(f"{item.title} - {item.source}")
+```
+
+#### Error Handling
+```python
+try:
+    response = uc.answersV2.create_and_wait("Your question here")
+except deepsights.exceptions.AuthenticationError:
+    print("Invalid API key or permissions")
+except deepsights.exceptions.RateLimitError:
+    print("Rate limit exceeded - please wait")
+```
+
+All return values are [Pydantic objects](https://docs.pydantic.dev/latest/) with `.schema_human()` for exploring available properties. See [main.py](https://github.com/marketlogicsoftware/deepsights-api/blob/main/main.py) for more examples.
 
 
-## Documentation
+## Developer Information
 
-Access the [documentation on github](https://marketlogicsoftware.github.io/deepsights-api/).
+### Rate Limits
+- **GET requests**: 1,000 per 60 seconds
+- **POST requests**: 100 per 60 seconds
+- Automatic exponential backoff retry logic included
+
+### Caching
+- User client responses cached for 240 seconds (TTL)
+- Document search results intelligently cached
+- Reduces API calls and improves performance
+
+### Authentication
+DeepSights supports multiple authentication methods:
+- **API Key**: Primary authentication (set `DEEPSIGHTS_API_KEY`)
+- **OAuth Token**: Enterprise integration support
+- **Service-specific keys**: Optional keys for ContentStore and MIP access
+
+### Response Format
+All API responses are strongly-typed [Pydantic models](https://docs.pydantic.dev/latest/) with:
+```python
+# Explore available properties
+print(response.schema_human())
+
+# Access nested data with IDE autocomplete
+answer_text = response.answer
+source_count = len(response.sources)
+```
+
+## Documentation & Support
+
+- **API Documentation**: [GitHub Pages](https://marketlogicsoftware.github.io/deepsights-api/)
+- **Issues & Support**: [GitHub Issues](https://github.com/marketlogicsoftware/deepsights-api/issues)
+- **API Portal**: [DeepSights API Portal](https://apiportal.mlsdevcloud.com/deep-sights)
+
+
+## License
+
+This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENSE) file for details.

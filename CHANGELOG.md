@@ -2,7 +2,19 @@
 
 <!--next-version-placeholder-->
 
-## v1.2.4 (16-Arp-2025)
+## v1.3.0 (13-Jun-2025)
+
+- Enhanced API client with robust error handling, retry logic for 429/502/503 status codes, and connection pooling
+- Added configurable timeouts, debug logging, and expanded HTTP success code support
+- Improved utils package with thread-safe caching, order-preserving parallel execution, and enhanced error handling
+- Optimized ranking algorithms
+- Exposed `search_only_ai_allowed_content` parameter in all contentstore search methods for full content access control
+- Fixed security vulnerabilities in documentstore
+- Refactored userclient polling logic with shared utility and improved error handling
+- Added tenacity retry patterns and safe dictionary access to userclient resources
+
+
+## v1.2.4 (16-Apr-2025)
 
 - Sort order in SCS text search
 
