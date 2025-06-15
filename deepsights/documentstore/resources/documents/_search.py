@@ -26,6 +26,7 @@ from deepsights.documentstore.resources.documents._load import (
 from deepsights.documentstore.resources.documents._model import (
     DocumentPageSearchResult,
     DocumentSearchResult,
+    TopicSearchResult,
 )
 from deepsights.utils import promote_exact_matches, rerank_by_recency
 
@@ -167,7 +168,7 @@ def documents_search(
             id=document_id,
             page_matches=[p for p in page_matches if p.document_id == document_id],
         )
-        for rank, document_id in enumerate(document_rank_score)
+        for document_id in document_rank_score
     ]
 
     # load documents if requested
@@ -196,3 +197,43 @@ def documents_search(
         result.rank = rank + 1
 
     return results
+
+
+#################################################
+def topic_search(
+    resource: APIResource, query: str, extended_search: bool = False
+) -> List[TopicSearchResult]:
+    """
+    Searches for documents by topic using AI-powered analysis.
+
+    Args:
+        resource (APIResource): An instance of the DeepSights API resource.
+        query (str): The search query topic.
+        extended_search (bool, optional): Whether to perform extended search. Defaults to False.
+
+    Returns:
+        List[TopicSearchResult]: The list of topic search results.
+    """
+    # Input validation
+    if query is None:
+        raise ValueError("The 'query' argument is required.")
+    if not isinstance(query, str):
+        raise ValueError("The 'query' must be a string.")
+    query = query.strip()
+    if len(query) == 0:
+        raise ValueError("The 'query' cannot be empty.")
+    if len(query) > 100:
+        raise ValueError("The 'query' must be 100 characters or less.")
+
+    body = {
+        "query": query,
+        "extended_search": extended_search,
+    }
+    
+    response = resource.api.post(
+        "supercharged-search-service/topic-searches", body=body
+    )
+    
+    # Extract the search results from the response
+    search_results = response.get("context", {}).get("search_results", [])
+    return [TopicSearchResult(**result) for result in search_results]

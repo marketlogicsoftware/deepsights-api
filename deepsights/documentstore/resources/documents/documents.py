@@ -32,6 +32,7 @@ from deepsights.documentstore.resources.documents._load import (
 from deepsights.documentstore.resources.documents._search import (
     document_pages_search,
     documents_search,
+    topic_search,
 )
 from deepsights.documentstore.resources.documents._upload import (
     document_upload,
@@ -54,4 +55,5 @@ class DocumentResource(APIResource):
     download = document_download
     search = documents_search
     search_pages = document_pages_search
+    topic_search = topic_search
     list = documents_list

@@ -258,6 +258,27 @@ def assert_descending_scores(results):
             assert result.score <= results[ix - 1].score
 
 
+def assert_valid_topic_search_result(topic_result):
+    """
+    Validate a topic search result has required fields.
+
+    Args:
+        topic_result: Topic search result object to validate.
+    """
+    assert topic_result.artifact_id is not None
+    assert topic_result.artifact_title is not None
+    assert topic_result.page_references is not None
+    assert len(topic_result.page_references) > 0
+
+    for page_ref in topic_result.page_references:
+        assert page_ref.id is not None
+        assert page_ref.number is not None
+        assert page_ref.number > 0
+        assert page_ref.text is not None
+        assert page_ref.relevance_class is not None
+        assert page_ref.relevance_assessment is not None
+
+
 def assert_ascending_ranks(results):
     """
     Validate that results have ascending rank values.

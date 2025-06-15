@@ -17,7 +17,7 @@ This module contains the user client for the DeepSights API, impersonating a giv
 """
 
 from deepsights.api.api import OAuthTokenAPI
-from deepsights.userclient.resources import AnswerV2Resource, ReportResource
+from deepsights.userclient.resources import AnswerV2Resource, ReportResource, TopicSearchResource
 
 
 #################################################
@@ -28,6 +28,7 @@ class UserClient(OAuthTokenAPI):
 
     answersV2: AnswerV2Resource
     reports: ReportResource
+    topic_search: TopicSearchResource
 
     #######################################
     def __init__(self, oauth_token: str) -> None:
@@ -45,3 +46,4 @@ class UserClient(OAuthTokenAPI):
 
         self.answersV2 = AnswerV2Resource(self)
         self.reports = ReportResource(self)
+        self.topic_search = TopicSearchResource(self)

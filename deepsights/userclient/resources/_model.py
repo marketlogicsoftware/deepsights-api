@@ -28,6 +28,22 @@ from deepsights.utils import (
     DeepSightsIdTitleModel,
 )
 
+# Re-export topic search models from documentstore  
+from deepsights.documentstore.resources.documents._model import (
+    TopicSearchResult,
+    TopicSearchPageReference,
+)
+
+__all__ = [
+    "Evidence",
+    "DocumentPageEvidence", 
+    "DocumentEvidence",
+    "ContentStoreSource",
+    "ContentStoreEvidence",
+    "TopicSearchResult",
+    "TopicSearchPageReference",
+]
+
 
 #################################################
 class Evidence(DeepSightsIdTitleModel):

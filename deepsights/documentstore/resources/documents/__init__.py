@@ -20,6 +20,16 @@ from deepsights.documentstore.resources.documents._list import (
     SortingField,
     SortingOrder,
 )
+from deepsights.documentstore.resources.documents._model import (
+    TopicSearchResult,
+    TopicSearchPageReference,
+)
 from deepsights.documentstore.resources.documents.documents import DocumentResource
 
-__all__ = ["DocumentResource", "SortingField", "SortingOrder"]
+__all__ = [
+    "DocumentResource", 
+    "SortingField", 
+    "SortingOrder",
+    "TopicSearchResult",
+    "TopicSearchPageReference",
+]

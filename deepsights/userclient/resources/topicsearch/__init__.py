@@ -13,11 +13,9 @@
 # limitations under the License.
 
 """
-This module contains the resource to retrieve answers from the DeepSights API.
+This module contains the resource to perform topic searches via the DeepSights API.
 """
 
-from deepsights.userclient.resources.answersV2 import AnswerV2Resource
-from deepsights.userclient.resources.reports import ReportResource
-from deepsights.userclient.resources.topicsearch import TopicSearchResource
+from deepsights.userclient.resources.topicsearch.topicsearch import TopicSearchResource
 
-__all__ = ["AnswerV2Resource", "ReportResource", "TopicSearchResource"]
+__all__ = ["TopicSearchResource"]

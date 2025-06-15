@@ -114,6 +114,25 @@ for doc in documents.results:
     print(f"{doc.title} - {doc.upload_date}")
 ```
 
+#### Topic Search with AI Analysis
+```python
+# AI-powered topic search for comprehensive insights
+results = ds.documentstore.documents.topic_search(
+    query="sustainable packaging trends", 
+    extended_search=True
+)
+
+for result in results:
+    print(f"📄 {result.artifact_title}")
+    print(f"📊 Relevance: {result.relevance_class}")
+    print(f"📝 Summary: {result.artifact_summary[:100]}...")
+    print(f"📑 {len(result.page_references)} relevant pages found\n")
+
+# User client version with OAuth authentication
+uc = ds.get_userclient("analyst@company.com") 
+user_results = uc.topic_search.search("market disruption AI")
+```
+
 #### Content Store Access
 ```python
 # Search third-party content (requires CONTENTSTORE_API_KEY)

@@ -25,7 +25,11 @@ from deepsights.documentstore.resources.documents._cache import (
     get_document,
     get_document_page,
 )
-from deepsights.utils import DeepSightsIdModel, DeepSightsIdTitleModel
+from deepsights.utils import (
+    DeepSightsBaseModel,
+    DeepSightsIdModel,
+    DeepSightsIdTitleModel,
+)
 
 
 #################################################
@@ -166,3 +170,56 @@ class DocumentSearchResult(DeepSightsIdModel):
             return f"{self.__class__.__name__}@{self.id}: {self.document.title}"
 
         return super().__repr__()
+
+
+#################################################
+class TopicSearchPageReference(DeepSightsBaseModel):
+    """
+    Represents a page reference in topic search results.
+
+    Attributes:
+        id (str): The ID of the page.
+        external_id (str): External ID of the artifact page.
+        number (int): Page number.
+        title (str): The title of the page.
+    """
+
+    id: str = Field(description="The ID of the page.", alias="page_id")
+    external_id: Optional[str] = Field(
+        description="External ID of the artifact page.", alias="page_external_id"
+    )
+    number: Optional[int] = Field(description="Page number.", alias="page_number")
+    title: Optional[str] = Field(
+        description="The title of the page.", alias="page_title"
+    )
+    text: Optional[str] = Field(description="The text of the page.", alias="page_text")
+    relevance_class: Optional[str] = Field(description="Relevance classification.")
+    relevance_assessment: Optional[str] = Field(description="Relevance assessment.")
+
+
+#################################################
+class TopicSearchResult(DeepSightsBaseModel):
+    """
+    Represents a topic search result for a document.
+
+    Attributes:
+        artifact_id (str): The ID of the artifact.
+        artifact_title (str): The title of the artifact.
+        artifact_summary (str): Summary of the artifact.
+        artifact_source (str): Source of the artifact.
+        artifact_publication_date (datetime): Publication date of the artifact.
+        page_references (List[TopicSearchPageReference]): Page references.
+        relevance_class (str): Relevance classification.
+    """
+
+    artifact_id: str = Field(description="The ID of the artifact.")
+    artifact_title: str = Field(description="The title of the artifact.")
+    artifact_summary: Optional[str] = Field(description="Summary of the artifact.")
+    artifact_source: Optional[str] = Field(description="Source of the artifact.")
+    artifact_publication_date: Optional[datetime] = Field(
+        description="Publication date of the artifact."
+    )
+    page_references: List[TopicSearchPageReference] = Field(
+        description="Page references."
+    )
+    relevance_class: Optional[str] = Field(description="Relevance classification.")
