@@ -23,7 +23,6 @@ from pydantic import BaseModel
 
 from deepsights.api import API
 from deepsights.utils import (
-    promote_exact_matches,
     rerank_by_recency,
 )
 
@@ -63,12 +62,12 @@ def contentstore_hybrid_search(
     max_results: int = 100,
     languages: List[str] = None,
     min_vector_score: float = 0.7,
-    vector_fraction: float = 0.9,
+    vector_fraction: float = 0.85,
     vector_weight: float = 0.9,
-    recency_weight: float = 0.4,
-    promote_exact_match: bool = False,
+    recency_weight: float = 0.0,
     search_from_timestamp: datetime = None,
     search_to_timestamp: datetime = None,
+    apply_evidence_filter: bool = False,
     search_only_ai_allowed_content: bool = True,
 ) -> List[BaseModel]:
     """
@@ -84,11 +83,11 @@ def contentstore_hybrid_search(
         languages (List[str], optional): The languages to search for. Defaults to None.
         min_vector_score (float, optional): The minimum score threshold for search results. Defaults to 0.7.
         vector_fraction (float, optional): The fraction of the search results to be vector-based. Defaults to 0.9.
-        vector_weight (float, optional): The weight to apply to vector search in result ranking. Defaults to 0.9.
-        recency_weight (float, optional): The weight to apply to recency in result ranking. Defaults to 0.4.
-        promote_exact_match (bool, optional): Whether to promote exact matches to the top of the results. Defaults to False.
+        vector_weight (float, optional): The weight to apply to vector search in result ranking. Defaults to 0.85.
+        recency_weight (float, optional): The weight to apply to recency in result ranking. Defaults to 0.0.
         search_from_timestamp (datetime, optional): The start timestamp for the search. Defaults to None.
         search_to_timestamp (datetime, optional): The end timestamp for the search. Defaults to None.
+        apply_evidence_filter (bool, optional): Whether to apply the evidence filter. Defaults to False.
         search_only_ai_allowed_content (bool, optional): Whether to search only AI-allowed content. Defaults to True.
 
     Returns:
@@ -110,7 +109,7 @@ def contentstore_hybrid_search(
         raise ValueError("Vector weight must be between 0 and 1")
     if not (0 < max_results <= 250):
         raise ValueError("Maximum results must be between 1 and 250")
-    if recency_weight is not None and not (0 <= recency_weight <= 1):
+    if not (0 <= recency_weight <= 1):
         raise ValueError("Recency weight must be between 0 and 1")
 
     body = {
@@ -127,15 +126,12 @@ def contentstore_hybrid_search(
         "content_restrictions": (
             "ALLOWED_FOR_AI_SUMMARIZATION" if search_only_ai_allowed_content else "NONE"
         ),
+        "use_evidence_filtering": apply_evidence_filter,
     }
     response = api.post("item-service/items/_hybrid-search", body=body)
 
     # parse
     results = [search_result(i) for i in response["items"]]
-
-    # pull exact matches to the top
-    if promote_exact_match:
-        results = promote_exact_matches(query, results)
 
     # record rank
     for rank, result in enumerate(results):
@@ -151,11 +147,12 @@ def contentstore_vector_search(
     item_type: str,
     search_result: BaseModel,
     min_score: float = 0.7,
-    max_results: int = 50,
+    max_results: int = 100,
     languages: List[str] = None,
-    recency_weight: float = None,
+    recency_weight: float = 0.0,
     search_from_timestamp: datetime = None,
     search_to_timestamp: datetime = None,
+    apply_evidence_filter: bool = False,
     search_only_ai_allowed_content: bool = True,
 ) -> List[BaseModel]:
     """
@@ -168,11 +165,12 @@ def contentstore_vector_search(
         item_type (str): The type of items to search for.
         search_result (BaseModel): The model to use for parsing search results.
         min_score (float, optional): The minimum score threshold for search results. Defaults to 0.7.
-        max_results (int, optional): The maximum number of search results to return. Defaults to 50.
+        max_results (int, optional): The maximum number of search results to return. Defaults to 100.
         languages (List[str], optional): The languages to search for. Defaults to None.
-        recency_weight (float, optional): The weight to apply to recency in result ranking. Defaults to None.
+        recency_weight (float, optional): The weight to apply to recency in result ranking. Defaults to 0.0.
         search_from_timestamp (datetime, optional): The start timestamp for the search. Defaults to None.
         search_to_timestamp (datetime, optional): The end timestamp for the search. Defaults to None.
+        apply_evidence_filter (bool, optional): Whether to apply the evidence filter. Defaults to False.
         search_only_ai_allowed_content (bool, optional): Whether to search only AI-allowed content. Defaults to True.
 
     Returns:
@@ -190,7 +188,7 @@ def contentstore_vector_search(
         raise ValueError("Minimum score must be between 0 and 1")
     if not (0 < max_results <= 100):
         raise ValueError("Maximum results must be between 1 and 100")
-    if recency_weight is not None and not (0 <= recency_weight <= 1):
+    if not (0 <= recency_weight <= 1):
         raise ValueError("Recency weight must be between 0 and 1")
 
     body = {
@@ -204,6 +202,7 @@ def contentstore_vector_search(
         "content_restrictions": (
             "ALLOWED_FOR_AI_SUMMARIZATION" if search_only_ai_allowed_content else "NONE"
         ),
+        "use_evidence_filtering": apply_evidence_filter,
     }
     response = api.post("item-service/items/_vector-search", body=body)
 
@@ -220,7 +219,7 @@ def contentstore_text_search(
     query: str,
     item_type: str,
     search_result: BaseModel,
-    max_results: int = 50,
+    max_results: int = 100,
     offset: int = 0,
     languages: List[str] = None,
     sort_descending: bool = True,
@@ -237,7 +236,7 @@ def contentstore_text_search(
         query (str): The search query.
         item_type (str): The type of items to search for.
         search_result (BaseModel): The model used to parse the search results.
-        max_results (int, optional): The maximum number of results to return. Defaults to 50.
+        max_results (int, optional): The maximum number of results to return. Defaults to 100.
         offset (int, optional): The offset to start the search from. Defaults to 0.
         languages (List[str], optional): The languages to search for. Defaults to None.
         most_recent_first (bool, optional): Whether to sort results by most recent first. Defaults to True.

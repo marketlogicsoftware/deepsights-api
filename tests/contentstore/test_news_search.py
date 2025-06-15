@@ -18,7 +18,7 @@ This module contains the tests for the DeepSights ContentStore news search funct
 
 from datetime import datetime, timedelta, timezone
 
-from tests.helpers.common import equal_results, matches_query_terms
+from tests.helpers.common import equal_results
 from tests.helpers.validation import (
     assert_ascending_publication_dates,
     assert_ascending_ranks,
@@ -194,6 +194,25 @@ def test_news_vector_search(ds_client, test_data):
     )
 
     assert len(results) == 5
+    for result in results:
+        assert_valid_contentstore_result(result)
+    assert_ascending_ranks(results)
+
+
+def test_news_vector_search_with_evidence_filter(ds_client, test_data):
+    """
+    Test the news vector search function with evidence filter.
+
+    This function tests the _news_vector_search function by calling it with a test embedding
+    and asserting that the returned results have the expected length and properties. It also
+    checks that the results have the expected evidence filter.
+    """
+    results = ds_client.contentstore.news.vector_search(
+        test_data["embedding"],
+        max_results=50,
+        apply_evidence_filter=True,
+    )
+
     for result in results:
         assert_valid_contentstore_result(result)
     assert_ascending_ranks(results)
@@ -437,44 +456,3 @@ def test_news_hybrid_search_with_vector_low(ds_client, test_data):
     assert len(hybrid_results) == results
     for ix, result in enumerate(hybrid_results):
         assert equal_results(result, text_results[ix])
-
-
-def test_news_text_search_with_title_promotion(ds_client):
-    """
-    Test case for performing a news text search with title promotion.
-
-    This test case verifies that the hybrid search function returns the expected results
-    when searching for news articles based on a query with title promotion enabled.
-    """
-    query = "gen candy"
-
-    # first find top 10 results without title promotion and hard recency weight
-    hybrid_results_no_promotion = ds_client.contentstore.news.search(
-        query=query,
-        max_results=50,
-        promote_exact_match=False,
-        recency_weight=0.99,
-    )
-
-    # must not match top result
-    assert not matches_query_terms(query, hybrid_results_no_promotion[0])
-
-    # find first result with index > 1 with that matches the query exactly
-    ix = 0
-    for ix, result in enumerate(hybrid_results_no_promotion[1:], 1):
-        if matches_query_terms(query, result):
-            break
-
-    assert ix > 0
-    assert ix < len(hybrid_results_no_promotion) - 1
-
-    # now retrieve with title promotion
-    hybrid_results = ds_client.contentstore.news.search(
-        query=query,
-        max_results=50,
-        promote_exact_match=True,
-        recency_weight=0.99,
-    )
-
-    assert equal_results(hybrid_results[0], hybrid_results_no_promotion[ix])
-    assert matches_query_terms(query, hybrid_results[0])

@@ -55,10 +55,11 @@ class NewsResource(APIResource):
         min_score: float = 0.7,
         max_results: int = 100,
         languages: List[str] = None,
-        recency_weight: float = None,
+        recency_weight: float = 0.0,
         search_from_timestamp: datetime = None,
         search_to_timestamp: datetime = None,
         search_only_ai_allowed_content: bool = True,
+        apply_evidence_filter: bool = False,
     ) -> List[NewsSearchResult]:
         """
         Perform a vector-based search for news articles.
@@ -67,13 +68,13 @@ class NewsResource(APIResource):
 
             query_embedding (List): The embedding vector representing the query.
             min_score (float, optional): The minimum score threshold for search results. Defaults to 0.7.
-            max_results (int, optional): The maximum number of search results to return. Defaults to 30.
+            max_results (int, optional): The maximum number of search results to return. Defaults to 100.
             languages (List[str], optional): The list of languages to search for. Defaults to None.
-            recency_weight (float, optional): The weight to apply to recency in the search ranking. Defaults to None.
+            recency_weight (float, optional): The weight to apply to recency in the search ranking. Defaults to 0.0.
             search_from_timestamp (datetime, optional): The start timestamp for the search. Defaults to None.
             search_to_timestamp (datetime, optional): The end timestamp for the search. Defaults to None.
             search_only_ai_allowed_content (bool, optional): Whether to search only AI-allowed content. Defaults to True.
-
+            apply_evidence_filter (bool, optional): Whether to apply the evidence filter. Defaults to False.
         Returns:
 
             List[NewsSearchResult]: A list of search results as NewsSearchResult objects.
@@ -93,6 +94,7 @@ class NewsResource(APIResource):
             search_from_timestamp=search_from_timestamp,
             search_to_timestamp=search_to_timestamp,
             search_only_ai_allowed_content=search_only_ai_allowed_content,
+            apply_evidence_filter=apply_evidence_filter,
         )
 
     #################################################
@@ -113,14 +115,13 @@ class NewsResource(APIResource):
         Args:
 
             query (str): The search query.
-            max_results (int, optional): The maximum number of search results to return. Defaults to 30.
+            max_results (int, optional): The maximum number of search results to return. Defaults to 100.
             offset (int, optional): The offset to start the search from. Defaults to 0.
             languages (List[str], optional): The list of languages to search for. Defaults to None.
             sort_descending (bool, optional): Whether to sort the results in descending order. Defaults to True.
             search_from_timestamp (datetime, optional): The start timestamp for the search. Defaults to None.
             search_to_timestamp (datetime, optional): The end timestamp for the search. Defaults to None.
             search_only_ai_allowed_content (bool, optional): Whether to search only AI-allowed content. Defaults to True.
-
         Returns:
 
             List[NewsSearchResult]: A list of news article search results.
@@ -148,13 +149,13 @@ class NewsResource(APIResource):
         max_results: int = 100,
         languages: List[str] = None,
         min_vector_score: float = 0.7,
-        vector_fraction: float = 0.9,
+        vector_fraction: float = 0.85,
         vector_weight: float = 0.9,
-        recency_weight: float = 0.4,
-        promote_exact_match: bool = False,
+        recency_weight: float = 0.0,
         search_from_timestamp: datetime = None,
         search_to_timestamp: datetime = None,
         search_only_ai_allowed_content: bool = True,
+        apply_evidence_filter: bool = False,
     ) -> List[NewsSearchResult]:
         """
         Perform a contentstore hybrid search using the provided query.
@@ -162,17 +163,16 @@ class NewsResource(APIResource):
         Args:
 
             query (str): The query.
-            max_results (int, optional): The maximum number of search results to return. Defaults to 30.
+            max_results (int, optional): The maximum number of search results to return. Defaults to 100.
             languages (List[str], optional): The list of languages to search for. Defaults to None.
             min_vector_score (float, optional): The minimum score threshold for search results. Defaults to 0.7.
-            vector_fraction (float, optional): The fraction of the search results to be vector-based. Defaults to 0.9.
+            vector_fraction (float, optional): The fraction of the search results to be vector-based. Defaults to 0.85.
             vector_weight (float, optional): The weight to apply to vector search in result ranking. Defaults to 0.9.
-            recency_weight (float, optional): The weight to apply to recency in result ranking. Defaults to 0.4.
-            promote_exact_match (bool, optional): Whether to promote exact matches in the search ranking. Defaults to False.
+            recency_weight (float, optional): The weight to apply to recency in result ranking. Defaults to 0.0.
             search_from_timestamp (datetime, optional): The start timestamp for the search. Defaults to None.
             search_to_timestamp (datetime, optional): The end timestamp for the search. Defaults to None.
             search_only_ai_allowed_content (bool, optional): Whether to search only AI-allowed content. Defaults to True.
-
+            apply_evidence_filter (bool, optional): Whether to apply the evidence filter. Defaults to False.
         Returns:
 
             List[NewsSearchResult]: The search results as a list of NewsSearchResult objects.
@@ -189,9 +189,9 @@ class NewsResource(APIResource):
             vector_fraction=vector_fraction,
             min_vector_score=min_vector_score,
             recency_weight=recency_weight,
-            promote_exact_match=promote_exact_match,
             search_from_timestamp=search_from_timestamp,
             search_to_timestamp=search_to_timestamp,
             languages=languages,
             search_only_ai_allowed_content=search_only_ai_allowed_content,
+            apply_evidence_filter=apply_evidence_filter,
         )

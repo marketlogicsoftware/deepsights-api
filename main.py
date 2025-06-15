@@ -94,16 +94,6 @@ hybrid_results = ds.contentstore.secondary.search(
     recency_weight=0.9,
 )
 
-# and we can promote exact title matches to the top for hybrid or text search
-# for pure full-text search, omit the query_embedding
-hybrid_results_promote = ds.contentstore.secondary.search(
-    query=test_question,
-    max_results=10,
-    promote_exact_match=True,
-)
-
-print(hybrid_results_promote[0].title)
-
 
 #################################################
 # USERCLIENT API
