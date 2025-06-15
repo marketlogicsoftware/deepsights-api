@@ -2,9 +2,9 @@
 
 <!--next-version-placeholder-->
 
-## v1.3.0 (13-Jun-2025)
+## v1.3.0 (15-Jun-2025)
 
-- Added topic-search support for B2B mode and userclient
+- Added topic-search & hybrid-search support for documentstore and userclient
 - Added support evidence filtering to content store; removed exact match promotion
 - Enhanced API client with robust error handling, retry logic for 429/502/503 status codes, and connection pooling
 - Added configurable timeouts, debug logging, and expanded HTTP success code support
