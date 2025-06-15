@@ -13,12 +13,9 @@
 # limitations under the License.
 
 """
-This module contains the resource to retrieve answers from the DeepSights API.
+This module contains the resource to perform hybrid searches via the DeepSights API.
 """
 
-from deepsights.userclient.resources.answersV2 import AnswerV2Resource
-from deepsights.userclient.resources.reports import ReportResource
-from deepsights.userclient.resources.topicsearch import TopicSearchResource
-from deepsights.userclient.resources.hybridsearch import HybridSearchResource
+from deepsights.userclient.resources.hybridsearch.hybridsearch import HybridSearchResource
 
-__all__ = ["AnswerV2Resource", "ReportResource", "TopicSearchResource", "HybridSearchResource"]
+__all__ = ["HybridSearchResource"]

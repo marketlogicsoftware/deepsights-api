@@ -23,6 +23,8 @@ from deepsights.documentstore.resources.documents._list import (
 from deepsights.documentstore.resources.documents._model import (
     TopicSearchResult,
     TopicSearchPageReference,
+    HybridSearchResult,
+    HybridSearchPageReference,
 )
 from deepsights.documentstore.resources.documents.documents import DocumentResource
 
@@ -32,4 +34,7 @@ __all__ = [
     "SortingOrder",
     "TopicSearchResult",
     "TopicSearchPageReference",
+    "HybridSearchResult",
+    "HybridSearchPageReference",
 ]
+

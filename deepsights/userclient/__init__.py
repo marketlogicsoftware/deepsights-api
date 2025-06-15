@@ -17,6 +17,5 @@ This module contains the resource to retrieve answers from the DeepSights API.
 """
 
 from deepsights.userclient.userclient import UserClient
-from deepsights.userclient.resources._model import TopicSearchResult, TopicSearchPageReference
 
-__all__ = ["UserClient", "TopicSearchResult", "TopicSearchPageReference"]
+__all__ = ["UserClient"]

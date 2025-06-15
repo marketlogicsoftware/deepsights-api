@@ -19,7 +19,7 @@ This module contains the model classes for documents.
 from datetime import datetime
 from typing import List, Optional
 
-from pydantic import Field
+from pydantic import AliasChoices, Field
 
 from deepsights.documentstore.resources.documents._cache import (
     get_document,
@@ -184,15 +184,26 @@ class TopicSearchPageReference(DeepSightsBaseModel):
         title (str): The title of the page.
     """
 
-    id: str = Field(description="The ID of the page.", alias="page_id")
+    id: str = Field(
+        description="The ID of the page.",
+        validation_alias=AliasChoices("id", "page_id"),
+    )
     external_id: Optional[str] = Field(
-        description="External ID of the artifact page.", alias="page_external_id"
+        description="External ID of the artifact page.",
+        validation_alias=AliasChoices("external_id", "page_external_id"),
     )
-    number: Optional[int] = Field(description="Page number.", alias="page_number")
+    number: Optional[int] = Field(
+        description="Page number.",
+        validation_alias=AliasChoices("number", "page_number"),
+    )
     title: Optional[str] = Field(
-        description="The title of the page.", alias="page_title"
+        description="The title of the page.",
+        validation_alias=AliasChoices("title", "page_title"),
     )
-    text: Optional[str] = Field(description="The text of the page.", alias="page_text")
+    text: Optional[str] = Field(
+        description="The text of the page.",
+        validation_alias=AliasChoices("text", "page_text"),
+    )
     relevance_class: Optional[str] = Field(description="Relevance classification.")
     relevance_assessment: Optional[str] = Field(description="Relevance assessment.")
 
@@ -223,3 +234,64 @@ class TopicSearchResult(DeepSightsBaseModel):
         description="Page references."
     )
     relevance_class: Optional[str] = Field(description="Relevance classification.")
+
+
+#################################################
+class HybridSearchPageReference(DeepSightsBaseModel):
+    """
+    Represents a page reference in hybrid search results.
+
+    Attributes:
+        id (str): The ID of the page.
+        external_id (str): External ID of the artifact page.
+        number (int): Page number.
+        title (str): The title of the page.
+        text (str): The text of the page.
+    """
+
+    id: str = Field(
+        description="The ID of the page.",
+        validation_alias=AliasChoices("id", "page_id"),
+    )
+    external_id: Optional[str] = Field(
+        description="External ID of the artifact page.",
+        validation_alias=AliasChoices("external_id", "page_external_id"),
+    )
+    number: Optional[int] = Field(
+        description="Page number.",
+        validation_alias=AliasChoices("number", "page_number"),
+    )
+    title: Optional[str] = Field(
+        description="The title of the page.",
+        validation_alias=AliasChoices("title", "page_title"),
+    )
+    text: Optional[str] = Field(
+        description="The text of the page.",
+        validation_alias=AliasChoices("text", "page_text"),
+    )
+
+
+#################################################
+class HybridSearchResult(DeepSightsBaseModel):
+    """
+    Represents a hybrid search result for a document.
+
+    Attributes:
+        artifact_id (str): The ID of the artifact.
+        artifact_title (str): The title of the artifact.
+        artifact_summary (str): Summary of the artifact.
+        artifact_source (str): Source of the artifact.
+        artifact_publication_date (datetime): Publication date of the artifact.
+        page_references (List[HybridSearchPageReference]): Page references.
+    """
+
+    artifact_id: str = Field(description="The ID of the artifact.")
+    artifact_title: str = Field(description="The title of the artifact.")
+    artifact_summary: Optional[str] = Field(description="Summary of the artifact.")
+    artifact_source: Optional[str] = Field(description="Source of the artifact.")
+    artifact_publication_date: Optional[datetime] = Field(
+        description="Publication date of the artifact."
+    )
+    page_references: List[HybridSearchPageReference] = Field(
+        description="Page references."
+    )

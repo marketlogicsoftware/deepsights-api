@@ -279,6 +279,25 @@ def assert_valid_topic_search_result(topic_result):
         assert page_ref.relevance_assessment is not None
 
 
+def assert_valid_hybrid_search_result(hybrid_result):
+    """
+    Validate a hybrid search result has required fields.
+
+    Args:
+        hybrid_result: Hybrid search result object to validate.
+    """
+    assert hybrid_result.artifact_id is not None
+    assert hybrid_result.artifact_title is not None
+    assert hybrid_result.page_references is not None
+    assert len(hybrid_result.page_references) > 0
+
+    for page_ref in hybrid_result.page_references:
+        assert page_ref.id is not None
+        if page_ref.number is not None:
+            assert page_ref.number > 0
+        assert page_ref.text is not None
+
+
 def assert_ascending_ranks(results):
     """
     Validate that results have ascending rank values.

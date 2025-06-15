@@ -28,7 +28,6 @@ from tenacity import (
     stop_after_attempt,
     wait_random_exponential,
 )
-from urllib3.util.retry import Retry
 
 
 def _should_retry_http_error(exception: Exception) -> bool:
@@ -87,19 +86,11 @@ class API:
         # setup session with connection pooling
         self._session = Session()
 
-        # configure retry strategy for connection-level retries
-        retry_strategy = Retry(
-            total=3,
-            status_forcelist=[429, 500, 502, 503, 504],
-            backoff_factor=1,
-            allowed_methods=["HEAD", "GET", "OPTIONS", "POST", "DELETE"],
-        )
-
-        # setup adapters with connection pooling
+        # setup adapters with connection pooling (no retries at session level)
         adapter = HTTPAdapter(
             pool_connections=pool_connections,
             pool_maxsize=pool_maxsize,
-            max_retries=retry_strategy,
+            max_retries=0,  # Disable session-level retries, rely on application-level retry decorators
         )
 
         self._session.mount("https://", adapter)
