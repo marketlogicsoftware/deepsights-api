@@ -199,25 +199,6 @@ def test_news_vector_search(ds_client, test_data):
     assert_ascending_ranks(results)
 
 
-def test_news_vector_search_with_evidence_filter(ds_client, test_data):
-    """
-    Test the news vector search function with evidence filter.
-
-    This function tests the _news_vector_search function by calling it with a test embedding
-    and asserting that the returned results have the expected length and properties. It also
-    checks that the results have the expected evidence filter.
-    """
-    results = ds_client.contentstore.news.vector_search(
-        test_data["embedding"],
-        max_results=50,
-        apply_evidence_filter=True,
-    )
-
-    for result in results:
-        assert_valid_contentstore_result(result)
-    assert_ascending_ranks(results)
-
-
 def test_news_vector_search_with_date(ds_client, test_data):
     """
     Test case for vector news search with date.
@@ -456,3 +437,22 @@ def test_news_hybrid_search_with_vector_low(ds_client, test_data):
     assert len(hybrid_results) == results
     for ix, result in enumerate(hybrid_results):
         assert equal_results(result, text_results[ix])
+
+
+def test_news_hybrid_search_with_evidence_filter(ds_client, test_data):
+    """
+    Test the news hybrid search function with evidence filter.
+
+    This function tests the _news_hybrid_search function by calling it with a test embedding
+    and asserting that the returned results have the expected length and properties. It also
+    checks that the results have the expected evidence filter.
+    """
+    results = ds_client.contentstore.news.search(
+        query=test_data["question"],
+        max_results=50,
+        apply_evidence_filter=True,
+    )
+
+    for result in results:
+        assert_valid_contentstore_result(result)
+    assert_ascending_ranks(results)

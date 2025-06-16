@@ -152,7 +152,6 @@ def contentstore_vector_search(
     recency_weight: float = 0.0,
     search_from_timestamp: datetime = None,
     search_to_timestamp: datetime = None,
-    apply_evidence_filter: bool = False,
     search_only_ai_allowed_content: bool = True,
 ) -> List[BaseModel]:
     """
@@ -170,7 +169,6 @@ def contentstore_vector_search(
         recency_weight (float, optional): The weight to apply to recency in result ranking. Defaults to 0.0.
         search_from_timestamp (datetime, optional): The start timestamp for the search. Defaults to None.
         search_to_timestamp (datetime, optional): The end timestamp for the search. Defaults to None.
-        apply_evidence_filter (bool, optional): Whether to apply the evidence filter. Defaults to False.
         search_only_ai_allowed_content (bool, optional): Whether to search only AI-allowed content. Defaults to True.
 
     Returns:
@@ -202,7 +200,6 @@ def contentstore_vector_search(
         "content_restrictions": (
             "ALLOWED_FOR_AI_SUMMARIZATION" if search_only_ai_allowed_content else "NONE"
         ),
-        "use_evidence_filtering": apply_evidence_filter,
     }
     response = api.post("item-service/items/_vector-search", body=body)
 

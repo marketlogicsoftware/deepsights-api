@@ -59,7 +59,6 @@ class SecondaryResource(APIResource):
         search_from_timestamp: datetime = None,
         search_to_timestamp: datetime = None,
         search_only_ai_allowed_content: bool = True,
-        apply_evidence_filter: bool = False,
     ) -> List[SecondarySearchResult]:
         """
         Perform a vector-based search for secondary reports.
@@ -74,7 +73,6 @@ class SecondaryResource(APIResource):
             search_from_timestamp (datetime, optional): The start timestamp for the search. Defaults to None.
             search_to_timestamp (datetime, optional): The end timestamp for the search. Defaults to None.
             search_only_ai_allowed_content (bool, optional): Whether to search only AI-allowed content. Defaults to True.
-            apply_evidence_filter (bool, optional): Whether to apply the evidence filter. Defaults to False.
         Returns:
 
             List[SecondarySearchResult]: A list of search results as SecondarySearchResult objects.
@@ -94,7 +92,6 @@ class SecondaryResource(APIResource):
             search_from_timestamp=search_from_timestamp,
             search_to_timestamp=search_to_timestamp,
             search_only_ai_allowed_content=search_only_ai_allowed_content,
-            apply_evidence_filter=apply_evidence_filter,
         )
 
     #################################################
