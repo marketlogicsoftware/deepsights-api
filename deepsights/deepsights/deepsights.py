@@ -97,3 +97,12 @@ class DeepSights(APIKeyAPI):
                 self.userclients[user_email] = UserClient(oauth_token)
 
             return self.userclients[user_email]
+
+    def get_userclient_by_token(self, oauth_token: str) -> UserClient:
+        """
+        Retrieves a user client for the given OAuth token.
+
+        Args:
+            oauth_token (str): The OAuth token to be used for authentication.
+        """
+        return UserClient(oauth_token)

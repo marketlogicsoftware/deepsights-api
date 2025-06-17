@@ -31,7 +31,7 @@ The **Content Store** holds public and paid 3rd party content, including industr
 
 ### User Client
 
-The **User Client** serves to impersonate existing platform users with their access permissions. The `userclient` API supports obtaining AI-generated answers and reports in reponse to business questions.
+The **User Client** serves to impersonate existing platform users with their access permissions. The `userclient` API supports obtaining AI-generated answers and reports in response to business questions, as well as document management operations with user-specific permissions including document listing, loading, page access, hybrid search, and topic search capabilities.
 
 
 ## Getting started
@@ -99,25 +99,56 @@ response = uc.answersV2.create_and_wait(
 )
 
 print(response.answer)
-print(f"Sources: {len(response.sources)} documents cited")
+print(f"Sources: {len(response.document_sources)} documents cited")
 ```
 
 #### Document Search & Retrieval
 ```python
-# Search your document store
-documents = ds.documentstore.documents.search(
+# Hybrid search combining text and vector search
+results = ds.documentstore.documents.search(
     query="consumer behavior trends 2024",
-    limit=10
+    extended_search=False
 )
 
-for doc in documents.results:
-    print(f"{doc.title} - {doc.upload_date}")
+for result in results:
+    print(f"📄 {result.artifact_title}")
+    print(f"📝 {result.artifact_summary[:100]}...")
+    print(f"📑 {len(result.page_references)} relevant pages\n")
+```
+
+#### User-Specific Document Management
+```python
+# Access documents through user permissions
+uc = ds.get_userclient("analyst@company.com")
+
+# List documents with user-specific access
+total_docs, documents = uc.documents.documents_list(
+    page_size=20,
+    sort_field="creation_date",
+    sort_order="DESC"
+)
+
+# Load specific documents with pages
+loaded_docs = uc.documents.documents_load(
+    document_ids=["doc_id_1", "doc_id_2"],
+    load_pages=True
+)
+
+# Load specific document pages
+pages = uc.documents.document_pages_load(["page_id_1", "page_id_2"])
+
+# Hybrid search through user client
+search_results = uc.documents.search(
+    query="consumer behavior insights",
+    extended_search=True
+)
 ```
 
 #### Topic Search with AI Analysis
 ```python
-# AI-powered topic search for comprehensive insights
-results = ds.documentstore.documents.topic_search(
+# AI-powered topic search available through user client
+uc = ds.get_userclient("analyst@company.com") 
+results = uc.topic_search.search(
     query="sustainable packaging trends", 
     extended_search=True
 )
@@ -127,10 +158,6 @@ for result in results:
     print(f"📊 Relevance: {result.relevance_class}")
     print(f"📝 Summary: {result.artifact_summary[:100]}...")
     print(f"📑 {len(result.page_references)} relevant pages found\n")
-
-# User client version with OAuth authentication
-uc = ds.get_userclient("analyst@company.com") 
-user_results = uc.topic_search.search("market disruption AI")
 ```
 
 #### Content Store Access

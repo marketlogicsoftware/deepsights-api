@@ -27,7 +27,6 @@ from deepsights.documentstore.resources.documents._model import (
     DocumentPageSearchResult,
     DocumentSearchResult,
     HybridSearchResult,
-    TopicSearchResult,
 )
 from deepsights.utils import promote_exact_matches, rerank_by_recency
 
@@ -140,6 +139,11 @@ def documents_search(
             "The 'query' argument is only used when 'promote_exact_match' is set to True."
         )
 
+    # emit deprecation warning
+    print(
+        "WARNING: The documents_search function is deprecated and will be removed in a future version. Please use the hybrid_search function instead."
+    )
+
     # get the page matches
     page_matches = document_pages_search(
         resource,
@@ -201,46 +205,6 @@ def documents_search(
 
 
 #################################################
-def topic_search(
-    resource: APIResource, query: str, extended_search: bool = False
-) -> List[TopicSearchResult]:
-    """
-    Searches for documents by topic using AI-powered analysis.
-
-    Args:
-        resource (APIResource): An instance of the DeepSights API resource.
-        query (str): The search query topic.
-        extended_search (bool, optional): Whether to perform extended search. Defaults to False.
-
-    Returns:
-        List[TopicSearchResult]: The list of topic search results.
-    """
-    # Input validation
-    if query is None:
-        raise ValueError("The 'query' argument is required.")
-    if not isinstance(query, str):
-        raise ValueError("The 'query' must be a string.")
-    query = query.strip()
-    if len(query) == 0:
-        raise ValueError("The 'query' cannot be empty.")
-    if len(query) > 100:
-        raise ValueError("The 'query' must be 100 characters or less.")
-
-    body = {
-        "query": query,
-        "extended_search": extended_search,
-    }
-    
-    response = resource.api.post(
-        "supercharged-search-service/topic-searches", body=body
-    )
-    
-    # Extract the search results from the response
-    search_results = response.get("context", {}).get("search_results", [])
-    return [TopicSearchResult(**result) for result in search_results]
-
-
-#################################################
 def hybrid_search(
     resource: APIResource, query: str, extended_search: bool = False
 ) -> List[HybridSearchResult]:
@@ -270,11 +234,11 @@ def hybrid_search(
         "query": query,
         "extended_search": extended_search,
     }
-    
+
     response = resource.api.post(
         "supercharged-search-service/hybrid-searches", body=body
     )
-    
+
     # Extract the search results from the response
     search_results = response.get("context", {}).get("search_results", [])
     return [HybridSearchResult(**result) for result in search_results]

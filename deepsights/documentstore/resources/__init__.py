@@ -18,6 +18,8 @@ This module contains models and resources for interacting with the document stor
 
 from deepsights.documentstore.resources.documents import (
     DocumentResource,
+)
+from deepsights.documentstore.resources.documents._model import (
     SortingField,
     SortingOrder,
 )

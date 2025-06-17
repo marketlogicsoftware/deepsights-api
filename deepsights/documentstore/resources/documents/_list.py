@@ -20,28 +20,11 @@ from typing import List
 
 from deepsights.api import APIResource
 from deepsights.documentstore.resources.documents._cache import set_document
-from deepsights.documentstore.resources.documents._model import Document
-
-
-#################################################
-class SortingOrder:
-    """
-    Represents the sorting order for documents.
-    """
-
-    ASCENDING = "ASC"
-    DESCENDING = "DESC"
-
-
-#################################################
-class SortingField:
-    """
-    Represents the sorting field for documents.
-    """
-
-    TITLE = "title"
-    PUBLICATION_DATE = "publication_date"
-    CREATION_DATE = "origin.creation_time"
+from deepsights.documentstore.resources.documents._model import (
+    Document,
+    SortingField,
+    SortingOrder,
+)
 
 
 #################################################

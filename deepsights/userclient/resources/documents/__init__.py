@@ -13,9 +13,9 @@
 # limitations under the License.
 
 """
-This module contains the resource to perform topic searches via the DeepSights API.
+This module contains the resource to perform hybrid searches via the DeepSights API.
 """
 
-from deepsights.userclient.resources.topicsearch.topicsearch import TopicSearchResource
+from deepsights.userclient.resources.documents.documents import DocumentResource
 
-__all__ = ["TopicSearchResource"]
+__all__ = ["DocumentResource"]

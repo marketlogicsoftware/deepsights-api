@@ -13,50 +13,34 @@
 # limitations under the License.
 
 """
-This module contains the functions to perform hybrid searches via the DeepSights API.
+This module contains the functions to perform topic searches via the DeepSights API.
 """
 
 from typing import List
 
-from ratelimit import limits, sleep_and_retry
-from requests.exceptions import ConnectionError, HTTPError, Timeout
-from tenacity import (
-    retry,
-    retry_if_exception_type,
-    stop_after_attempt,
-    wait_random_exponential,
-)
-
 from deepsights.api import APIResource
-from deepsights.documentstore.resources.documents._model import HybridSearchResult
+from deepsights.userclient.resources.search._model import TopicSearchResult
 
 
 #################################################
-class HybridSearchResource(APIResource):
+class SearchResource(APIResource):
     """
-    Represents a resource for performing hybrid searches via the DeepSights API.
+    Represents a resource for performing topic searches via the DeepSights API.
     """
 
     #################################################
-    @retry(
-        stop=stop_after_attempt(3),
-        wait=wait_random_exponential(max=5),
-        retry=retry_if_exception_type((Timeout, ConnectionError, HTTPError)),
-    )
-    @sleep_and_retry
-    @limits(calls=3, period=60)
-    def search(
+    def topic_search(
         self, query: str, extended_search: bool = False
-    ) -> List[HybridSearchResult]:
+    ) -> List[TopicSearchResult]:
         """
-        Searches for documents using hybrid search combining text and vector search.
+        Searches for documents by topic using AI-powered analysis.
 
         Args:
-            query (str): The search query.
+            query (str): The search query topic.
             extended_search (bool, optional): Whether to perform extended search. Defaults to False.
 
         Returns:
-            List[HybridSearchResult]: The list of hybrid search results.
+            List[TopicSearchResult]: The list of topic search results.
         """
         # Input validation
         if not isinstance(query, str):
@@ -72,9 +56,8 @@ class HybridSearchResource(APIResource):
             "extended_search": extended_search,
         }
 
-        # Temporarily allow 5xx responses to debug the error
-        response = self.api.post("end-user-gateway-service/hybrid-searches", body=body)
+        response = self.api.post("end-user-gateway-service/topic-searches", body=body)
 
         # Extract the search results from the response
         search_results = response.get("context", {}).get("search_results", [])
-        return [HybridSearchResult(**result) for result in search_results]
+        return [TopicSearchResult(**result) for result in search_results]

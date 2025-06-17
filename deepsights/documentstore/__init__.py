@@ -17,6 +17,6 @@ This module contains the client for the document store in the DeepSights API.
 """
 
 from deepsights.documentstore.documentstore import DocumentStore
-from deepsights.documentstore.resources.documents import SortingField, SortingOrder
+from deepsights.documentstore.resources import SortingField, SortingOrder
 
 __all__ = ["DocumentStore", "SortingField", "SortingOrder"]

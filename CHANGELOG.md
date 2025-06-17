@@ -2,6 +2,16 @@
 
 <!--next-version-placeholder-->
 
+## v1.3.1 (17-Jun-2025)
+
+- **BREAKING CHANGE**: Removed topic_search from documentstore (moved to userclient only)
+- Added comprehensive userclient document management: documents_list(), documents_load(), document_pages_load()
+- Enhanced userclient with hybrid_search functionality
+- Topic search models moved from documentstore to userclient.topic_search module
+- Deprecated documentstore.search_documents() in favor of documentsearch.hybrid_search()
+- Added extensive test coverage for new userclient document methods
+- Clean up of packaging
+
 ## v1.3.0 (15-Jun-2025)
 
 - Added topic-search & hybrid-search support for documentstore and userclient

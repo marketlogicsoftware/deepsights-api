@@ -40,30 +40,39 @@ profile = ds.quota.get_profile()
 # get quota information
 quota = ds.quota.get_status()
 
-# search document matches for an ADA-002 query vector
-document_results = ds.documentstore.documents.search(
+# hybrid search combining text and vector search
+hybrid_results = ds.documentstore.documents.search(
+    query="consumer behavior trends 2024", extended_search=False
+)
+
+print("=== Document Store Hybrid Search Results ===")
+for result in hybrid_results:
+    print(f"📄 {result.artifact_title}")
+    print(
+        f"📝 {result.artifact_summary[:100]}..."
+        if result.artifact_summary
+        else "No summary"
+    )
+    print(f"📑 {len(result.page_references)} relevant pages\n")
+
+# search document matches for an ADA-002 query vector (legacy approach)
+document_results = ds.documentstore.documents.search_documents(
     query_embedding=test_embedding, max_results=10, min_score=0.0
 )
 
-# search again, but this time re-rank the results based on recency
-document_results_recency = ds.documentstore.documents.search(
-    query_embedding=test_embedding,
-    max_results=10,
-    recency_weight=0.7,
-)
-
-# load the docs with their pages; we might as well have passed "load_documents=True" to the search function
+# load the docs with their pages
 documents = ds.documentstore.documents.load(
     document_ids=[r.id for r in document_results],
     load_pages=True,
 )
 
 # get the first doc
-top_document = documents[0]
-print(top_document.title)
+if documents:
+    top_document = documents[0]
+    print(f"Top document: {top_document.title}")
 
-# what fields are available?
-print(top_document.schema_human())
+    # what fields are available?
+    print(top_document.schema_human())
 
 #################################################
 # CONTENTSTORE API
@@ -85,8 +94,8 @@ secondary_results = ds.contentstore.secondary.search(
 )
 
 # we can also use control hybrid search for news and reports; this will first combine recency weighting and then merge text & vector results
-# note that document search currently does not expose the hybrid search functionality
-hybrid_results = ds.contentstore.secondary.search(
+# note that document store now supports hybrid search via documents.search()
+cs_hybrid_results = ds.contentstore.secondary.search(
     query=test_question,
     max_results=10,
     vector_weight=0.7,
@@ -103,8 +112,52 @@ hybrid_results = ds.contentstore.secondary.search(
 # obtain a user client for a known email address
 uc = ds.get_userclient("john.doe@acme.com")
 
+print("=== User Client Document Management ===")
+
+# list documents with user-specific access
+total_docs, user_documents = uc.documents.documents_list(
+    page_size=10, sort_field="creation_date", sort_order="DESC"
+)
+print(f"Found {total_docs} documents accessible to user")
+
+# hybrid search through user client
+user_hybrid_results = uc.documents.search(
+    query="consumer behavior insights", extended_search=False
+)
+print(f"User hybrid search returned {len(user_hybrid_results)} results")
+
+# topic search with AI analysis (user client only)
+topic_results = uc.topic_search.search(
+    query="sustainable packaging trends", extended_search=False
+)
+print(f"Topic search returned {len(topic_results)} results")
+for result in topic_results[:2]:  # Show first 2
+    print(f"📄 {result.artifact_title}")
+    print(f"📊 Relevance: {result.relevance_class}")
+    print(
+        f"📝 Summary: {result.artifact_summary[:100]}..."
+        if result.artifact_summary
+        else "No summary"
+    )
+    print(f"📑 {len(result.page_references)} relevant pages\n")
+
+# load specific documents with pages (if any found)
+if user_documents:
+    doc_ids = [doc.id for doc in user_documents[:2]]  # First 2 documents
+    loaded_docs = uc.documents.documents_load(document_ids=doc_ids, load_pages=True)
+    print(f"Loaded {len(loaded_docs)} documents with pages")
+
+    # load specific document pages
+    if loaded_docs and loaded_docs[0].page_ids:
+        page_ids = loaded_docs[0].page_ids[:3]  # First 3 pages
+        pages = uc.documents.document_pages_load(page_ids)
+        print(f"Loaded {len(pages)} individual pages")
+
+print("=== AI-Generated Answers ===")
+
 # obtain an answer set
 answer = uc.answersV2.create_and_wait(
     question=test_question,
 )
-print(answer.answer)
+print(f"Answer: {answer.answer}")
+print(f"Sources: {len(answer.document_sources)} documents cited")

@@ -16,15 +16,6 @@
 This module contains the functions to retrieve reports from the DeepSights self.
 """
 
-from ratelimit import limits, sleep_and_retry
-from requests.exceptions import ConnectionError, HTTPError, Timeout
-from tenacity import (
-    retry,
-    retry_if_exception_type,
-    stop_after_attempt,
-    wait_random_exponential,
-)
-
 from deepsights.api import APIResource
 from deepsights.userclient.resources.answersV2._model import AnswerV2
 from deepsights.utils import (
@@ -41,13 +32,6 @@ class AnswerV2Resource(APIResource):
     """
 
     #################################################
-    @retry(
-        stop=stop_after_attempt(3),
-        wait=wait_random_exponential(max=5),
-        retry=retry_if_exception_type((Timeout, ConnectionError, HTTPError)),
-    )
-    @sleep_and_retry
-    @limits(calls=3, period=60)
     def create(self, question: str) -> str:
         """
         Creates a new answer V2 by submitting a question to the DeepSights self.

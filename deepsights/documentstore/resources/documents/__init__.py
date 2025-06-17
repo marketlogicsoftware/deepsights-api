@@ -16,25 +16,20 @@
 This module contains the resource to interact with documents via the DeepSights API.
 """
 
-from deepsights.documentstore.resources.documents._list import (
+from deepsights.documentstore.resources.documents._model import (
+    HybridSearchPageReference,
+    HybridSearchResult,
     SortingField,
     SortingOrder,
 )
-from deepsights.documentstore.resources.documents._model import (
-    TopicSearchResult,
-    TopicSearchPageReference,
-    HybridSearchResult,
-    HybridSearchPageReference,
+from deepsights.documentstore.resources.documents.documents import (
+    DocumentResource,
 )
-from deepsights.documentstore.resources.documents.documents import DocumentResource
 
 __all__ = [
-    "DocumentResource", 
-    "SortingField", 
+    "DocumentResource",
+    "SortingField",
     "SortingOrder",
-    "TopicSearchResult",
-    "TopicSearchPageReference",
     "HybridSearchResult",
     "HybridSearchPageReference",
 ]
-

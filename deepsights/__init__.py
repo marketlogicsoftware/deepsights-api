@@ -17,9 +17,6 @@ This module contains the client library to interact with the Market Logic DeepSi
 """
 
 from deepsights.deepsights import DeepSights
-from deepsights.documentstore import (
-    SortingField,
-    SortingOrder,
-)
+from deepsights.documentstore.resources import SortingField, SortingOrder
 
 __all__ = ["SortingField", "SortingOrder", "DeepSights"]

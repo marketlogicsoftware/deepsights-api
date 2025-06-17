@@ -66,17 +66,20 @@ class MIPIdentityResolver(APIKeyAPI):
     #################################################
     def get_oauth_token(self, email: str) -> Optional[str]:
         """
-        Retrieves an oauth token to be used to impersonate the given user.
+        Retrieves an OAuth token for impersonating a user.
 
         Args:
-            email (str): The email of the user to impersonate.
+            email (str): Email address of the user to impersonate.
 
         Returns:
-            Optional[str]: The oauth token of the user, or None if not found
+            Optional[str]: OAuth token if user exists, None otherwise.
 
         Raises:
-            ValueError: If the provided email address is invalid.
+            ValueError: If email format is invalid.
         """
+        if not self._api_key:
+            return None
+
         self._check_email(email)
         body = {"user_email": email}
 
@@ -89,8 +92,6 @@ class MIPIdentityResolver(APIKeyAPI):
         except HTTPError as e:
             if e.response.status_code == 404:
                 return None
-            # Let other HTTP errors (500, 503, 429, etc.) bubble up
-            # as they should be handled by the base API retry logic
             raise
 
         return response["access_token"]

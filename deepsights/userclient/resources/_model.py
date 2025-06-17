@@ -28,8 +28,8 @@ from deepsights.utils import (
     DeepSightsIdTitleModel,
 )
 
-# Re-export topic search models from documentstore  
-from deepsights.documentstore.resources.documents._model import (
+# Re-export topic search models from topicsearch module
+from deepsights.userclient.resources.search._model import (
     TopicSearchResult,
     TopicSearchPageReference,
 )

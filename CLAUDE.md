@@ -47,11 +47,11 @@ DeepSights (main client)
 
 ### Key Features
 
-**Search & Retrieval**: Vector-based document search with embeddings, hybrid search combining text/vector results, and recency weighting algorithms.
+**Search & Retrieval**: Vector-based document search with embeddings, hybrid search combining text/vector results, recency weighting algorithms, and AI-powered topic search (via user client).
 
-**Document Management**: Complete lifecycle (upload/search/download/delete) with page-level search and batch operations.
+**Document Management**: Complete lifecycle (upload/search/download/delete) with page-level search and batch operations. User client provides permission-based document listing, loading, and page access.
 
-**AI Integration**: User impersonation for AI answers and report generation with permission-based access control.
+**AI Integration**: User impersonation for AI answers and report generation with permission-based access control. Enhanced user client capabilities include document management, hybrid search, and topic search.
 
 ## Environment Configuration
 
