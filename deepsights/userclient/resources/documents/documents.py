@@ -49,7 +49,7 @@ class DocumentResource(APIResource):
     """
 
     #################################################
-    def hybrid_search(
+    def search(
         self, query: str, extended_search: bool = False
     ) -> List[HybridSearchResult]:
         """
