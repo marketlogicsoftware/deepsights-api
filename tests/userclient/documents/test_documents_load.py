@@ -103,6 +103,7 @@ def test_documents_load_force_load(user_client, test_data):
     Test the force_load parameter to bypass cache.
     """
     test_document_id = test_data["document_id"]
+    remove_document(test_document_id)
 
     # Load document first time
     documents = user_client.documents.documents_load(
