@@ -122,17 +122,19 @@ def poll_for_completion(
             status = None
             if isinstance(response, dict):
                 # Try common status field locations
-                if "status" in response:
-                    status = response["status"]
-                elif "minion_job" in response and "status" in response["minion_job"]:
-                    status = response["minion_job"]["status"]
+                status_dict = response
+                if "minion_job" in response and "status" in response["minion_job"]:
+                    status_dict = response["minion_job"]
                 elif (
                     "desk_research" in response
                     and "minion_job" in response["desk_research"]
                 ):
-                    status = response["desk_research"]["minion_job"]["status"]
+                    status_dict = response["desk_research"]["minion_job"]
                 elif "answer_v2" in response and "minion_job" in response["answer_v2"]:
-                    status = response["answer_v2"]["minion_job"]["status"]
+                    status_dict = response["answer_v2"]["minion_job"]
+
+            status = status_dict.get("status")
+            error_message = status_dict.get("error_message")
 
             if status is None:
                 raise PollingFailedError(
@@ -146,13 +148,8 @@ def poll_for_completion(
 
             # Check if operation failed
             if status.startswith(failure_status_prefix):
-                error_message = (
-                    response.get("error_reason")
-                    or response.get("error_message")
-                    or "Unknown error"
-                )
                 raise PollingFailedError(
-                    f"Operation failed for {resource_id}: {error_message}"
+                    f"Operation failed for resource {resource_id}: {error_message}"
                 )
 
             # Check if we have a specific success status requirement
