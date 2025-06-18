@@ -2,6 +2,11 @@
 
 <!--next-version-placeholder-->
 
+## v1.3.2 (18-Jun-2025)
+
+- Improved error logging for answer polling
+- Documentation fix
+
 ## v1.3.1 (17-Jun-2025)
 
 - **BREAKING CHANGE**: Removed topic_search from documentstore (moved to userclient only)
