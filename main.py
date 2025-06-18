@@ -127,7 +127,7 @@ user_hybrid_results = uc.documents.search(
 print(f"User hybrid search returned {len(user_hybrid_results)} results")
 
 # topic search with AI analysis (user client only)
-topic_results = uc.topic_search.search(
+topic_results = uc.search.topic_search(
     query="sustainable packaging trends", extended_search=False
 )
 print(f"Topic search returned {len(topic_results)} results")
