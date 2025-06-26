@@ -16,7 +16,17 @@
 This module contains the client library to interact with the Market Logic DeepSights and ContentStore APIs.
 """
 
+from deepsights import exceptions
 from deepsights.deepsights import DeepSights
 from deepsights.documentstore.resources import SortingField, SortingOrder
+from deepsights.exceptions import AuthenticationError, DeepSightsError, RateLimitError
 
-__all__ = ["SortingField", "SortingOrder", "DeepSights"]
+__all__ = [
+    "SortingField",
+    "SortingOrder",
+    "DeepSights",
+    "exceptions",
+    "AuthenticationError",
+    "DeepSightsError",
+    "RateLimitError",
+]

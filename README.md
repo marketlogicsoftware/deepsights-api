@@ -172,14 +172,48 @@ for item in content.results:
     print(f"{item.title} - {item.source}")
 ```
 
-#### Error Handling
+#### Error Handling & Rate Limiting
 ```python
+import time
+import deepsights
+
+ds = deepsights.DeepSights()
+uc = ds.get_userclient("analyst@company.com")
+
+try:
+    # Ask multiple questions - will demonstrate rate limiting
+    for i in range(15):  # Exceeds 10/minute limit for answers
+        response = uc.answersV2.create(f"Question {i}: Market trends?")
+        print(f"✅ Question {i+1} processed")
+        
+except deepsights.RateLimitError as e:
+    print(f"🚫 Rate limit exceeded: {e}")
+    
+    if e.retry_after:
+        print(f"⏱️  Client-side limit - wait {e.retry_after} seconds")
+        time.sleep(e.retry_after)
+    else:
+        print("⏱️  Server busy - try again later")
+        
+except deepsights.AuthenticationError as e:
+    print(f"🔐 Authentication failed: {e}")
+    
+except deepsights.DeepSightsError as e:
+    print(f"⚠️  API error: {e}")
+
+# Alternative: Handle all rate limiting uniformly
 try:
     response = uc.answersV2.create_and_wait("Your question here")
-except deepsights.exceptions.AuthenticationError:
-    print("Invalid API key or permissions")
-except deepsights.exceptions.RateLimitError:
-    print("Rate limit exceeded - please wait")
+    
+except deepsights.RateLimitError as e:
+    # Handles both client-side (10/min) and server-side (persistent 429) limits
+    print(f"Rate limit hit: {e}")
+    
+    # Implement your retry strategy
+    if e.retry_after:
+        time.sleep(e.retry_after)  # Known wait time
+    else:
+        time.sleep(60)  # Conservative fallback for server limits
 ```
 
 All return values are [Pydantic objects](https://docs.pydantic.dev/latest/) with `.schema_human()` for exploring available properties. See [main.py](https://github.com/marketlogicsoftware/deepsights-api/blob/main/main.py) for more examples.
@@ -187,10 +221,43 @@ All return values are [Pydantic objects](https://docs.pydantic.dev/latest/) with
 
 ## Developer Information
 
-### Rate Limits
-- **GET requests**: 1,000 per 60 seconds
-- **POST requests**: 100 per 60 seconds
-- Automatic exponential backoff retry logic included
+### Rate Limits & Error Handling
+
+The DeepSights API implements **comprehensive rate limiting** to ensure fair usage and optimal performance:
+
+#### Client-Side Rate Limits
+- **AI Answers**: 10 requests per 60 seconds (`uc.answersV2.create()`)
+- **AI Reports**: 3 requests per 60 seconds (`uc.reports.create()`)
+- **General GET requests**: 1,000 per 60 seconds
+- **General POST requests**: 100 per 60 seconds
+
+#### Behavior
+- **Client-side limits**: Immediate `RateLimitError` with `retry_after` information
+- **Server-side limits**: Automatic retry with exponential backoff (up to 3 attempts)
+- **Persistent server limits**: Convert to `RateLimitError` after retries for consistent handling
+
+#### Exception Hierarchy
+```python
+deepsights.DeepSightsError          # Base exception
+├── deepsights.RateLimitError       # Rate limiting (client + server)
+└── deepsights.AuthenticationError  # Invalid API keys/permissions
+```
+
+#### Best Practices
+```python
+# Recommended error handling pattern
+try:
+    response = uc.answersV2.create_and_wait("Your question")
+    
+except deepsights.RateLimitError as e:
+    # Single handler for all rate limiting scenarios
+    wait_time = e.retry_after or 60  # Use provided time or conservative fallback
+    print(f"Rate limited, waiting {wait_time} seconds...")
+    time.sleep(wait_time)
+    
+except deepsights.AuthenticationError:
+    print("Check your API keys and permissions")
+```
 
 ### Caching
 - User client responses cached for 240 seconds (TTL)

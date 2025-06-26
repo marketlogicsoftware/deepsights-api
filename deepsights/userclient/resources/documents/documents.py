@@ -171,7 +171,7 @@ class DocumentResource(APIResource):
         # load uncached document pages
         def _load_document_page(page_id: str) -> DocumentPage:
             result = self.api.get(
-                f"/end-user-gateway-service/pages/{page_id}", timeout=5
+                f"/end-user-gateway-service/artifacts/pages/{page_id}", timeout=5
             )
 
             # map the document page

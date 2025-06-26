@@ -29,6 +29,8 @@ from tenacity import (
     wait_random_exponential,
 )
 
+from deepsights.exceptions import AuthenticationError, RateLimitError
+
 
 def _should_retry_http_error(exception: Exception) -> bool:
     """
@@ -51,6 +53,50 @@ def _should_retry_http_error(exception: Exception) -> bool:
         return False
     # Always retry connection and timeout errors
     return isinstance(exception, (ConnectionError, Timeout))
+
+
+def _handle_http_error(response):
+    """
+    Handles HTTP errors and raises appropriate custom exceptions.
+
+    Args:
+        response: The HTTP response object
+
+    Raises:
+        AuthenticationError: If status code is 401 (Unauthorized)
+        HTTPError: For other HTTP errors
+    """
+    if response.status_code == 401:
+        raise AuthenticationError("Invalid API key or insufficient permissions")
+    elif response.status_code in [429, 502, 503]:
+        raise HTTPError(f"Retriable error {response.status_code}", response=response)
+    else:
+        response.raise_for_status()
+
+
+def _handle_persistent_rate_limit(func):
+    """
+    Decorator to catch persistent 429 errors after retries and convert them to RateLimitError.
+
+    This ensures consistent exception handling for both client-side and server-side rate limiting.
+    """
+
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except HTTPError as e:
+            if (
+                hasattr(e, "response")
+                and e.response is not None
+                and e.response.status_code == 429
+            ):
+                raise RateLimitError(
+                    "Server rate limit exceeded after retries. Please wait before making another request.",
+                    retry_after=None,  # Server didn't provide retry-after info
+                ) from e
+            raise
+
+    return wrapper
 
 
 #################################################
@@ -120,6 +166,7 @@ class API:
         return self._endpoint_base + path.strip("/")
 
     #######################################
+    @_handle_persistent_rate_limit
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_random_exponential(max=5),
@@ -143,6 +190,8 @@ class API:
             The JSON body of the server's response to the request.
 
         Raises:
+            AuthenticationError: If the request fails with a 401 status code.
+            RateLimitError: If the request fails with persistent 429 status code after retries.
             HTTPError: If the GET request fails with a non-200 status code and not in the expected_statuscodes list.
         """
         timeout = timeout or self._default_timeout
@@ -154,15 +203,12 @@ class API:
             response.status_code not in [200, 201, 202]
             and response.status_code not in expected_statuscodes
         ):
-            if response.status_code in [429, 502, 503]:
-                raise HTTPError(
-                    f"Retriable error {response.status_code}", response=response
-                )
-            response.raise_for_status()
+            _handle_http_error(response)
 
         return response.json()
 
     #######################################
+    @_handle_persistent_rate_limit
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_random_exponential(max=5),
@@ -189,6 +235,8 @@ class API:
             bytes: The raw content of the server's response.
 
         Raises:
+            AuthenticationError: If the request fails with a 401 status code.
+            RateLimitError: If the request fails with persistent 429 status code after retries.
             HTTPError: If the GET request fails with a non-200 status code and not in the expected_statuscodes list.
         """
         timeout = timeout or self._default_timeout
@@ -200,15 +248,12 @@ class API:
             response.status_code not in [200, 201, 202]
             and response.status_code not in expected_statuscodes
         ):
-            if response.status_code in [429, 502, 503]:
-                raise HTTPError(
-                    f"Retriable error {response.status_code}", response=response
-                )
-            response.raise_for_status()
+            _handle_http_error(response)
 
         return response.content
 
     #######################################
+    @_handle_persistent_rate_limit
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_random_exponential(max=5),
@@ -236,6 +281,11 @@ class API:
 
         Returns:
             Dict: The JSON body of the server's response to the request.
+
+        Raises:
+            AuthenticationError: If the request fails with a 401 status code.
+            RateLimitError: If the request fails with persistent 429 status code after retries.
+            HTTPError: For other HTTP errors.
         """
         timeout = timeout or self._default_timeout
         response = self._session.post(
@@ -246,15 +296,12 @@ class API:
             response.status_code not in [200, 201, 202]
             and response.status_code not in expected_statuscodes
         ):
-            if response.status_code in [429, 502, 503]:
-                raise HTTPError(
-                    f"Retriable error {response.status_code}", response=response
-                )
-            response.raise_for_status()
+            _handle_http_error(response)
 
         return response.json()
 
     #######################################
+    @_handle_persistent_rate_limit
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_random_exponential(max=5),
@@ -273,6 +320,8 @@ class API:
 
         Raises:
 
+            AuthenticationError: If the request fails with a 401 status code.
+            RateLimitError: If the request fails with persistent 429 status code after retries.
             HTTPError: If the DELETE request fails with a non-200 status code.
         """
         timeout = timeout or self._default_timeout
@@ -282,11 +331,7 @@ class API:
             response.status_code not in [200, 204]
             and response.status_code not in expected_statuscodes
         ):
-            if response.status_code in [429, 502, 503]:
-                raise HTTPError(
-                    f"Retriable error {response.status_code}", response=response
-                )
-            response.raise_for_status()
+            _handle_http_error(response)
 
 
 #################################################

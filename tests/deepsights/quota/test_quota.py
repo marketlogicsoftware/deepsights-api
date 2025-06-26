@@ -17,8 +17,8 @@ This module contains the tests for the DeepSights API.
 """
 
 import pytest
-import requests
 
+from deepsights.exceptions import AuthenticationError
 from tests.helpers.validation import (
     assert_valid_quota_profile,
     assert_valid_quota_status,
@@ -29,23 +29,14 @@ def test_ds_api_authentication(unauthorized_client):
     """
     Test case for DeepSights API authentication.
 
-    This test verifies that an HTTPError with status code 401 is raised when attempting to
+    This test verifies that an AuthenticationError is raised when attempting to
     get the profile using an invalid API key.
 
     """
-    with pytest.raises(requests.exceptions.HTTPError) as exc:
+    with pytest.raises(AuthenticationError) as exc:
         unauthorized_client.quota.get_profile()
 
-    assert exc.value.response.status_code == 401
-
-
-def test_ds_api_profile(ds_client):
-    """
-    Test case to verify the profile of the DeepSights API response.
-    """
-    profile = ds_client.quota.get_profile()
-
-    assert_valid_quota_profile(profile)
+    assert "Invalid API key or insufficient permissions" in str(exc.value)
 
 
 def test_ds_quota_info(ds_client):
@@ -59,3 +50,12 @@ def test_ds_quota_info(ds_client):
     status = ds_client.quota.get_status()
 
     assert_valid_quota_status(status)
+
+
+def test_ds_api_profile(ds_client):
+    """
+    Test case to verify the profile of the DeepSights API response.
+    """
+    profile = ds_client.quota.get_profile()
+
+    assert_valid_quota_profile(profile)

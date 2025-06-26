@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.3.3 (26-Jun-2025)
+
+- Auto-refresh token for userclient
+- Streamlined rate limiting and error handling
+ 
+
 ## v1.3.2 (18-Jun-2025)
 
 - Improved error logging for answer polling

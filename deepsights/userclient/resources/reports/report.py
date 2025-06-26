@@ -16,7 +16,10 @@
 This module contains the functions to retrieve reports from the DeepSights self.
 """
 
+from ratelimit import RateLimitException, limits
+
 from deepsights.api import APIResource
+from deepsights.exceptions import RateLimitError
 from deepsights.userclient.resources.reports._model import Report
 from deepsights.utils import (
     PollingFailedError,
@@ -32,6 +35,7 @@ class ReportResource(APIResource):
     """
 
     #################################################
+    @limits(calls=3, period=60)
     def create(self, question: str) -> str:
         """
         Creates a new report by submitting a question to the DeepSights self.
@@ -43,12 +47,23 @@ class ReportResource(APIResource):
         Returns:
 
             str: The ID of the created report's minion job.
+
+        Raises:
+
+            RateLimitError: If the rate limit of 3 calls per 60 seconds is exceeded.
         """
+        try:
+            body = {"input": question}
+            response = self.api.post(
+                "/end-user-gateway-service/desk-researches", body=body
+            )
 
-        body = {"input": question}
-        response = self.api.post("/end-user-gateway-service/desk-researches", body=body)
-
-        return response["desk_research"]["minion_job"]["id"]
+            return response["desk_research"]["minion_job"]["id"]
+        except RateLimitException as e:
+            raise RateLimitError(
+                "Report creation rate limit exceeded (3 calls per 60 seconds). Please wait before making another request.",
+                retry_after=60,
+            ) from e
 
     #################################################
     def wait_for_report(self, report_id: str, timeout=600) -> Report:

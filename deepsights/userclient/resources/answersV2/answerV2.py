@@ -16,7 +16,10 @@
 This module contains the functions to retrieve reports from the DeepSights self.
 """
 
+from ratelimit import RateLimitException, limits
+
 from deepsights.api import APIResource
+from deepsights.exceptions import RateLimitError
 from deepsights.userclient.resources.answersV2._model import AnswerV2
 from deepsights.utils import (
     PollingFailedError,
@@ -32,6 +35,7 @@ class AnswerV2Resource(APIResource):
     """
 
     #################################################
+    @limits(calls=10, period=60)
     def create(self, question: str) -> str:
         """
         Creates a new answer V2 by submitting a question to the DeepSights self.
@@ -43,12 +47,21 @@ class AnswerV2Resource(APIResource):
         Returns:
 
             str: The ID of the created answer's minion job.
+
+        Raises:
+
+            RateLimitError: If the rate limit of 10 calls per 60 seconds is exceeded.
         """
+        try:
+            body = {"input": question}
+            response = self.api.post("/end-user-gateway-service/answers-v2", body=body)
 
-        body = {"input": question}
-        response = self.api.post("/end-user-gateway-service/answers-v2", body=body)
-
-        return response["answer_v2"]["minion_job"]["id"]
+            return response["answer_v2"]["minion_job"]["id"]
+        except RateLimitException as e:
+            raise RateLimitError(
+                "Answer creation rate limit exceeded (10 calls per 60 seconds). Please wait before making another request.",
+                retry_after=60,
+            ) from e
 
     #################################################
     def wait_for_answer(self, answer_id: str, timeout=90) -> AnswerV2:
@@ -148,6 +161,7 @@ class AnswerV2Resource(APIResource):
             )
 
     #################################################
+    @limits(calls=10, period=60)
     def create_and_wait(self, question: str, timeout=90) -> AnswerV2:
         """
         Submits a question to the DeepSights API and waits for the answer to complete.
@@ -163,7 +177,14 @@ class AnswerV2Resource(APIResource):
 
         Raises:
 
+            RateLimitError: If the rate limit of 10 calls per 60 seconds is exceeded.
             PollingTimeoutError: If the answer fails to complete within timeout.
             PollingFailedError: If the answer fails to complete.
         """
-        return self.wait_for_answer(self.create(question), timeout=timeout)
+        try:
+            return self.wait_for_answer(self.create(question), timeout=timeout)
+        except RateLimitException as e:
+            raise RateLimitError(
+                "Answer creation rate limit exceeded (10 calls per 60 seconds). Please wait before making another request.",
+                retry_after=60,
+            ) from e

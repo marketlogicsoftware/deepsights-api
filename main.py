@@ -17,6 +17,7 @@ Sample code to use the DeepSights API.
 """
 
 import json
+import time
 
 import deepsights
 
@@ -109,10 +110,61 @@ cs_hybrid_results = ds.contentstore.secondary.search(
 #
 # for this to work, we assume the api key for user resolution was set in the environment as MIP_API_KEY
 
-# obtain a user client for a known email address
-uc = ds.get_userclient("john.doe@acme.com")
+print("=== User Client Examples ===")
 
-print("=== User Client Document Management ===")
+# Method 1: Traditional approach - obtain a user client for a known email address
+# This gets a token once and uses it (no auto-refresh)
+uc = ds.get_userclient("john.doe@acme.com")
+print(f"Traditional user client created for john.doe@acme.com")
+
+# Method 2: Auto-refresh mode with configurable interval
+# This automatically refreshes tokens every 10 minutes (600 seconds) by default
+print("\n=== Auto-Refresh Token Management ===")
+
+try:
+    # Create user client with auto-refresh (default 10-minute intervals)
+    auto_uc = deepsights.UserClient(
+        email="john.doe@acme.com",
+        # api_key="your_mip_api_key_here"  # or set MIP_API_KEY environment variable
+    )
+
+    # Check token status
+    token_info = auto_uc.get_token_info()
+    print(f"Auto-refresh enabled: {token_info['auto_refresh_enabled']}")
+    print(f"User email: {token_info['email']}")
+    print(
+        f"Refresh interval: {token_info['refresh_interval_seconds']} seconds ({token_info['refresh_interval_seconds'] / 60:.1f} minutes)"
+    )
+    print(f"Has valid token: {token_info['has_token']}")
+
+    # Example with custom refresh interval (5 minutes for demo)
+    frequent_refresh_uc = deepsights.UserClient(
+        email="john.doe@acme.com",
+        # api_key="your_mip_api_key_here",
+        auto_refresh_interval_seconds=300,  # Refresh every 5 minutes
+    )
+
+    print("\nCreated client with custom 5-minute refresh interval")
+
+    # Manually trigger a token refresh if needed
+    print("Demonstrating manual token refresh...")
+    refresh_success = frequent_refresh_uc.manual_token_refresh()
+    print(f"Manual refresh successful: {refresh_success}")
+
+    # For long-running applications, you can stop auto-refresh when done
+    print("Stopping auto-refresh for cleanup...")
+    frequent_refresh_uc.stop_auto_refresh()
+
+    # Use the auto-refresh client for API calls (tokens refresh automatically)
+    uc = auto_uc  # Use auto-refresh client for remaining examples
+
+except ValueError as e:
+    print(f"Auto-refresh mode not available: {e}")
+    print("Falling back to traditional mode...")
+    # Fall back to traditional method if auto-refresh setup fails
+    uc = ds.get_userclient("john.doe@acme.com")
+
+print("\n=== User Client Document Management ===")
 
 # list documents with user-specific access
 total_docs, user_documents = uc.documents.documents_list(
@@ -153,7 +205,7 @@ if user_documents:
         pages = uc.documents.document_pages_load(page_ids)
         print(f"Loaded {len(pages)} individual pages")
 
-print("=== AI-Generated Answers ===")
+print("\n=== AI-Generated Answers ===")
 
 # obtain an answer set
 answer = uc.answersV2.create_and_wait(
@@ -161,3 +213,86 @@ answer = uc.answersV2.create_and_wait(
 )
 print(f"Answer: {answer.answer}")
 print(f"Sources: {len(answer.document_sources)} documents cited")
+
+print("\n=== Rate Limiting & Error Handling Demo ===")
+
+
+# Demonstrate consistent rate limiting and error handling
+def demonstrate_rate_limiting():
+    """
+    Demonstrates how the DeepSights API handles rate limiting consistently
+    for both client-side and server-side scenarios.
+    """
+    print("🔄 Testing rate limiting behavior...")
+
+    questions = [
+        "What are the latest consumer trends in sustainability?",
+        "How is Gen Z changing the retail landscape?",
+        "What are emerging food consumption patterns?",
+        "How do brand preferences differ across demographics?",
+        "What drives customer loyalty in digital-first brands?",
+    ]
+
+    successful_requests = 0
+
+    for i, question in enumerate(questions):
+        try:
+            print(f"\n📝 Processing question {i + 1}: {question[:50]}...")
+
+            # This will hit client-side rate limits (10/minute for answers)
+            answer_id = uc.answersV2.create(question)
+            print(f"✅ Answer request created: {answer_id}")
+            successful_requests += 1
+
+        except deepsights.RateLimitError as e:
+            print(f"🚫 Rate limit exceeded: {e}")
+
+            if e.retry_after:
+                print(f"⏱️  Client-side limit - suggested wait: {e.retry_after} seconds")
+                print("   (In production, you'd implement your retry strategy here)")
+            else:
+                print("⏱️  Server-side limit - try again later")
+
+            # In a real application, you might:
+            # - Queue the request for later
+            # - Wait and retry automatically
+            # - Show user a progress indicator
+            break
+
+        except deepsights.AuthenticationError as e:
+            print(f"🔐 Authentication failed: {e}")
+            print("   Check your API keys and user permissions")
+            break
+
+        except deepsights.DeepSightsError as e:
+            print(f"⚠️  API error: {e}")
+            print("   This could be a temporary server issue")
+            break
+
+        except Exception as e:
+            print(f"❌ Unexpected error: {type(e).__name__}: {e}")
+            break
+
+    print("\n📊 Rate limiting demo complete!")
+    print(f"   Successfully processed: {successful_requests}/{len(questions)} requests")
+    print("   Rate limit: 10 requests per 60 seconds for AI answers")
+
+    # Best practice example
+    print("\n💡 Best Practice Example:")
+    print("   For production applications, implement exponential backoff:")
+    print("   ```python")
+    print("   try:")
+    print("       response = uc.answersV2.create_and_wait(question)")
+    print("   except deepsights.RateLimitError as e:")
+    print("       wait_time = e.retry_after or 60  # Use provided time or fallback")
+    print("       time.sleep(wait_time)")
+    print("       # Retry logic here...")
+    print("   ```")
+
+
+# Run the demonstration
+try:
+    demonstrate_rate_limiting()
+except Exception as e:
+    print(f"Demo could not run: {e}")
+    print("This is normal if running without proper API credentials")
