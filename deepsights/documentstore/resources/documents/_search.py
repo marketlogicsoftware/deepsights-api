@@ -219,6 +219,8 @@ def hybrid_search(
     Returns:
         List[HybridSearchResult]: The list of hybrid search results.
     """
+    MAX_QUERY_LENGTH = 512
+
     # Input validation
     if query is None:
         raise ValueError("The 'query' argument is required.")
@@ -227,8 +229,8 @@ def hybrid_search(
     query = query.strip()
     if len(query) == 0:
         raise ValueError("The 'query' cannot be empty.")
-    if len(query) > 100:
-        raise ValueError("The 'query' must be 100 characters or less.")
+    if len(query) > MAX_QUERY_LENGTH:
+        raise ValueError(f"The 'query' must be {MAX_QUERY_LENGTH} characters or less.")
 
     body = {
         "query": query,

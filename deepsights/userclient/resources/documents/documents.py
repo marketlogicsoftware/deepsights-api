@@ -48,6 +48,8 @@ class DocumentResource(APIResource):
     Represents a resource for performing hybrid searches via the DeepSights API.
     """
 
+    MAX_QUERY_LENGTH = 512
+
     #################################################
     def search(
         self, query: str, extended_search: bool = False
@@ -68,8 +70,10 @@ class DocumentResource(APIResource):
         query = query.strip()
         if len(query) == 0:
             raise ValueError("The 'query' cannot be empty.")
-        if len(query) > 100:
-            raise ValueError("The 'query' must be 100 characters or less.")
+        if len(query) > self.MAX_QUERY_LENGTH:
+            raise ValueError(
+                f"The 'query' must be {self.MAX_QUERY_LENGTH} characters or less."
+            )
 
         body = {
             "query": query,

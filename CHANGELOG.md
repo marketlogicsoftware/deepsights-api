@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v1.3.4 (11-Jul-2025)
+
+- Extended hybrid search query length limitation to 512 chars
+
 ## v1.3.3 (26-Jun-2025)
 
 - Auto-refresh token for userclient
