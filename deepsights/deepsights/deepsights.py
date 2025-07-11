@@ -45,6 +45,7 @@ class DeepSights(APIKeyAPI):
         ds_api_key: Optional[str] = None,
         cs_api_key: Optional[str] = None,
         mip_api_key: Optional[str] = None,
+        endpoint_base: Optional[str] = "https://api.deepsights.ai/ds/v1/",
     ) -> None:
         """
         Initializes the DeepSights API client.
@@ -55,7 +56,7 @@ class DeepSights(APIKeyAPI):
             mip_api_key (str): The API key for the MIP API. If None, the MIP_API_KEY environment variable is used.
         """
         super().__init__(
-            endpoint_base="https://api.deepsights.ai/ds/v1/",
+            endpoint_base=endpoint_base,
             api_key=ds_api_key,
             api_key_env_var="DEEPSIGHTS_API_KEY",
         )

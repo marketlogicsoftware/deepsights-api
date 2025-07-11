@@ -17,7 +17,6 @@ Sample code to use the DeepSights API.
 """
 
 import json
-import time
 
 import deepsights
 

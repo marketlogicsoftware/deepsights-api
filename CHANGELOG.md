@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v1.3.5 (11-Jul-2025)
+
+- Add configurable endpoint base URL for test envs
+
 ## v1.3.4 (11-Jul-2025)
 
 - Extended hybrid search query length limitation to 512 chars
