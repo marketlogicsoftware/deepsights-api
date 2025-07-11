@@ -37,7 +37,6 @@ def test_hybrid_search_basic(user_client, test_data):
         assert len(result.artifact_title) > 0
 
 
-@pytest.mark.skip(reason="Skipping extended search test due to 500 error")
 def test_hybrid_search_extended(user_client, test_data):
     """
     Test the hybrid search functionality with extended search enabled.
@@ -71,5 +70,5 @@ def test_hybrid_search_validation_errors(user_client):
         user_client.documents.search(query="   ")
 
     # Test query too long
-    with pytest.raises(ValueError, match="query.*100 characters"):
-        user_client.documents.search(query="x" * 101)
+    with pytest.raises(ValueError, match="query.*512 characters"):
+        user_client.documents.search(query="x" * 601)

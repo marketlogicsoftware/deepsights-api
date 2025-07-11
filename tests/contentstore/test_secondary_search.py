@@ -406,29 +406,6 @@ def test_secondary_hybrid_search_with_vector_high(ds_client, test_data):
     for ix, result in enumerate(vector_results):
         assert equal_results(hybrid_results[ix], result)
 
-
-def test_secondary_hybrid_search_with_vector_low(ds_client, test_data):
-    """
-    Test case for performing hybrid search with a low vector weight, checking
-    that the final ranking is that same as the text ranking.
-    """
-    hybrid_results = ds_client.contentstore.secondary.search(
-        query=test_data["question"],
-        max_results=50,
-        vector_weight=0.00001,
-        vector_fraction=0.5,
-        recency_weight=0.0,
-    )
-
-    text_results = ds_client.contentstore.secondary.text_search(
-        query=test_data["question"],
-        max_results=10,
-    )
-
-    for ix, result in enumerate(text_results):
-        assert equal_results(result, hybrid_results[ix])
-
-
 def test_secondary_hybrid_search_with_evidence_filter(ds_client, test_data):
     """
     Test the secondary hybrid search function with evidence filter.

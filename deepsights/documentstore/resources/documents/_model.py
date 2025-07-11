@@ -124,6 +124,7 @@ class Document(DeepSightsIdTitleModel):
 
     def __init__(self, **kwargs):
         kwargs["creation_date"] = kwargs["origin"]["creation_time"]
+        kwargs["publication_date"] = kwargs["publication_data"]["publication_date"]
         super().__init__(**kwargs)
 
     @property

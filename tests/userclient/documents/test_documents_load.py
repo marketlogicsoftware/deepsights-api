@@ -44,7 +44,6 @@ def test_documents_load_404(user_client):
     assert exc.value.response.status_code == 404
 
 
-@pytest.mark.skip(reason="Skipping document load test due to server endpoint issue")
 def test_documents_load_basic(user_client, test_data):
     """
     Test the basic loading of a document using userclient documents_load() function.

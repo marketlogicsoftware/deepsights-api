@@ -178,7 +178,6 @@ def test_hybrid_search_basic(ds_client, test_data):
         assert_valid_hybrid_search_result(result)
 
 
-@pytest.mark.skip(reason="Skipping extended search test due to 500 error")
 def test_hybrid_search_extended(ds_client, test_data):
     """
     Test the hybrid search functionality with extended search enabled.
@@ -218,5 +217,5 @@ def test_hybrid_search_validation_errors(ds_client):
         ds_client.documentstore.documents.search(query="   ")
 
     # Test query too long
-    with pytest.raises(ValueError, match="query.*100 characters"):
-        ds_client.documentstore.documents.search(query="x" * 101)
+    with pytest.raises(ValueError, match="query.*512 characters"):
+        ds_client.documentstore.documents.search(query="x" * 601)
