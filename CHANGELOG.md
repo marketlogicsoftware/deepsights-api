@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v1.3.6 (24-Jul-2025)
+
+- Support document page retrieval via user token endpoints 
+
 ## v1.3.5 (11-Jul-2025)
 
 - Add configurable endpoint base URL for test envs

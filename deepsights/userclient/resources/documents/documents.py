@@ -18,6 +18,8 @@ This module contains the functions to perform hybrid searches via the DeepSights
 
 from typing import List
 
+import requests
+
 from deepsights.api import APIResource
 from deepsights.documentstore.resources.documents._cache import (
     get_document,
@@ -172,28 +174,50 @@ class DocumentResource(APIResource):
             page_id for page_id in page_ids if not has_document_page(page_id)
         ]
 
-        # load uncached document pages
-        def _load_document_page(page_id: str) -> DocumentPage:
-            result = self.api.get(
-                f"/end-user-gateway-service/artifacts/pages/{page_id}", timeout=5
-            )
+        # load uncached document pages using batch endpoint
+        if uncached_document_page_ids:
+            # Split into batches of 100 (API limit)
+            batch_size = 100
+            for i in range(0, len(uncached_document_page_ids), batch_size):
+                batch_ids = uncached_document_page_ids[i : i + batch_size]
 
-            # map the document page
-            return DocumentPage(
-                id=result["id"],
-                page_number=result["number"],
-                text=segment_landscape_page(result),
-            )
+                # Use the batch search endpoint
+                response = self.api.post(
+                    "/end-user-gateway-service/artifact-pages/_search",
+                    body={"ids": batch_ids},
+                    timeout=10,  # Increased timeout for batch operation
+                )
 
-        uncached_document_pages = run_in_parallel(
-            _load_document_page, uncached_document_page_ids, max_workers=5
-        )
+                # Process the response
+                for page_data in response.get("items", []):
+                    # The batch endpoint returns text directly, not the complex structure
+                    page = DocumentPage(
+                        id=page_data["id"],
+                        page_number=page_data["number"],
+                        text=page_data.get("text", ""),
+                    )
+                    # Cache the page
+                    set_document_page(page.id, page)
 
-        # set in cache
-        for page in uncached_document_pages:
-            set_document_page(page.id, page)
+            # Check if all uncached pages were found
+            missing_page_ids = [
+                page_id
+                for page_id in uncached_document_page_ids
+                if not has_document_page(page_id)
+            ]
+            if missing_page_ids:
+                # Create a mock response for the HTTPError
+                response = requests.Response()
+                response.status_code = 404
+                response._content = (
+                    f"Page(s) not found: {', '.join(missing_page_ids)}".encode()
+                )
+                raise requests.exceptions.HTTPError(
+                    f"404 Client Error: Not Found for page(s): {', '.join(missing_page_ids)}",
+                    response=response,
+                )
 
-        # collect results
+        # collect results maintaining original order
         return [get_document_page(page_id) for page_id in page_ids]
 
     #################################################

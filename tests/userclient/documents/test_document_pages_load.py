@@ -25,9 +25,6 @@ from deepsights.documentstore.resources.documents._cache import (
 )
 
 
-@pytest.mark.skip(
-    reason="Skipping document page load test due to server endpoint issue"
-)
 def test_document_pages_load_basic(user_client, test_data):
     """
     Test the basic loading of a document page.
@@ -50,9 +47,6 @@ def test_document_pages_load_basic(user_client, test_data):
     assert has_document_page(test_page_id)
 
 
-@pytest.mark.skip(
-    reason="Skipping document page load test due to server endpoint issue"
-)
 def test_document_pages_load_caching(user_client, test_data):
     """
     Test the caching behavior of document_pages_load function.
@@ -74,9 +68,6 @@ def test_document_pages_load_caching(user_client, test_data):
     assert pages_cached[0].text != original_text
 
 
-@pytest.mark.skip(
-    reason="Skipping document page load test due to server endpoint issue"
-)
 def test_document_pages_load_multiple_pages(user_client, test_data):
     """
     Test loading multiple document pages at once.
@@ -98,9 +89,6 @@ def test_document_pages_load_multiple_pages(user_client, test_data):
         assert page.text is not None
 
 
-@pytest.mark.skip(
-    reason="Skipping document page load test due to server endpoint issue"
-)
 def test_document_pages_load_from_document_with_pages(user_client, test_data):
     """
     Test loading pages for a document that has been loaded with pages.
@@ -132,9 +120,6 @@ def test_document_pages_load_from_document_with_pages(user_client, test_data):
         assert has_document_page(page.id)
 
 
-@pytest.mark.skip(
-    reason="Skipping document page load test due to server endpoint issue"
-)
 def test_document_pages_load_404_error(user_client):
     """
     Test that document_pages_load handles 404 errors appropriately for non-existent pages.
@@ -147,9 +132,6 @@ def test_document_pages_load_404_error(user_client):
     assert exc.value.response.status_code == 404
 
 
-@pytest.mark.skip(
-    reason="Skipping document page load test due to server endpoint issue"
-)
 def test_document_pages_load_mixed_cached_uncached(user_client, test_data):
     """
     Test loading a mix of cached and uncached pages.
@@ -181,9 +163,6 @@ def test_document_pages_load_mixed_cached_uncached(user_client, test_data):
         assert has_document_page(page.id)
 
 
-@pytest.mark.skip(
-    reason="Skipping document page load test due to server endpoint issue"
-)
 def test_document_pages_load_page_properties(user_client, test_data):
     """
     Test that loaded pages have all expected properties.
@@ -211,9 +190,6 @@ def test_document_pages_load_page_properties(user_client, test_data):
     assert len(page.text.strip()) > 0
 
 
-@pytest.mark.skip(
-    reason="Skipping document page load test due to server endpoint issue"
-)
 def test_document_pages_load_parallel_loading(user_client, test_data):
     """
     Test that parallel loading of pages works correctly.

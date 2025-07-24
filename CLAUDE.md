@@ -8,6 +8,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `pytest` - Run all tests
 - `pytest tests/documentstore/` - Run specific test module
 - `pytest -v` - Run tests with verbose output
+- `pytest -k "test_name"` - Run specific test by name
+- `pytest -x` - Stop on first failure
+- `pytest --lf` - Run only last failed tests
 
 ### Code Quality
 - `pylint $(git ls-files '*.py')` - Run linting on all Python files
@@ -43,7 +46,11 @@ DeepSights (main client)
 
 **Caching**: TTL-based caching (240s for user clients) using `cachetools` with sophisticated document caching in `documentstore`.
 
-**Rate Limiting**: Built-in limits (1000 GET, 100 POST per 60s) with exponential backoff retry logic via `tenacity`.
+**Rate Limiting**: Built-in limits with exponential backoff retry logic via `tenacity`:
+- AI Answers: 10 requests per minute
+- AI Reports: 3 requests per minute  
+- GET requests: 1000 per minute
+- POST requests: 100 per minute
 
 ### Key Features
 
@@ -64,3 +71,14 @@ Required API keys (set in environment or pass to constructor):
 ## Testing Structure
 
 Tests mirror source structure with integration tests for each service. Test data includes JSON, PDF, and text files in `tests/data/`. Environment-based API key configuration supports CI/CD workflows.
+
+## Python Version Support
+
+This project supports Python 3.10, 3.11, and 3.12. CI/CD pipeline runs tests on Python 3.12.
+
+## Project Links
+
+- [PyPI Package](https://pypi.org/project/deepsights-api/)
+- [GitHub Repository](https://github.com/marketlogicsoftware/deepsights-api)
+- [API Documentation](https://marketlogicsoftware.github.io/deepsights-api/)
+- [DeepSights API Portal](https://apiportal.mlsdevcloud.com/deep-sights)

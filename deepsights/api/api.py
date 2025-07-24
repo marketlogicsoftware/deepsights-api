@@ -144,7 +144,7 @@ class API:
 
         # set keep-alive headers
         self._session.headers.update(
-            {"Connection": "keep-alive", "User-Agent": "deepsights-api/1.3.5"}
+            {"Connection": "keep-alive", "User-Agent": "deepsights-api/1.3.6"}
         )
 
         # store default timeout
