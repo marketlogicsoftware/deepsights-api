@@ -20,6 +20,7 @@ import logging
 import threading
 from typing import Optional
 
+from cachetools import TTLCache
 
 from deepsights.api.api import OAuthTokenAPI
 from deepsights.deepsights._mip_identity import MIPIdentityResolver
@@ -42,6 +43,10 @@ class UserClient(OAuthTokenAPI):
     1. Direct OAuth token (manual refresh)
     2. Auto-refresh mode using email + API key (automatic token refresh)
     """
+
+    # Class-level static cache for user clients
+    _userclients_cache: TTLCache = TTLCache(maxsize=100, ttl=240)
+    _userclients_lock: threading.RLock = threading.RLock()
 
     answersV2: AnswerV2Resource
     reports: ReportResource
@@ -256,6 +261,63 @@ class UserClient(OAuthTokenAPI):
             ),
             "has_token": bool(self._oauth_token),
         }
+
+    #######################################
+    @staticmethod
+    def get_userclient(
+        user_email: str, 
+        mip_api_key: str, 
+        endpoint_base: Optional[str] = None
+    ) -> "UserClient":
+        """
+        Retrieves a user client for the given user.
+
+        Args:
+            user_email (str): The email of the user to impersonate.
+            mip_api_key (str): The API key for the MIP API.
+            endpoint_base (str, optional): The base URL of the API endpoint.
+                If not provided, the default endpoint base will be used.
+
+        Returns:
+            UserClient: The user client for the given user. Will be cached.
+
+        Raises:
+            ValueError: If the user is not found.
+        """
+        # normalize the email
+        user_email = user_email.lower().strip()
+        
+        if endpoint_base is None:
+            endpoint_base = ENDPOINT_BASE
+
+        # thread-safe cache access
+        with UserClient._userclients_lock:
+            # create the user client if it doesn't exist
+            if user_email not in UserClient._userclients_cache:
+                mip_identity_resolver = MIPIdentityResolver(mip_api_key)
+                oauth_token = mip_identity_resolver.get_oauth_token(user_email)
+                if not oauth_token:
+                    raise ValueError(f"User not found: {user_email}")
+
+                UserClient._userclients_cache[user_email] = UserClient(
+                    oauth_token=oauth_token, 
+                    endpoint_base=endpoint_base
+                )
+
+            return UserClient._userclients_cache[user_email]
+
+    #######################################
+    @staticmethod
+    def get_userclient_by_token(oauth_token: str, endpoint_base: Optional[str] = None) -> "UserClient":
+        """
+        Retrieves a user client for the given OAuth token.
+
+        Args:
+            oauth_token (str): The OAuth token to be used for authentication.
+            endpoint_base (str, optional): The base URL of the API endpoint.
+                If not provided, the default endpoint base will be used.
+        """
+        return UserClient(oauth_token=oauth_token, endpoint_base=endpoint_base)
 
     #######################################
     def __del__(self) -> None:

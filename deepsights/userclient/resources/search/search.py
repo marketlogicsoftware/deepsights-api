@@ -60,4 +60,4 @@ class SearchResource(APIResource):
 
         # Extract the search results from the response
         search_results = response.get("context", {}).get("search_results", [])
-        return [TopicSearchResult(**result) for result in search_results]
+        return [TopicSearchResult(**result) for result in search_results if len(result) > 0]

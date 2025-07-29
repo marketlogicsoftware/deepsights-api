@@ -4,6 +4,10 @@
 
 ## v1.3.7 (29-Jul-2025)
 
+- User client refactoring for use w/o B2B DS key
+
+## v1.3.7 (29-Jul-2025)
+
 - Custom endpoint support
 
 ## v1.3.6 (24-Jul-2025)

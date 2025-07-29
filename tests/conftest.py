@@ -22,6 +22,7 @@ import os
 import pytest
 
 import deepsights
+from deepsights.userclient import UserClient
 
 
 @pytest.fixture(scope="session")
@@ -67,7 +68,9 @@ def user_client():
         UserClient: User client instance configured with valid email.
     """
     valid_email = os.environ["MIP_IDENTITY_VALID_EMAIL"]
-    return deepsights.DeepSights().get_userclient(valid_email)
+    mip_api_key = os.environ.get("MIP_API_KEY")
+    endpoint_base = "https://api.deepsights.ai/ds/v1"  # Default endpoint
+    return UserClient.get_userclient(valid_email, mip_api_key, endpoint_base)
 
 
 @pytest.fixture(scope="session")

@@ -16,20 +16,28 @@
 This module contains the tests for the MIP identity resolver.
 """
 
+import os
 
-def test_user_token_unknown_email(ds_client):
+from deepsights.deepsights._mip_identity import MIPIdentityResolver
+
+
+def test_user_token_unknown_email():
     """
     Test case to verify that the OAuth token is None when the email is unknown.
     """
-    oauth_token = ds_client._mip_identity_resolver.get_oauth_token("foo@bar.de")
+    mip_api_key = os.environ.get("MIP_API_KEY")
+    mip_resolver = MIPIdentityResolver(mip_api_key)
+    oauth_token = mip_resolver.get_oauth_token("foo@bar.de")
 
     assert oauth_token is None
 
 
-def test_user_token_known_email(ds_client, valid_email):
+def test_user_token_known_email(valid_email):
     """
     Test case to verify the retrieval of an OAuth token for a known email address.
     """
-    oauth_token = ds_client._mip_identity_resolver.get_oauth_token(valid_email)
+    mip_api_key = os.environ.get("MIP_API_KEY")
+    mip_resolver = MIPIdentityResolver(mip_api_key)
+    oauth_token = mip_resolver.get_oauth_token(valid_email)
 
     assert oauth_token is not None

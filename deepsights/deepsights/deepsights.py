@@ -16,17 +16,12 @@
 This module contains the DeepSights client.
 """
 
-import threading
 from typing import Optional
-
-from cachetools import TTLCache
 
 from deepsights.api.api import APIKeyAPI
 from deepsights.contentstore import ContentStore
-from deepsights.deepsights._mip_identity import MIPIdentityResolver
 from deepsights.deepsights.resources.quota import QuotaResource
 from deepsights.documentstore import DocumentStore
-from deepsights.userclient import UserClient
 
 ENDPOINT_BASE = "https://api.deepsights.ai/ds/v1"
 
@@ -45,7 +40,6 @@ class DeepSights(APIKeyAPI):
         self,
         ds_api_key: Optional[str] = None,
         cs_api_key: Optional[str] = None,
-        mip_api_key: Optional[str] = None,
         endpoint_base: Optional[str] = None,
     ) -> None:
         """
@@ -54,7 +48,6 @@ class DeepSights(APIKeyAPI):
         Args:
             ds_api_key (str): The API key for the DeepSights API. If None, the DEEPSIGHTS_API_KEY environment variable is used.
             cs_api_key (str): The API key for the ContentStore API. If None, the CONTENTSTORE_API_KEY environment variable is used.
-            mip_api_key (str): The API key for the MIP API. If None, the MIP_API_KEY environment variable is used.
             endpoint_base (str, optional): The base URL of the API endpoint.
                 If not provided, the default endpoint base will be used.
         """
@@ -67,46 +60,3 @@ class DeepSights(APIKeyAPI):
         self.quota = QuotaResource(self)
         self.documentstore = DocumentStore(ds_api_key)
         self.contentstore = ContentStore(cs_api_key)
-        self._mip_identity_resolver = MIPIdentityResolver(mip_api_key)
-
-        self.userclients = TTLCache(maxsize=100, ttl=240)
-        self._userclients_lock = threading.RLock()
-
-    #######################################
-    def get_userclient(self, user_email: str) -> UserClient:
-        """
-        Retrieves a user client for the given user.
-
-        Args:
-            user_email (str): The email of the user to impersonate.
-
-        Returns:
-            UserClient: The user client for the given user. Will be cached.
-
-        Raises:
-            ValueError: If the user is not found.
-
-        """
-        # normalize the email
-        user_email = user_email.lower().strip()
-
-        # thread-safe cache access
-        with self._userclients_lock:
-            # create the user client if it doesn't exist
-            if user_email not in self.userclients:
-                oauth_token = self._mip_identity_resolver.get_oauth_token(user_email)
-                if not oauth_token:
-                    raise ValueError(f"User not found: {user_email}")
-
-                self.userclients[user_email] = UserClient(oauth_token=oauth_token, endpoint_base=self._endpoint_base)
-
-            return self.userclients[user_email]
-
-    def get_userclient_by_token(self, oauth_token: str) -> UserClient:
-        """
-        Retrieves a user client for the given OAuth token.
-
-        Args:
-            oauth_token (str): The OAuth token to be used for authentication.
-        """
-        return UserClient(oauth_token=oauth_token, endpoint_base=self._endpoint_base)

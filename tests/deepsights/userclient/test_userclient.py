@@ -16,21 +16,29 @@
 This module contains the tests for the user client access.
 """
 
+import os
+
 import pytest
+
+from deepsights.userclient import UserClient
 
 
 def test_user_client_unknown_email(ds_client):
     """
     Test case to verify that the user client raises an exception if the email is unknown.
     """
+    mip_api_key = os.environ.get("MIP_API_KEY")
+    endpoint_base = ds_client._endpoint_base
     with pytest.raises(ValueError):
-        uc = ds_client.get_userclient("foo@bar.de")
+        uc = UserClient.get_userclient("foo@bar.de", mip_api_key, endpoint_base)
 
 
 def test_user_token_known_email(ds_client, valid_email):
     """
     Test case to verify the retrieval of a user client for a known email address.
     """
-    uc = ds_client.get_userclient(valid_email)
+    mip_api_key = os.environ.get("MIP_API_KEY")
+    endpoint_base = ds_client._endpoint_base
+    uc = UserClient.get_userclient(valid_email, mip_api_key, endpoint_base)
 
     assert uc is not None

@@ -2,7 +2,6 @@
 Tests for UserClient automatic token refresh functionality.
 """
 
-import time
 from unittest.mock import MagicMock, patch
 
 import pytest

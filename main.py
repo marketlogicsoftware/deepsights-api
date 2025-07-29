@@ -17,8 +17,10 @@ Sample code to use the DeepSights API.
 """
 
 import json
+import os
 
 import deepsights
+from deepsights.userclient import UserClient
 
 # get the test embedding from JSON
 # THIS REQUIRES THE TEST DATA TO BE AVAILABLE FROM GITHUB REPO
@@ -113,7 +115,11 @@ print("=== User Client Examples ===")
 
 # Method 1: Traditional approach - obtain a user client for a known email address
 # This gets a token once and uses it (no auto-refresh)
-uc = ds.get_userclient("john.doe@acme.com")
+uc = UserClient.get_userclient(
+    "john.doe@acme.com", 
+    os.environ.get('MIP_API_KEY'), 
+    ds._endpoint_base
+)
 print(f"Traditional user client created for john.doe@acme.com")
 
 # Method 2: Auto-refresh mode with configurable interval
@@ -122,7 +128,7 @@ print("\n=== Auto-Refresh Token Management ===")
 
 try:
     # Create user client with auto-refresh (default 10-minute intervals)
-    auto_uc = deepsights.UserClient(
+    auto_uc = UserClient(
         email="john.doe@acme.com",
         # api_key="your_mip_api_key_here"  # or set MIP_API_KEY environment variable
     )
@@ -137,7 +143,7 @@ try:
     print(f"Has valid token: {token_info['has_token']}")
 
     # Example with custom refresh interval (5 minutes for demo)
-    frequent_refresh_uc = deepsights.UserClient(
+    frequent_refresh_uc = UserClient(
         email="john.doe@acme.com",
         # api_key="your_mip_api_key_here",
         auto_refresh_interval_seconds=300,  # Refresh every 5 minutes
@@ -161,7 +167,11 @@ except ValueError as e:
     print(f"Auto-refresh mode not available: {e}")
     print("Falling back to traditional mode...")
     # Fall back to traditional method if auto-refresh setup fails
-    uc = ds.get_userclient("john.doe@acme.com")
+    uc = UserClient.get_userclient(
+        "john.doe@acme.com", 
+        os.environ.get('MIP_API_KEY'), 
+        ds._endpoint_base
+    )
 
 print("\n=== User Client Document Management ===")
 

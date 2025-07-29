@@ -85,13 +85,19 @@ ds = deepsights.DeepSights(
 
 #### AI-Powered Business Questions
 ```python
+import os
 import deepsights
+from deepsights.userclient import UserClient
 
 # Initialize with API keys from environment
 ds = deepsights.DeepSights()
 
 # Get user client for AI-generated insights
-uc = ds.get_userclient("analyst@company.com")
+uc = UserClient.get_userclient(
+    "analyst@company.com", 
+    os.environ.get('MIP_API_KEY'), 
+    "https://api.deepsights.ai/ds/v1"
+)
 
 # Ask business questions and get AI answers
 response = uc.answersV2.create_and_wait(
@@ -119,7 +125,11 @@ for result in results:
 #### User-Specific Document Management
 ```python
 # Access documents through user permissions
-uc = ds.get_userclient("analyst@company.com")
+uc = UserClient.get_userclient(
+    "analyst@company.com", 
+    os.environ.get('MIP_API_KEY'), 
+    "https://api.deepsights.ai/ds/v1"
+)
 
 # List documents with user-specific access
 total_docs, documents = uc.documents.documents_list(
@@ -147,8 +157,12 @@ search_results = uc.documents.search(
 #### Topic Search with AI Analysis
 ```python
 # AI-powered topic search available through user client
-uc = ds.get_userclient("analyst@company.com") 
-results = uc.topic_search.search(
+uc = UserClient.get_userclient(
+    "analyst@company.com", 
+    os.environ.get('MIP_API_KEY'), 
+    "https://api.deepsights.ai/ds/v1"
+)
+results = uc.search.search(
     query="sustainable packaging trends", 
     extended_search=True
 )
@@ -174,11 +188,17 @@ for item in content.results:
 
 #### Error Handling & Rate Limiting
 ```python
+import os
 import time
 import deepsights
+from deepsights.userclient import UserClient
 
 ds = deepsights.DeepSights()
-uc = ds.get_userclient("analyst@company.com")
+uc = UserClient.get_userclient(
+    "analyst@company.com", 
+    os.environ.get('MIP_API_KEY'), 
+    "https://api.deepsights.ai/ds/v1"
+)
 
 try:
     # Ask multiple questions - will demonstrate rate limiting
