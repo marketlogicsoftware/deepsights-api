@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v1.3.7 (29-Jul-2025)
+
+- Custom endpoint support
+
 ## v1.3.6 (24-Jul-2025)
 
 - Support document page retrieval via user token endpoints 

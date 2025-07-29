@@ -28,6 +28,7 @@ from deepsights.deepsights.resources.quota import QuotaResource
 from deepsights.documentstore import DocumentStore
 from deepsights.userclient import UserClient
 
+ENDPOINT_BASE = "https://api.deepsights.ai/ds/v1"
 
 #################################################
 class DeepSights(APIKeyAPI):
@@ -45,7 +46,7 @@ class DeepSights(APIKeyAPI):
         ds_api_key: Optional[str] = None,
         cs_api_key: Optional[str] = None,
         mip_api_key: Optional[str] = None,
-        endpoint_base: Optional[str] = "https://api.deepsights.ai/ds/v1/",
+        endpoint_base: Optional[str] = None,
     ) -> None:
         """
         Initializes the DeepSights API client.
@@ -54,9 +55,11 @@ class DeepSights(APIKeyAPI):
             ds_api_key (str): The API key for the DeepSights API. If None, the DEEPSIGHTS_API_KEY environment variable is used.
             cs_api_key (str): The API key for the ContentStore API. If None, the CONTENTSTORE_API_KEY environment variable is used.
             mip_api_key (str): The API key for the MIP API. If None, the MIP_API_KEY environment variable is used.
+            endpoint_base (str, optional): The base URL of the API endpoint.
+                If not provided, the default endpoint base will be used.
         """
         super().__init__(
-            endpoint_base=endpoint_base,
+            endpoint_base=endpoint_base or ENDPOINT_BASE,
             api_key=ds_api_key,
             api_key_env_var="DEEPSIGHTS_API_KEY",
         )
@@ -95,7 +98,7 @@ class DeepSights(APIKeyAPI):
                 if not oauth_token:
                     raise ValueError(f"User not found: {user_email}")
 
-                self.userclients[user_email] = UserClient(oauth_token)
+                self.userclients[user_email] = UserClient(oauth_token=oauth_token, endpoint_base=self._endpoint_base)
 
             return self.userclients[user_email]
 
@@ -106,4 +109,4 @@ class DeepSights(APIKeyAPI):
         Args:
             oauth_token (str): The OAuth token to be used for authentication.
         """
-        return UserClient(oauth_token)
+        return UserClient(oauth_token=oauth_token, endpoint_base=self._endpoint_base)

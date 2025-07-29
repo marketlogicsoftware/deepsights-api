@@ -20,6 +20,7 @@ import logging
 import threading
 from typing import Optional
 
+
 from deepsights.api.api import OAuthTokenAPI
 from deepsights.deepsights._mip_identity import MIPIdentityResolver
 from deepsights.userclient.resources import (
@@ -30,7 +31,7 @@ from deepsights.userclient.resources import (
 )
 
 logger = logging.getLogger(__name__)
-
+ENDPOINT_BASE = "https://api.deepsights.ai/ds/v1"
 
 #################################################
 class UserClient(OAuthTokenAPI):
@@ -50,6 +51,7 @@ class UserClient(OAuthTokenAPI):
     #######################################
     def __init__(
         self,
+        endpoint_base: Optional[str] = None,
         oauth_token: Optional[str] = None,
         email: Optional[str] = None,
         api_key: Optional[str] = None,
@@ -59,6 +61,8 @@ class UserClient(OAuthTokenAPI):
         Initializes the API client.
 
         Args:
+            endpoint_base (str, optional): The base URL of the API endpoint.
+                If not provided, the default endpoint base will be used.
             oauth_token (str, optional): The OAuth token to be used for authentication.
                 If provided, the client will use this token directly without auto-refresh.
             email (str, optional): Email address for auto-refresh mode.
@@ -71,6 +75,8 @@ class UserClient(OAuthTokenAPI):
         Raises:
             ValueError: If neither oauth_token nor (email + api_key) is provided.
         """
+        if endpoint_base is None:
+            endpoint_base = ENDPOINT_BASE
 
         # Validate input parameters
         if oauth_token:
@@ -109,7 +115,7 @@ class UserClient(OAuthTokenAPI):
 
         # Initialize parent class with the token
         super().__init__(
-            endpoint_base="https://api.deepsights.ai/ds/v1",
+            endpoint_base=endpoint_base,
             oauth_token=initial_token,
         )
 
