@@ -31,7 +31,7 @@ def test_documents_list_basic(user_client):
     This function tests the `documents.documents_list` method by performing a basic list
     request and verifying the results structure.
     """
-    number_of_results, documents = user_client.documents.documents_list(
+    number_of_results, documents = user_client.documents.list(
         page_size=10,
         page_number=0,
         sort_order=SortingOrder.DESCENDING,
@@ -57,7 +57,7 @@ def test_documents_list_pagination(user_client):
     pagination works correctly.
     """
     # Test page size 5
-    number_of_results_page1, documents_page1 = user_client.documents.documents_list(
+    number_of_results_page1, documents_page1 = user_client.documents.list(
         page_size=5,
         page_number=0,
         sort_order=SortingOrder.DESCENDING,
@@ -65,7 +65,7 @@ def test_documents_list_pagination(user_client):
     )
 
     # Test page size 3
-    number_of_results_page2, documents_page2 = user_client.documents.documents_list(
+    number_of_results_page2, documents_page2 = user_client.documents.list(
         page_size=3,
         page_number=0,
         sort_order=SortingOrder.DESCENDING,
@@ -91,7 +91,7 @@ def test_documents_list_sorting_by_title(user_client):
     Test the documents list sorting by title functionality.
     """
     # Test ascending order
-    number_of_results_asc, documents_asc = user_client.documents.documents_list(
+    number_of_results_asc, documents_asc = user_client.documents.list(
         page_size=10,
         page_number=0,
         sort_order=SortingOrder.ASCENDING,
@@ -99,7 +99,7 @@ def test_documents_list_sorting_by_title(user_client):
     )
 
     # Test descending order
-    number_of_results_desc, documents_desc = user_client.documents.documents_list(
+    number_of_results_desc, documents_desc = user_client.documents.list(
         page_size=10,
         page_number=0,
         sort_order=SortingOrder.DESCENDING,
@@ -135,7 +135,7 @@ def test_documents_list_sorting_by_publication_date(user_client):
     """
     Test the documents list sorting by publication date functionality.
     """
-    number_of_results, documents = user_client.documents.documents_list(
+    number_of_results, documents = user_client.documents.list(
         page_size=10,
         page_number=0,
         sort_order=SortingOrder.DESCENDING,
@@ -161,7 +161,7 @@ def test_documents_list_status_filter(user_client):
     """
     # Test with COMPLETED status filter
     number_of_results_completed, documents_completed = (
-        user_client.documents.documents_list(
+        user_client.documents.list(
             page_size=10,
             page_number=0,
             status_filter=["COMPLETED"],
@@ -169,7 +169,7 @@ def test_documents_list_status_filter(user_client):
     )
 
     # Test without status filter
-    number_of_results_all, documents_all = user_client.documents.documents_list(
+    number_of_results_all, documents_all = user_client.documents.list(
         page_size=10,
         page_number=0,
     )
@@ -186,7 +186,7 @@ def test_documents_list_multiple_status_filter(user_client):
     """
     Test the documents list with multiple status filters.
     """
-    number_of_results, documents = user_client.documents.documents_list(
+    number_of_results, documents = user_client.documents.list(
         page_size=10,
         page_number=0,
         status_filter=["COMPLETED", "PROCESSING"],
@@ -205,7 +205,7 @@ def test_documents_list_empty_status_filter(user_client):
     """
     Test the documents list with empty status filter (should return all).
     """
-    number_of_results, documents = user_client.documents.documents_list(
+    number_of_results, documents = user_client.documents.list(
         page_size=10,
         page_number=0,
         status_filter=[],
@@ -219,22 +219,20 @@ def test_documents_list_validation_errors(user_client):
     """
     Test that documents_list properly validates input parameters.
     """
-    import pytest
-
     # Test page size too large
     with pytest.raises(
         AssertionError, match="page size must be less than or equal to 100"
     ):
-        user_client.documents.documents_list(page_size=101)
+        user_client.documents.list(page_size=101)
 
     # Test negative page number
     with pytest.raises(AssertionError, match="page number must be greater than 0"):
-        user_client.documents.documents_list(page_number=-1)
+        user_client.documents.list(page_number=-1)
 
     # Test invalid sort order
     with pytest.raises(AssertionError, match="sort order must be"):
-        user_client.documents.documents_list(sort_order="INVALID")
+        user_client.documents.list(sort_order="INVALID")
 
     # Test invalid sort field
     with pytest.raises(AssertionError, match="sort field must be"):
-        user_client.documents.documents_list(sort_field="invalid_field")
+        user_client.documents.list(sort_field="invalid_field")

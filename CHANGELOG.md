@@ -2,7 +2,11 @@
 
 <!--next-version-placeholder-->
 
-## v1.3.7 (29-Jul-2025)
+## v1.3.9 (30-Jul-2025)
+
+- Consistent DocumentResource methods for user client and deepsights B2B client
+
+## v1.3.8 (29-Jul-2025)
 
 - User client refactoring for use w/o B2B DS key
 

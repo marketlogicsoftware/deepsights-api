@@ -35,7 +35,7 @@ def test_document_pages_load_basic(user_client, test_data):
     test_page_id = test_data["document_page_id"]
     remove_document_page(test_page_id)
 
-    pages = user_client.documents.document_pages_load([test_page_id])
+    pages = user_client.documents.load_pages([test_page_id])
 
     assert len(pages) == 1
     assert pages[0].id == test_page_id
@@ -55,14 +55,14 @@ def test_document_pages_load_caching(user_client, test_data):
     remove_document_page(test_page_id)
 
     # First load
-    pages = user_client.documents.document_pages_load([test_page_id])
+    pages = user_client.documents.load_pages([test_page_id])
     original_text = pages[0].text
 
     # Modify the cached page to test caching
     pages[0].text = "__TEST_CACHE__"
 
     # Second load should return cached version
-    pages_cached = user_client.documents.document_pages_load([test_page_id])
+    pages_cached = user_client.documents.load_pages([test_page_id])
 
     assert pages_cached[0].text == "__TEST_CACHE__"
     assert pages_cached[0].text != original_text
@@ -80,7 +80,7 @@ def test_document_pages_load_multiple_pages(user_client, test_data):
 
     remove_document_page(test_page_id)
 
-    pages = user_client.documents.document_pages_load(page_ids)
+    pages = user_client.documents.load_pages(page_ids)
 
     assert len(pages) == len(page_ids)
     for i, page in enumerate(pages):
@@ -97,7 +97,7 @@ def test_document_pages_load_from_document_with_pages(user_client, test_data):
     test_document_id = test_data["document_id"]
 
     # First load document with pages
-    documents = user_client.documents.documents_load(
+    documents = user_client.documents.load(
         [test_document_id],
         load_pages=True,
     )
@@ -110,7 +110,7 @@ def test_document_pages_load_from_document_with_pages(user_client, test_data):
         remove_document_page(page_id)
 
     # Load the pages individually
-    pages = user_client.documents.document_pages_load(page_ids)
+    pages = user_client.documents.load_pages(page_ids)
 
     assert len(pages) == len(page_ids)
     for i, page in enumerate(pages):
@@ -127,7 +127,7 @@ def test_document_pages_load_404_error(user_client):
     non_existent_page_id = "non-existent-page-id"
 
     with pytest.raises(requests.exceptions.HTTPError) as exc:
-        user_client.documents.document_pages_load([non_existent_page_id])
+        user_client.documents.load_pages([non_existent_page_id])
 
     assert exc.value.response.status_code == 404
 
@@ -139,7 +139,7 @@ def test_document_pages_load_mixed_cached_uncached(user_client, test_data):
     test_document_id = test_data["document_id"]
 
     # Load document with pages to get multiple page IDs
-    documents = user_client.documents.documents_load(
+    documents = user_client.documents.load(
         [test_document_id],
         load_pages=True,
     )
@@ -153,7 +153,7 @@ def test_document_pages_load_mixed_cached_uncached(user_client, test_data):
     remove_document_page(page_ids[1])  # Remove middle page
 
     # Load all pages - should handle mix of cached and uncached
-    pages = user_client.documents.document_pages_load(page_ids)
+    pages = user_client.documents.load_pages(page_ids)
 
     assert len(pages) == len(page_ids)
     for i, page in enumerate(pages):
@@ -170,7 +170,7 @@ def test_document_pages_load_page_properties(user_client, test_data):
     test_page_id = test_data["document_page_id"]
     remove_document_page(test_page_id)
 
-    pages = user_client.documents.document_pages_load([test_page_id])
+    pages = user_client.documents.load_pages([test_page_id])
 
     page = pages[0]
 
@@ -198,7 +198,7 @@ def test_document_pages_load_parallel_loading(user_client, test_data):
     test_document_id = test_data["document_id"]
 
     # Load document with pages to get multiple page IDs
-    documents = user_client.documents.documents_load(
+    documents = user_client.documents.load(
         [test_document_id],
         load_pages=True,
     )
@@ -212,7 +212,7 @@ def test_document_pages_load_parallel_loading(user_client, test_data):
         remove_document_page(page_id)
 
     # Load all pages at once - should use parallel loading internally
-    pages = user_client.documents.document_pages_load(page_ids)
+    pages = user_client.documents.load_pages(page_ids)
 
     assert len(pages) == len(page_ids)
     for i, page in enumerate(pages):

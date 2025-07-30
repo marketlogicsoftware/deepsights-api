@@ -23,7 +23,6 @@ from deepsights.documentstore.resources.documents._cache import (
     has_document,
     has_document_page,
     remove_document,
-    remove_document_page,
 )
 
 
@@ -36,7 +35,7 @@ def test_documents_load_404(user_client):
     document with a non-existent ID.
     """
     with pytest.raises(requests.exceptions.HTTPError) as exc:
-        user_client.documents.documents_load(
+        user_client.documents.load(
             ["non-existent-document-id"],
             load_pages=False,
         )
@@ -51,7 +50,7 @@ def test_documents_load_basic(user_client, test_data):
     test_document_id = test_data["document_id"]
     remove_document(test_document_id)
 
-    documents = user_client.documents.documents_load(
+    documents = user_client.documents.load(
         [test_document_id],
         load_pages=False,
     )
@@ -80,7 +79,7 @@ def test_documents_load_caching(user_client, test_data):
     remove_document(test_document_id)
 
     # First load
-    documents = user_client.documents.documents_load(
+    documents = user_client.documents.load(
         [test_document_id],
         load_pages=False,
     )
@@ -89,7 +88,7 @@ def test_documents_load_caching(user_client, test_data):
     documents[0].title = "__TEST_CACHE__"
 
     # Second load should return cached version
-    documents_cached = user_client.documents.documents_load(
+    documents_cached = user_client.documents.load(
         [test_document_id],
         load_pages=False,
     )
@@ -105,7 +104,7 @@ def test_documents_load_force_load(user_client, test_data):
     remove_document(test_document_id)
 
     # Load document first time
-    documents = user_client.documents.documents_load(
+    documents = user_client.documents.load(
         [test_document_id],
         load_pages=False,
     )
@@ -115,7 +114,7 @@ def test_documents_load_force_load(user_client, test_data):
     documents[0].title = "__TEST_FORCE_LOAD__"
 
     # Force load should bypass cache and get fresh data
-    documents_forced = user_client.documents.documents_load(
+    documents_forced = user_client.documents.load(
         [test_document_id],
         force_load=True,
         load_pages=False,
@@ -138,7 +137,7 @@ def test_documents_load_with_pages(user_client, test_data):
     test_document_id = test_data["document_id"]
     remove_document(test_document_id)
 
-    documents = user_client.documents.documents_load(
+    documents = user_client.documents.load(
         [test_document_id],
         load_pages=True,
     )
@@ -172,7 +171,7 @@ def test_documents_load_multiple_documents(user_client, test_data):
 
     remove_document(test_document_id)
 
-    documents = user_client.documents.documents_load(
+    documents = user_client.documents.load(
         document_ids,
         load_pages=False,
     )
@@ -193,7 +192,7 @@ def test_documents_load_pages_for_existing_document(user_client, test_data):
 
     # First load without pages
     remove_document(test_document_id)
-    documents = user_client.documents.documents_load(
+    documents = user_client.documents.load(
         [test_document_id],
         load_pages=False,
     )
@@ -202,7 +201,7 @@ def test_documents_load_pages_for_existing_document(user_client, test_data):
     assert documents[0].page_ids is None or len(documents[0].page_ids) == 0
 
     # Now load with pages
-    documents_with_pages = user_client.documents.documents_load(
+    documents_with_pages = user_client.documents.load(
         [test_document_id],
         load_pages=True,
     )
@@ -220,7 +219,7 @@ def test_documents_load_validation_errors(user_client):
     Test that documents_load properly validates input parameters.
     """
     # Test empty document_ids list
-    documents = user_client.documents.documents_load([])
+    documents = user_client.documents.load([])
     assert len(documents) == 0
 
     # Test with very large number of documents (should trigger cache size assertion)
@@ -231,4 +230,4 @@ def test_documents_load_validation_errors(user_client):
     with pytest.raises(
         AssertionError, match="Cannot load more documents than the cache size"
     ):
-        user_client.documents.documents_load(large_doc_list)
+        user_client.documents.load(large_doc_list)
