@@ -162,7 +162,7 @@ uc = UserClient.get_userclient(
     os.environ.get('MIP_API_KEY'), 
     "https://api.deepsights.ai/ds/v1"
 )
-results = uc.search.search(
+results = uc.search.topic_search(
     query="sustainable packaging trends", 
     extended_search=True
 )

@@ -2,6 +2,11 @@
 
 <!--next-version-placeholder-->
 
+## v1.3.10 (17-Oct-2025)
+
+- Configurable endpoints for non-prod
+- Documentation fix
+
 ## v1.3.9 (30-Jul-2025)
 
 - Consistent DocumentResource methods for user client and deepsights B2B client

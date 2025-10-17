@@ -30,16 +30,19 @@ class ContentStore(APIKeyAPI):
     secondary: SecondaryResource
 
     #######################################
-    def __init__(self, api_key: str = None) -> None:
+    def __init__(self, api_key: str = None, endpoint_base: str = None) -> None:
         """
         Initializes the API client.
 
         Args:
 
             api_key (str, optional): The API key to be used for authentication. If not provided, it will be fetched from the environment variable CONTENTSTORE_API_KEY.
+            endpoint_base (str, optional): The base URL of the API endpoint.
+                If not provided, the default endpoint base will be used.
         """
         super().__init__(
-            endpoint_base="https://apigee.mlsdevcloud.com/secondary-content/api/",
+            endpoint_base=endpoint_base
+            or "https://apigee.mlsdevcloud.com/secondary-content/api/",
             api_key=api_key,
             api_key_env_var="CONTENTSTORE_API_KEY",
         )

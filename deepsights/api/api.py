@@ -144,7 +144,7 @@ class API:
 
         # set keep-alive headers
         self._session.headers.update(
-            {"Connection": "keep-alive", "User-Agent": "deepsights-api/1.3.9"}
+            {"Connection": "keep-alive", "User-Agent": "deepsights-api/1.3.10"}
         )
 
         # store default timeout
@@ -362,9 +362,9 @@ class APIKeyAPI(API):
         super().__init__(endpoint_base, **kwargs)
 
         # set api key
-        assert api_key or api_key_env_var, (
-            "Must provide either API key or environment variable"
-        )
+        assert (
+            api_key or api_key_env_var
+        ), "Must provide either API key or environment variable"
         if not api_key:
             api_key = os.environ.get(api_key_env_var)
         self._api_key = api_key

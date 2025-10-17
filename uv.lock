@@ -118,7 +118,7 @@ wheels = [
 
 [[package]]
 name = "deepsights-api"
-version = "1.3.7"
+version = "1.3.9"
 source = { editable = "." }
 dependencies = [
     { name = "cachetools" },

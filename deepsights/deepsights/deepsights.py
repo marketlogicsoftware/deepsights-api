@@ -25,6 +25,7 @@ from deepsights.documentstore import DocumentStore
 
 ENDPOINT_BASE = "https://api.deepsights.ai/ds/v1"
 
+
 #################################################
 class DeepSights(APIKeyAPI):
     """
@@ -40,7 +41,8 @@ class DeepSights(APIKeyAPI):
         self,
         ds_api_key: Optional[str] = None,
         cs_api_key: Optional[str] = None,
-        endpoint_base: Optional[str] = None,
+        ds_endpoint_base: Optional[str] = None,
+        cs_endpoint_base: Optional[str] = None,
     ) -> None:
         """
         Initializes the DeepSights API client.
@@ -48,15 +50,17 @@ class DeepSights(APIKeyAPI):
         Args:
             ds_api_key (str): The API key for the DeepSights API. If None, the DEEPSIGHTS_API_KEY environment variable is used.
             cs_api_key (str): The API key for the ContentStore API. If None, the CONTENTSTORE_API_KEY environment variable is used.
-            endpoint_base (str, optional): The base URL of the API endpoint.
+            ds_endpoint_base (str, optional): The base URL of the DeepSights API endpoint.
+                If not provided, the default endpoint base will be used.
+            cs_endpoint_base (str, optional): The base URL of the ContentStore API endpoint.
                 If not provided, the default endpoint base will be used.
         """
         super().__init__(
-            endpoint_base=endpoint_base or ENDPOINT_BASE,
+            endpoint_base=ds_endpoint_base or ENDPOINT_BASE,
             api_key=ds_api_key,
             api_key_env_var="DEEPSIGHTS_API_KEY",
         )
 
         self.quota = QuotaResource(self)
-        self.documentstore = DocumentStore(ds_api_key)
-        self.contentstore = ContentStore(cs_api_key)
+        self.documentstore = DocumentStore(ds_api_key, ds_endpoint_base)
+        self.contentstore = ContentStore(cs_api_key, cs_endpoint_base)
