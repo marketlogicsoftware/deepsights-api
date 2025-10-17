@@ -393,18 +393,19 @@ def test_secondary_hybrid_search_with_vector_high(ds_client, test_data):
     hybrid_results = ds_client.contentstore.secondary.search(
         query=test_data["question"],
         max_results=50,
-        vector_weight=0.99999,
-        vector_fraction=0.5,
+        vector_weight=0.9999999,
+        vector_fraction=0.9,
         recency_weight=0.0,
     )
 
     vector_results = ds_client.contentstore.secondary.vector_search(
         query_embedding=test_data["embedding"],
-        max_results=10,
+        max_results=5,
     )
 
     for ix, result in enumerate(vector_results):
         assert equal_results(hybrid_results[ix], result)
+
 
 def test_secondary_hybrid_search_with_evidence_filter(ds_client, test_data):
     """

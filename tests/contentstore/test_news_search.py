@@ -67,7 +67,7 @@ def test_news_download(ds_client):
     """ """
     results = ds_client.contentstore.news.text_search(
         query="",
-        max_results=1,
+        max_results=5,
         search_to_timestamp=datetime.now(timezone.utc) - timedelta(days=100),
     )
 
