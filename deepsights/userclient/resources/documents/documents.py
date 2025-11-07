@@ -17,6 +17,7 @@ This module contains the functions to perform hybrid searches via the DeepSights
 """
 
 from typing import List
+import re
 
 import requests
 
@@ -39,8 +40,10 @@ from deepsights.documentstore.resources.documents._model import (
     SortingOrder,
 )
 from deepsights.utils import run_in_parallel
+from deepsights.userclient.resources.documents._download import document_download
 
 MAX_QUERY_LENGTH = 512
+
 
 #################################################
 def hybrid_search(
@@ -63,9 +66,7 @@ def hybrid_search(
     if len(query) == 0:
         raise ValueError("The 'query' cannot be empty.")
     if len(query) > MAX_QUERY_LENGTH:
-        raise ValueError(
-            f"The 'query' must be {MAX_QUERY_LENGTH} characters or less."
-        )
+        raise ValueError(f"The 'query' must be {MAX_QUERY_LENGTH} characters or less.")
 
     body = {
         "query": query,
@@ -78,6 +79,7 @@ def hybrid_search(
     # Extract the search results from the response
     search_results = response.get("context", {}).get("search_results", [])
     return [HybridSearchResult(**result) for result in search_results]
+
 
 #################################################
 def documents_list(
@@ -111,9 +113,7 @@ def documents_list(
         SortingField.TITLE,
         SortingField.PUBLICATION_DATE,
         SortingField.CREATION_DATE,
-    ], (
-        "The sort field must be 'title', 'publication_date', or 'origin.creation_time'."
-    )
+    ], "The sort field must be 'title', 'publication_date', or 'origin.creation_time'."
 
     # construct
     body = {
@@ -140,8 +140,11 @@ def documents_list(
 
     return total_results, documents
 
+
 #################################################
-def document_pages_load(resource: APIResource, page_ids: List[str]) -> List[DocumentPage]:
+def document_pages_load(
+    resource: APIResource, page_ids: List[str]
+) -> List[DocumentPage]:
     """
     Load document pages from the cache or fetch them from the API if not cached.
 
@@ -184,7 +187,7 @@ def document_pages_load(resource: APIResource, page_ids: List[str]) -> List[Docu
                 page = DocumentPage(
                     id=page_data["id"],
                     page_number=page_data["number"],
-                    text=page_data.get("text", ""),
+                    text=_normalize_text(page_data.get("text", "")),
                 )
                 # Cache the page
                 set_document_page(page.id, page)
@@ -209,6 +212,7 @@ def document_pages_load(resource: APIResource, page_ids: List[str]) -> List[Docu
 
     # collect results maintaining original order
     return [get_document_page(page_id) for page_id in page_ids]
+
 
 #################################################
 def documents_load(
@@ -277,9 +281,7 @@ def documents_load(
         )
 
         # Flatten page ids
-        flat_page_ids = [
-            page_id for page_ids in all_page_ids for page_id in page_ids
-        ]
+        flat_page_ids = [page_id for page_ids in all_page_ids for page_id in page_ids]
 
         # Load actual pages
         document_pages_load(resource, flat_page_ids)
@@ -304,3 +306,18 @@ class DocumentResource(APIResource):
     load_pages = document_pages_load
     search = hybrid_search
     list = documents_list
+    download = document_download
+
+
+def _normalize_text(text: str) -> str:
+    """Lightly normalize page text to reduce formatting noise.
+
+    - Collapse runs of spaces/tabs but preserve newlines
+    - Limit 3+ consecutive newlines to two
+    - Trim leading/trailing whitespace
+    """
+    if text is None:
+        return ""
+    text = re.sub(r"[^\S\n]+", " ", text)
+    text = re.sub(r"\n{3,}", "\n\n", text, flags=re.MULTILINE)
+    return text.strip()

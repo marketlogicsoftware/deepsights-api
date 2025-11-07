@@ -2,6 +2,11 @@
 
 <!--next-version-placeholder-->
 
+## ongoing
+
+- Add document download for user client
+
+
 ## v1.3.10 (17-Oct-2025)
 
 - Configurable endpoints for non-prod

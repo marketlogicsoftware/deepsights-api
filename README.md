@@ -241,6 +241,11 @@ All return values are [Pydantic objects](https://docs.pydantic.dev/latest/) with
 
 ## Developer Information
 
+### UserClient Documents Capabilities
+- Supported (end-user gateway): `documents.list`, `documents.load`, `documents.load_pages`, `documents.search` (hybrid), `documents.download`.
+- Not available via user token: `documents.upload`, `documents.wait_for_upload`, `documents.delete`, `documents.wait_for_delete`, `documents.search_documents`, `documents.search_pages`.
+- Notes: Page text for userclient is returned directly by the API (lightly normalized); docstore adds segmentation on page content.
+
 ### Rate Limits & Error Handling
 
 The DeepSights API implements **comprehensive rate limiting** to ensure fair usage and optimal performance:
