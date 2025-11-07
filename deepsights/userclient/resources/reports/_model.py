@@ -57,12 +57,14 @@ class Report(DeepSightsIdModel):
         default=None, description="The summary text of the report in markdown format."
     )
     document_sources: List[DocumentEvidence] = Field(
-        default=[], description="List of evidence from documents used in the report."
+        default_factory=list,
+        description="List of evidence from documents used in the report.",
     )
     secondary_sources: List[ContentStoreEvidence] = Field(
-        default=[],
+        default_factory=list,
         description="List of evidence from secondary sources used in the report.",
     )
     news_sources: List[ContentStoreEvidence] = Field(
-        default=[], description="List of evidence from news sources used in the report."
+        default_factory=list,
+        description="List of evidence from news sources used in the report.",
     )

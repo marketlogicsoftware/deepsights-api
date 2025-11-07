@@ -37,11 +37,13 @@ def rrf_merge_single(items: List, ranks: Callable, weights: List) -> List:
 
         List: A list of merged, re-ranked items.
     """
-    l = len(items)
+    n_items = len(items)
 
     # calculate sum of ranks
     rank = {
-        ix: sum([weight / (rank + l / 2) for weight, rank in zip(weights, ranks(item))])
+        ix: sum(
+            [weight / (rank + n_items / 2) for weight, rank in zip(weights, ranks(item))]
+        )
         for ix, item in enumerate(items)
     }
 
@@ -69,7 +71,7 @@ def rrf_merge_multi(items: List[List], weights: List) -> List:
     """
     rank_score = {}
     item_by_id = {}
-    max_len = max([len(l) for l in items])
+    max_len = max([len(lst) for lst in items])
 
     # calculate sum of ranks
     for weight, item_list in zip(weights, items):

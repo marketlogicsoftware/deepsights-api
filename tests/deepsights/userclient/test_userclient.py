@@ -30,7 +30,7 @@ def test_user_client_unknown_email(ds_client):
     mip_api_key = os.environ.get("MIP_API_KEY")
     endpoint_base = ds_client._endpoint_base
     with pytest.raises(ValueError):
-        uc = UserClient.get_userclient("foo@bar.de", mip_api_key, endpoint_base)
+        UserClient.get_userclient("foo@bar.de", mip_api_key, endpoint_base)
 
 
 def test_user_token_known_email(ds_client, valid_email):

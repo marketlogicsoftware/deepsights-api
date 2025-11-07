@@ -68,3 +68,5 @@ def test_document_download(ds_client: deepsights.DeepSights, test_data: Any):
     assert os.path.exists(local_filename)
 
     os.remove(local_filename)
+
+pytestmark = pytest.mark.integration

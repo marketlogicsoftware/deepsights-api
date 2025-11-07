@@ -28,13 +28,14 @@ from deepsights.documentstore.resources.documents._model import (
 
 
 #################################################
+# pylint: disable-next=too-many-arguments, too-many-positional-arguments
 def documents_list(
     resource: APIResource,
     page_size: int = 50,
     page_number: int = 0,
     sort_order: str = SortingOrder.DESCENDING,
     sort_field: str = SortingField.CREATION_DATE,
-    status_filter: List[str] = [],
+    status_filter: List[str] | None = None,
 ):
     """
     List documents from the DeepSights API.

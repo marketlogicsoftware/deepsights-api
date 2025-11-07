@@ -16,7 +16,6 @@
 Tests for rate limiting and exception handling functionality.
 """
 
-import time
 from unittest.mock import Mock, patch
 
 import pytest
@@ -176,7 +175,6 @@ class TestAuthenticationErrorHandling:
         """Test that 401 responses are converted to AuthenticationError."""
         from unittest.mock import Mock
 
-        from requests.exceptions import HTTPError
 
         from deepsights.api.api import _handle_http_error
 

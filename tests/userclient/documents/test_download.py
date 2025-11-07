@@ -55,3 +55,4 @@ def test_document_download(user_client, test_data: Any):
 
     os.remove(local_filename)
 
+pytestmark = pytest.mark.integration

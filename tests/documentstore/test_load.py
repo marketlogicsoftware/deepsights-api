@@ -458,3 +458,5 @@ def test_document_page_load(ds_client, test_data):
     assert deepsights.documentstore.resources.documents._cache.has_document_page(
         test_page_id
     )
+
+pytestmark = pytest.mark.integration

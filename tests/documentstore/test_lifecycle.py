@@ -105,3 +105,5 @@ def test_documents_upload_and_delete(ds_client):
     with pytest.raises(requests.exceptions.HTTPError):
         docs = ds_client.documentstore.documents.load([artifact_id])
         print(docs)
+
+pytestmark = pytest.mark.integration

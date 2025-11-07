@@ -116,7 +116,7 @@ class DocumentEvidence(Evidence):
     pages: List[DocumentPageEvidence] = Field(
         alias="page_references",
         description="The list of pages in the document where the evidence is found.",
-        default=[],
+        default_factory=list,
     )
 
 
@@ -128,7 +128,7 @@ class ContentStoreSource(DeepSightsBaseModel):
     Attributes:
 
         name (str): The name of the source.
-        image_url (Optional[str]): The image url of the source, may be none∏∏
+        image_url (Optional[str]): The image url of the source; may be None.
     """
 
     name: str = Field(

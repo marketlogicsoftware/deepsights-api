@@ -85,7 +85,7 @@ class Document(DeepSightsIdTitleModel):
         file_size (int, optional): The size of the file.
         description (str, optional): The description of the document.
         publication_date (datetime, optional): The publication date of the document.
-        creation_date (datetime, optional): The creation date of the document.§
+        creation_date (datetime, optional): The creation date of the document.
         page_ids (List[str], optional): The list of page IDs in the document.
         number_of_pages (int, optional): The total number of pages in the document.
     """
@@ -114,7 +114,7 @@ class Document(DeepSightsIdTitleModel):
         description="The creation date of the document.",
     )
     page_ids: List[str] = Field(
-        default=None, description="The list of page IDs in the document."
+        default_factory=list, description="The list of page IDs in the document."
     )
     number_of_pages: Optional[int] = Field(
         alias="total_pages",
@@ -123,12 +123,18 @@ class Document(DeepSightsIdTitleModel):
     )
 
     def __init__(self, **kwargs):
-        kwargs["creation_date"] = kwargs["origin"]["creation_time"]
-        kwargs["publication_date"] = kwargs["publication_data"]["publication_date"]
+        # Defensive extraction: tolerate missing fields from upstream services
+        origin = kwargs.get("origin") or {}
+        publication_data = kwargs.get("publication_data") or {}
+        kwargs.setdefault("creation_date", origin.get("creation_time"))
+        kwargs.setdefault(
+            "publication_date", publication_data.get("publication_date")
+        )
         super().__init__(**kwargs)
 
     @property
     def pages(self) -> List[DocumentPage]:
+        """Return list of pages for this document from cache (may be empty)."""
         return [get_document_page(page_id) for page_id in self.page_ids]
 
 
@@ -150,11 +156,13 @@ class DocumentPageSearchResult(DeepSightsIdModel):
 
     @property
     def page_number(self) -> DocumentPage:
+        """Return page number for this search result if cached, else None."""
         page = get_document_page(self.id)
         return page.page_number if page else None
 
     @property
     def text(self) -> str:
+        """Return page text for this search result if cached, else None."""
         page = get_document_page(self.id)
         return page.text if page else None
 
@@ -171,7 +179,8 @@ class DocumentSearchResult(DeepSightsIdModel):
     """
 
     page_matches: List[DocumentPageSearchResult] = Field(
-        default=[], description="The matching page search results for the document."
+        default_factory=list,
+        description="The matching page search results for the document.",
     )
     rank: Optional[int] = Field(
         default=None, description="The final rank of the item in the search results."
@@ -179,10 +188,12 @@ class DocumentSearchResult(DeepSightsIdModel):
 
     @property
     def document(self) -> Document:
+        """Return the cached Document for this result id, if available."""
         return get_document(self.id)
 
     @property
     def publication_date(self) -> datetime:
+        """Return the document's publication date if available, else None."""
         document = self.document
         return document.publication_date if document else None
 

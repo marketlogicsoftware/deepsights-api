@@ -202,7 +202,6 @@ def test_hybrid_search_validation_errors(ds_client):
 
     This function tests various invalid inputs to ensure proper error handling.
     """
-    import pytest
 
     # Test None query
     with pytest.raises(ValueError, match="query.*required"):

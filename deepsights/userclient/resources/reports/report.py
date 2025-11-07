@@ -1,4 +1,5 @@
 # Copyright 2024-2025 Market Logic Software AG. All Rights Reserved.
+# pylint: disable=invalid-name
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +14,7 @@
 # limitations under the License.
 
 """
-This module contains the functions to retrieve reports from the DeepSights self.
+This module contains the functions to retrieve reports from the DeepSights API.
 """
 
 from ratelimit import RateLimitException, limits
@@ -38,7 +39,7 @@ class ReportResource(APIResource):
     @limits(calls=3, period=60)
     def create(self, question: str) -> str:
         """
-        Creates a new report by submitting a question to the DeepSights self.
+        Creates a new report by submitting a question to the DeepSights API.
 
         Args:
 
@@ -96,7 +97,7 @@ class ReportResource(APIResource):
                 resource_id=report_id,
                 timeout=timeout,
                 pending_statuses=["CREATED", "STARTED"],
-                get_final_result_func=lambda rid: self.get(rid),
+                get_final_result_func=self.get,
             )
             return self.get(report_id)
         except PollingTimeoutError as e:
@@ -111,7 +112,7 @@ class ReportResource(APIResource):
     #################################################
     def get(self, report_id: str) -> Report:
         """
-        Loads a report from the DeepSights self.
+        Loads a report from the DeepSights API.
 
         Args:
 
@@ -125,37 +126,37 @@ class ReportResource(APIResource):
 
         if response.get("permission_validation_result") == "DELETED_CONTENT":
             return None
-        elif response.get("permission_validation_result") == "RESTRICTED":
+        if response.get("permission_validation_result") == "RESTRICTED":
             restricted_data = response.get("restricted_desk_research", {})
             return Report(
-                **dict(
-                    permission_validation=response.get("permission_validation_result"),
-                    id=restricted_data.get("desk_research_id"),
-                    status="n/a",
-                    question=restricted_data.get("input"),
-                    topic="n/a",
-                    summary="n/a",
-                    document_sources=[],
-                    secondary_sources=[],
-                    news_sources=[],
-                )
+                **{
+                    "permission_validation": response.get(
+                        "permission_validation_result"
+                    ),
+                    "id": restricted_data.get("desk_research_id"),
+                    "status": "n/a",
+                    "question": restricted_data.get("input"),
+                    "topic": "n/a",
+                    "summary": "n/a",
+                    "document_sources": [],
+                    "secondary_sources": [],
+                    "news_sources": [],
+                }
             )
-        else:
-            desk_research = response.get("desk_research", {})
-            minion_job = desk_research.get("minion_job", {})
-            context = desk_research.get("context", {})
+        desk_research = response.get("desk_research", {})
+        minion_job = desk_research.get("minion_job", {})
+        context = desk_research.get("context", {})
 
-            return Report(
-                **dict(
-                    permission_validation=response.get("permission_validation_result"),
-                    id=minion_job.get("id"),
-                    status=minion_job.get("status"),
-                    question=context.get("input"),
-                    topic=context.get("topic"),
-                    summary=context.get("summary"),
-                    document_sources=context.get("artifact_vector_search_results")
-                    or [],
-                    secondary_sources=context.get("scs_report_search_results") or [],
-                    news_sources=context.get("scs_news_search_results") or [],
-                )
-            )
+        return Report(
+            **{
+                "permission_validation": response.get("permission_validation_result"),
+                "id": minion_job.get("id"),
+                "status": minion_job.get("status"),
+                "question": context.get("input"),
+                "topic": context.get("topic"),
+                "summary": context.get("summary"),
+                "document_sources": context.get("artifact_vector_search_results") or [],
+                "secondary_sources": context.get("scs_report_search_results") or [],
+                "news_sources": context.get("scs_news_search_results") or [],
+            }
+        )

@@ -17,8 +17,10 @@ This module contains the tests for the MIP identity resolver.
 """
 
 import os
-
+import pytest
 from deepsights.deepsights._mip_identity import MIPIdentityResolver
+
+pytestmark = pytest.mark.integration
 
 
 def test_user_token_unknown_email():

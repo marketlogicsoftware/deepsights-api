@@ -1,4 +1,5 @@
 # Copyright 2024-2025 Market Logic Software AG. All Rights Reserved.
+# pylint: disable=invalid-name
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +14,7 @@
 # limitations under the License.
 
 """
-This module contains the functions to retrieve reports from the DeepSights self.
+This module contains the functions to retrieve answers from the DeepSights API.
 """
 
 from ratelimit import RateLimitException, limits
@@ -38,7 +39,7 @@ class AnswerV2Resource(APIResource):
     @limits(calls=10, period=60)
     def create(self, question: str) -> str:
         """
-        Creates a new answer V2 by submitting a question to the DeepSights self.
+        Creates a new answer V2 by submitting a question to the DeepSights API.
 
         Args:
 
@@ -92,7 +93,7 @@ class AnswerV2Resource(APIResource):
                 resource_id=answer_id,
                 timeout=timeout,
                 pending_statuses=["CREATED", "STARTED"],
-                get_final_result_func=lambda rid: self.get(rid),
+                get_final_result_func=self.get,
             )
             return self.get(answer_id)
         except PollingTimeoutError as e:
@@ -107,7 +108,7 @@ class AnswerV2Resource(APIResource):
     #################################################
     def get(self, answer_id: str) -> AnswerV2:
         """
-        Loads an answer from the DeepSights self.
+        Loads an answer from the DeepSights API.
 
         Args:
 
@@ -137,28 +138,27 @@ class AnswerV2Resource(APIResource):
                     news_suggestions=[],
                 )
             )
-        else:
-            answer_data = response.get("answer_v2", {})
-            minion_job = answer_data.get("minion_job", {})
-            context = answer_data.get("context", {})
-            summary = context.get("summary", {})
+        answer_data = response.get("answer_v2", {})
+        minion_job = answer_data.get("minion_job", {})
+        context = answer_data.get("context", {})
+        summary = context.get("summary", {})
 
-            return AnswerV2(
-                **dict(
-                    permission_validation=response.get("permission_validation_result"),
-                    id=minion_job.get("id"),
-                    status=minion_job.get("status"),
-                    question=context.get("input"),
-                    answer=summary.get("answer"),
-                    watchouts=summary.get("watchouts"),
-                    document_sources=context.get("avs_results") or [],
-                    secondary_sources=context.get("srs_results") or [],
-                    news_sources=context.get("sns_results") or [],
-                    document_suggestions=context.get("avs_suggestions") or [],
-                    secondary_suggestions=context.get("srs_suggestions") or [],
-                    news_suggestions=context.get("sns_suggestions") or [],
-                )
-            )
+        return AnswerV2(
+            **{
+                "permission_validation": response.get("permission_validation_result"),
+                "id": minion_job.get("id"),
+                "status": minion_job.get("status"),
+                "question": context.get("input"),
+                "answer": summary.get("answer"),
+                "watchouts": summary.get("watchouts"),
+                "document_sources": context.get("avs_results") or [],
+                "secondary_sources": context.get("srs_results") or [],
+                "news_sources": context.get("sns_results") or [],
+                "document_suggestions": context.get("avs_suggestions") or [],
+                "secondary_suggestions": context.get("srs_suggestions") or [],
+                "news_suggestions": context.get("sns_suggestions") or [],
+            }
+        )
 
     #################################################
     @limits(calls=10, period=60)

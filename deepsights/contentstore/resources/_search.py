@@ -27,6 +27,43 @@ from deepsights.utils import (
 )
 
 
+# ----------------------------
+# Validation helpers (internal)
+# ----------------------------
+def _validate_query_non_empty(query: str, max_len: int = 1000) -> str:
+    """Validate that query is a non-empty string with a max length; return stripped.
+
+    Mirrors existing error messages to avoid behavioral changes.
+    """
+    if not isinstance(query, str):
+        raise ValueError("Query must be a string")
+    q = query.strip()
+    if len(q) == 0:
+        raise ValueError("Query cannot be empty")
+    if len(q) > max_len:
+        raise ValueError(f"Query too long (max {max_len} characters)")
+    return q
+
+
+def _ensure_between_0_1(value: float, message: str) -> None:
+    if not 0 <= value <= 1:
+        raise ValueError(message)
+
+
+def _validate_max_results(value: int, upper: int, message: str) -> None:
+    if not 0 < value <= upper:
+        raise ValueError(message)
+
+
+def _validate_embedding(query_embedding: List) -> None:
+    if not isinstance(query_embedding, list):
+        raise ValueError("Query embedding must be a list")
+    if not query_embedding:
+        raise ValueError("Query embedding cannot be empty")
+    if len(query_embedding) != 1536:
+        raise ValueError("Query embedding must be of length 1536")
+
+
 #################################################
 def _get_time_filter(
     search_from_timestamp: datetime, search_to_timestamp: datetime
@@ -54,6 +91,7 @@ def _get_time_filter(
 
 
 #################################################
+ # pylint: disable-next=too-many-arguments, too-many-positional-arguments, too-many-locals
 def contentstore_hybrid_search(
     api: API,
     query: str,
@@ -82,8 +120,8 @@ def contentstore_hybrid_search(
         max_results (int, optional): The maximum number of search results to return. Defaults to 100.
         languages (List[str], optional): The languages to search for. Defaults to None.
         min_vector_score (float, optional): The minimum score threshold for search results. Defaults to 0.7.
-        vector_fraction (float, optional): The fraction of the search results to be vector-based. Defaults to 0.9.
-        vector_weight (float, optional): The weight to apply to vector search in result ranking. Defaults to 0.85.
+        vector_fraction (float, optional): The fraction of the search results to be vector-based. Defaults to 0.85.
+        vector_weight (float, optional): The weight to apply to vector search in result ranking. Defaults to 0.9.
         recency_weight (float, optional): The weight to apply to recency in result ranking. Defaults to 0.0.
         search_from_timestamp (datetime, optional): The start timestamp for the search. Defaults to None.
         search_to_timestamp (datetime, optional): The end timestamp for the search. Defaults to None.
@@ -95,22 +133,12 @@ def contentstore_hybrid_search(
         List[BaseModel]: The re-ranked search results.
     """
     # Input validation
-    if not isinstance(query, str):
-        raise ValueError("Query must be a string")
-    if len(query.strip()) == 0:
-        raise ValueError("Query cannot be empty")
-    if len(query) > 1000:
-        raise ValueError("Query too long (max 1000 characters)")
-    if not (0 <= min_vector_score <= 1):
-        raise ValueError("Minimum vector score must be between 0 and 1")
-    if not (0 <= vector_fraction <= 1):
-        raise ValueError("Vector fraction must be between 0 and 1")
-    if not (0 <= vector_weight <= 1):
-        raise ValueError("Vector weight must be between 0 and 1")
-    if not (0 < max_results <= 250):
-        raise ValueError("Maximum results must be between 1 and 250")
-    if not (0 <= recency_weight <= 1):
-        raise ValueError("Recency weight must be between 0 and 1")
+    query = _validate_query_non_empty(query, max_len=1000)
+    _ensure_between_0_1(min_vector_score, "Minimum vector score must be between 0 and 1")
+    _ensure_between_0_1(vector_fraction, "Vector fraction must be between 0 and 1")
+    _ensure_between_0_1(vector_weight, "Vector weight must be between 0 and 1")
+    _validate_max_results(max_results, 250, "Maximum results must be between 1 and 250")
+    _ensure_between_0_1(recency_weight, "Recency weight must be between 0 and 1")
 
     body = {
         "query": query,
@@ -141,6 +169,7 @@ def contentstore_hybrid_search(
 
 
 #################################################
+ # pylint: disable-next=too-many-arguments, too-many-positional-arguments
 def contentstore_vector_search(
     api: API,
     query_embedding: List,
@@ -176,18 +205,10 @@ def contentstore_vector_search(
         List[BaseModel]: The re-ranked search results.
     """
     # Input validation
-    if not isinstance(query_embedding, list):
-        raise ValueError("Query embedding must be a list")
-    if not query_embedding:
-        raise ValueError("Query embedding cannot be empty")
-    if len(query_embedding) != 1536:
-        raise ValueError("Query embedding must be of length 1536")
-    if not (0 <= min_score <= 1):
-        raise ValueError("Minimum score must be between 0 and 1")
-    if not (0 < max_results <= 100):
-        raise ValueError("Maximum results must be between 1 and 100")
-    if not (0 <= recency_weight <= 1):
-        raise ValueError("Recency weight must be between 0 and 1")
+    _validate_embedding(query_embedding)
+    _ensure_between_0_1(min_score, "Minimum score must be between 0 and 1")
+    _validate_max_results(max_results, 100, "Maximum results must be between 1 and 100")
+    _ensure_between_0_1(recency_weight, "Recency weight must be between 0 and 1")
 
     body = {
         "vector": query_embedding,
@@ -211,6 +232,7 @@ def contentstore_vector_search(
 
 
 #################################################
+ # pylint: disable-next=too-many-arguments, too-many-positional-arguments, too-many-locals
 def contentstore_text_search(
     api: API,
     query: str,
@@ -236,7 +258,7 @@ def contentstore_text_search(
         max_results (int, optional): The maximum number of results to return. Defaults to 100.
         offset (int, optional): The offset to start the search from. Defaults to 0.
         languages (List[str], optional): The languages to search for. Defaults to None.
-        most_recent_first (bool, optional): Whether to sort results by most recent first. Defaults to True.
+        sort_descending (bool, optional): Whether to sort results in descending order (relevancy or publication date). Defaults to True.
         search_from_timestamp (datetime, optional): The start timestamp for the search. Defaults to None.
         search_to_timestamp (datetime, optional): The end timestamp for the search. Defaults to None.
         search_only_ai_allowed_content (bool, optional): Whether to search only AI-allowed content. Defaults to True.
@@ -245,8 +267,7 @@ def contentstore_text_search(
 
         List[BaseModel]: The re-ranked search results.
     """
-    if not (0 < max_results <= 100):
-        raise ValueError("Maximum results must be between 1 and 100")
+    _validate_max_results(max_results, 100, "Maximum results must be between 1 and 100")
 
     # force proper empty search
     if query is not None and len(query.strip()) == 0:

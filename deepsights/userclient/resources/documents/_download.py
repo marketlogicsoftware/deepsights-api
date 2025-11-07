@@ -39,7 +39,9 @@ def document_download(
 
     # obtain real filename (and validate existence via API)
     # local import to avoid circular import at module load time
-    from deepsights.userclient.resources.documents.documents import documents_load
+    from deepsights.userclient.resources.documents.documents import (  # pylint: disable=import-outside-toplevel
+        documents_load,
+    )
     document = documents_load(resource, [document_id])[0]
     # Sanitize filename to prevent path traversal attacks
     safe_filename = os.path.basename(document.file_name or "unknown")

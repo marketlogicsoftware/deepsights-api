@@ -45,6 +45,10 @@ def ds_client():
     Returns:
         deepsights.DeepSights: Configured client instance.
     """
+    if not os.environ.get("DEEPSIGHTS_RUN_INTEGRATION") and not os.environ.get(
+        "DEEPSIGHTS_API_KEY"
+    ):
+        pytest.skip("integration test requires DEEPSIGHTS_API_KEY or DEEPSIGHTS_RUN_INTEGRATION=1")
     return deepsights.DeepSights()
 
 
@@ -56,6 +60,8 @@ def unauthorized_client():
     Returns:
         deepsights.DeepSights: Client with invalid API key.
     """
+    if not os.environ.get("DEEPSIGHTS_RUN_INTEGRATION"):
+        pytest.skip("integration test requires DEEPSIGHTS_RUN_INTEGRATION=1")
     return deepsights.DeepSights("invalid_api_key_2344234")
 
 
@@ -67,7 +73,17 @@ def user_client():
     Returns:
         UserClient: User client instance configured with valid email.
     """
-    valid_email = os.environ["MIP_IDENTITY_VALID_EMAIL"]
+    if not (
+        os.environ.get("DEEPSIGHTS_RUN_INTEGRATION")
+        or (
+            os.environ.get("MIP_IDENTITY_VALID_EMAIL")
+            and os.environ.get("MIP_API_KEY")
+        )
+    ):
+        pytest.skip(
+            "integration test requires MIP_IDENTITY_VALID_EMAIL and MIP_API_KEY or DEEPSIGHTS_RUN_INTEGRATION=1"
+        )
+    valid_email = os.environ.get("MIP_IDENTITY_VALID_EMAIL")
     mip_api_key = os.environ.get("MIP_API_KEY")
     endpoint_base = "https://api.deepsights.ai/ds/v1"  # Default endpoint
     return UserClient.get_userclient(valid_email, mip_api_key, endpoint_base)
@@ -81,4 +97,11 @@ def valid_email():
     Returns:
         str: Valid email address from environment.
     """
-    return os.environ["MIP_IDENTITY_VALID_EMAIL"]
+    if not (
+        os.environ.get("DEEPSIGHTS_RUN_INTEGRATION")
+        or os.environ.get("MIP_IDENTITY_VALID_EMAIL")
+    ):
+        pytest.skip(
+            "integration test requires MIP_IDENTITY_VALID_EMAIL or DEEPSIGHTS_RUN_INTEGRATION=1"
+        )
+    return os.environ.get("MIP_IDENTITY_VALID_EMAIL")

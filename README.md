@@ -177,12 +177,20 @@ for result in results:
 #### Content Store Access
 ```python
 # Search third-party content (requires CONTENTSTORE_API_KEY)
-content = ds.contentstore.content.search(
+# News articles
+news = ds.contentstore.news.search(
     query="sustainable packaging innovations",
-    limit=5
+    max_results=5
 )
+for item in news:
+    print(f"{item.title} - {item.source}")
 
-for item in content.results:
+# Secondary reports
+reports = ds.contentstore.secondary.search(
+    query="sustainable packaging innovations",
+    max_results=5
+)
+for item in reports:
     print(f"{item.title} - {item.source}")
 ```
 
@@ -316,3 +324,13 @@ source_count = len(response.sources)
 ## License
 
 This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENSE) file for details.
+## Testing
+
+- Unit tests (offline):
+  - Run without credentials: `pytest -m "not integration"`
+  - These tests rely on mocks and do not perform network calls.
+
+- Integration tests (live APIs):
+  - Export required credentials: `DEEPSIGHTS_API_KEY`, `MIP_API_KEY`, `MIP_IDENTITY_VALID_EMAIL`
+  - Or set `DEEPSIGHTS_RUN_INTEGRATION=1` to enable integration fixtures.
+  - Run integration tests: `pytest -m integration`

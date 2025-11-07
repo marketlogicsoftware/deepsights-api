@@ -20,13 +20,9 @@ This module contains custom exception classes for the DeepSights API.
 class DeepSightsError(Exception):
     """Base exception class for all DeepSights API errors."""
 
-    pass
-
 
 class AuthenticationError(DeepSightsError):
     """Raised when authentication fails due to invalid credentials or permissions."""
-
-    pass
 
 
 class RateLimitError(DeepSightsError):

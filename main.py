@@ -116,11 +116,11 @@ print("=== User Client Examples ===")
 # Method 1: Traditional approach - obtain a user client for a known email address
 # This gets a token once and uses it (no auto-refresh)
 uc = UserClient.get_userclient(
-    "john.doe@acme.com", 
-    os.environ.get('MIP_API_KEY'), 
+    "john.doe@acme.com",
+    os.environ.get('MIP_API_KEY'),
     ds._endpoint_base
 )
-print(f"Traditional user client created for john.doe@acme.com")
+print("Traditional user client created for john.doe@acme.com")
 
 # Method 2: Auto-refresh mode with configurable interval
 # This automatically refreshes tokens every 10 minutes (600 seconds) by default
@@ -168,8 +168,8 @@ except ValueError as e:
     print("Falling back to traditional mode...")
     # Fall back to traditional method if auto-refresh setup fails
     uc = UserClient.get_userclient(
-        "john.doe@acme.com", 
-        os.environ.get('MIP_API_KEY'), 
+        "john.doe@acme.com",
+        os.environ.get('MIP_API_KEY'),
         ds._endpoint_base
     )
 

@@ -16,7 +16,7 @@
 This module contains the base functions to download content from the ContentStore.
 """
 
-from requests.exceptions import ConnectionError, HTTPError, Timeout
+from requests.exceptions import ConnectionError as RequestsConnectionError, HTTPError, Timeout
 
 from deepsights.api import APIResource
 
@@ -51,9 +51,11 @@ def contentstore_download(resource: APIResource, item_id: str) -> str:
             return content.decode("utf-8")
         except UnicodeDecodeError:
             return content.decode("latin-1", errors="replace")
-    except (HTTPError, ConnectionError, Timeout) as e:
-        raise ValueError(f"Failed to download content for item {item_id}: {e}")
+    except (HTTPError, RequestsConnectionError, Timeout) as e:
+        raise ValueError(
+            f"Failed to download content for item {item_id}: {e}"
+        ) from e
     except Exception as e:
         raise ValueError(
             f"Unexpected error downloading content for item {item_id}: {e}"
-        )
+        ) from e

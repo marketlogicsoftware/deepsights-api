@@ -49,6 +49,7 @@ class SecondaryResource(APIResource):
         return contentstore_download(self, item_id)
 
     #################################################
+    # pylint: disable-next=too-many-arguments, too-many-positional-arguments
     def vector_search(
         self,
         query_embedding: List,
@@ -82,7 +83,7 @@ class SecondaryResource(APIResource):
             self.api,
             item_type="REPORTS",
             search_result=lambda i: SecondarySearchResult(
-                **dict(source_name=i["source"]["display_name"], **i)
+                **{"source_name": i["source"]["display_name"], **i}
             ),
             query_embedding=query_embedding,
             min_score=min_score,
@@ -95,6 +96,7 @@ class SecondaryResource(APIResource):
         )
 
     #################################################
+    # pylint: disable-next=too-many-arguments, too-many-positional-arguments
     def text_search(
         self,
         query: str,
@@ -127,7 +129,7 @@ class SecondaryResource(APIResource):
             self.api,
             item_type="REPORTS",
             search_result=lambda i: SecondarySearchResult(
-                **dict(source_name=i["source"]["display_name"], **i)
+                **{"source_name": i["source"]["display_name"], **i}
             ),
             query=query,
             max_results=max_results,
@@ -140,6 +142,7 @@ class SecondaryResource(APIResource):
         )
 
     #################################################
+    # pylint: disable-next=too-many-arguments, too-many-positional-arguments
     def search(
         self,
         query: str,
@@ -178,7 +181,7 @@ class SecondaryResource(APIResource):
             self.api,
             item_type="REPORTS",
             search_result=lambda i: SecondarySearchResult(
-                **dict(source_name=i["source"]["display_name"], **i)
+                **{"source_name": i["source"]["display_name"], **i}
             ),
             query=query,
             max_results=max_results,

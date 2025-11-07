@@ -17,6 +17,8 @@ This module contains the user client for the DeepSights API, impersonating a giv
 """
 
 import logging
+import os
+import random
 import threading
 from typing import Optional
 
@@ -45,7 +47,10 @@ class UserClient(OAuthTokenAPI):
     """
 
     # Class-level static cache for user clients
-    _userclients_cache: TTLCache = TTLCache(maxsize=100, ttl=240)
+    _userclients_cache: TTLCache = TTLCache(
+        maxsize=int(os.environ.get("DEEPSIGHTS_USERCLIENT_CACHE_MAXSIZE", "100")),
+        ttl=int(os.environ.get("DEEPSIGHTS_USERCLIENT_CACHE_TTL", "240")),
+    )
     _userclients_lock: threading.RLock = threading.RLock()
 
     answersV2: AnswerV2Resource
@@ -169,9 +174,9 @@ class UserClient(OAuthTokenAPI):
                         f"Failed to refresh OAuth token for user {self._email}: No token returned"
                     )
 
-        except Exception as e:
-            logger.error(
-                f"Error refreshing OAuth token for user {self._email}: {str(e)}"
+        except Exception as e:  # Keep broad catch to avoid crashing background timer
+            logger.exception(
+                "Error refreshing OAuth token for user %s: %s", self._email, str(e)
             )
         finally:
             # Schedule the next refresh regardless of success/failure
@@ -191,16 +196,23 @@ class UserClient(OAuthTokenAPI):
             self._refresh_timer.cancel()
 
         # Schedule next refresh
-        self._refresh_timer = threading.Timer(
-            self._auto_refresh_interval_seconds, self._refresh_oauth_token
+        # Apply small jitter (+/-10%) to avoid synchronized refresh storms
+        jitter_pct = 0.1
+        interval = max(
+            1.0,
+            self._auto_refresh_interval_seconds
+            + self._auto_refresh_interval_seconds * random.uniform(-jitter_pct, jitter_pct),
         )
+
+        self._refresh_timer = threading.Timer(interval, self._refresh_oauth_token)
         self._refresh_timer.daemon = (
             True  # Allow program to exit even if timer is running
         )
         self._refresh_timer.start()
 
-        interval_minutes = self._auto_refresh_interval_seconds / 60
-        logger.debug(f"Scheduled next token refresh in {interval_minutes:.1f} minutes")
+        logger.debug(
+            "Scheduled next token refresh in %.1f minutes (with jitter)", interval / 60
+        )
 
     #######################################
     def stop_auto_refresh(self) -> None:
@@ -209,14 +221,16 @@ class UserClient(OAuthTokenAPI):
 
         This method can be called to manually stop the auto-refresh mechanism.
         """
-        if (
-            self._auto_refresh_enabled
-            and hasattr(self, "_refresh_timer")
-            and self._refresh_timer
-        ):
-            self._refresh_timer.cancel()
-            self._auto_refresh_enabled = False
-            logger.info(f"Auto-refresh stopped for user {self._email}")
+        try:
+            if (
+                getattr(self, "_auto_refresh_enabled", False)
+                and getattr(self, "_refresh_timer", None)
+            ):
+                self._refresh_timer.cancel()
+        finally:
+            if getattr(self, "_auto_refresh_enabled", False):
+                self._auto_refresh_enabled = False
+                logger.info("Auto-refresh stopped for user %s", self._email)
 
     #######################################
     def manual_token_refresh(self) -> bool:
@@ -242,7 +256,7 @@ class UserClient(OAuthTokenAPI):
             self._refresh_oauth_token()
             return self._oauth_token != old_token and self._oauth_token is not None
         except Exception as e:
-            logger.error(f"Manual token refresh failed: {str(e)}")
+            logger.exception("Manual token refresh failed: %s", str(e))
             return False
 
     #######################################
@@ -263,10 +277,47 @@ class UserClient(OAuthTokenAPI):
         }
 
     #######################################
+    def close(self) -> None:
+        """
+        Stop auto-refresh (if enabled) and close the underlying HTTP session.
+        """
+        try:
+            if getattr(self, "_auto_refresh_enabled", False):
+                self.stop_auto_refresh()
+        finally:
+            super().close()
+
+    #######################################
+    @staticmethod
+    def cache_info() -> dict:
+        """
+        Return userclient cache configuration and current size.
+        """
+        cache = UserClient._userclients_cache
+        return {"maxsize": cache.maxsize, "ttl": cache.ttl, "currsize": len(cache)}
+
+    #######################################
+    @staticmethod
+    def cache_clear() -> None:
+        """Clear the userclient cache entirely."""
+        with UserClient._userclients_lock:
+            UserClient._userclients_cache.clear()
+
+    #######################################
+    @staticmethod
+    def cache_invalidate(user_email: str) -> None:
+        """Remove a specific user from the userclient cache (email normalized)."""
+        if not user_email:
+            return
+        email = user_email.lower().strip()
+        with UserClient._userclients_lock:
+            UserClient._userclients_cache.pop(email, None)
+
+    #######################################
     @staticmethod
     def get_userclient(
-        user_email: str, 
-        mip_api_key: str, 
+        user_email: str,
+        mip_api_key: str,
         endpoint_base: Optional[str] = None
     ) -> "UserClient":
         """
@@ -286,7 +337,7 @@ class UserClient(OAuthTokenAPI):
         """
         # normalize the email
         user_email = user_email.lower().strip()
-        
+
         if endpoint_base is None:
             endpoint_base = ENDPOINT_BASE
 
@@ -300,7 +351,7 @@ class UserClient(OAuthTokenAPI):
                     raise ValueError(f"User not found: {user_email}")
 
                 UserClient._userclients_cache[user_email] = UserClient(
-                    oauth_token=oauth_token, 
+                    oauth_token=oauth_token,
                     endpoint_base=endpoint_base
                 )
 

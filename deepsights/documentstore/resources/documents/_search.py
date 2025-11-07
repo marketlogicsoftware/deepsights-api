@@ -17,6 +17,7 @@ This module contains the functions to search for documents and document pages ba
 """
 
 from typing import List
+import warnings
 
 from deepsights.api import APIResource
 from deepsights.documentstore.resources.documents._load import (
@@ -59,9 +60,9 @@ def document_pages_search(
         raise ValueError("The 'query_embedding' argument is required.")
     if len(query_embedding) != 1536:
         raise ValueError("The 'query_embedding' must be of length 1536.")
-    if not (0 <= min_score <= 1):
+    if not 0 <= min_score <= 1:
         raise ValueError("The 'min_score' must be between 0 and 1.")
-    if not (0 < max_results <= 100):
+    if not 0 < max_results <= 100:
         raise ValueError("Maximum results must be between 1 and 100.")
 
     body = {
@@ -128,11 +129,11 @@ def documents_search(
         raise ValueError("The 'query_embedding' argument is required.")
     if len(query_embedding) != 1536:
         raise ValueError("The 'query_embedding' must be of length 1536.")
-    if not (0 <= min_score <= 1):
+    if not 0 <= min_score <= 1:
         raise ValueError("The 'min_score' must be between 0 and 1.")
-    if not (0 < max_results <= 100):
+    if not 0 < max_results <= 100:
         raise ValueError("Maximum results must be between 1 and 100.")
-    if recency_weight is not None and not (0 <= recency_weight <= 1):
+    if recency_weight is not None and not 0 <= recency_weight <= 1:
         raise ValueError("Recency weight must be between 0 and 1.")
     if query is not None and not promote_exact_match:
         raise ValueError(
@@ -140,8 +141,10 @@ def documents_search(
         )
 
     # emit deprecation warning
-    print(
-        "WARNING: The documents_search function is deprecated and will be removed in a future version. Please use the hybrid_search function instead."
+    warnings.warn(
+        "documents_search() is deprecated and will be removed in a future version. Use hybrid_search() instead.",
+        DeprecationWarning,
+        stacklevel=2,
     )
 
     # get the page matches
@@ -160,12 +163,9 @@ def documents_search(
             page.document_id, 0
         ) + 1.0 / (rank + max_results / 2)
 
-    document_rank_score = {
-        k: v
-        for k, v in sorted(
-            document_rank_score.items(), key=lambda item: item[1], reverse=True
-        )
-    }
+    document_rank_score = dict(
+        sorted(document_rank_score.items(), key=lambda item: item[1], reverse=True)
+    )
 
     # now construct the document matches in rank order
     results = [
@@ -219,7 +219,7 @@ def hybrid_search(
     Returns:
         List[HybridSearchResult]: The list of hybrid search results.
     """
-    MAX_QUERY_LENGTH = 512
+    max_query_length = 512
 
     # Input validation
     if query is None:
@@ -229,8 +229,10 @@ def hybrid_search(
     query = query.strip()
     if len(query) == 0:
         raise ValueError("The 'query' cannot be empty.")
-    if len(query) > MAX_QUERY_LENGTH:
-        raise ValueError(f"The 'query' must be {MAX_QUERY_LENGTH} characters or less.")
+    if len(query) > max_query_length:
+        raise ValueError(
+            f"The 'query' must be {max_query_length} characters or less."
+        )
 
     body = {
         "query": query,

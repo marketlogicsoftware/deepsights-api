@@ -21,6 +21,7 @@ from deepsights.deepsights import DeepSights
 from deepsights.userclient import UserClient
 from deepsights.documentstore.resources import SortingField, SortingOrder
 from deepsights.exceptions import AuthenticationError, DeepSightsError, RateLimitError
+from deepsights._version import __version__
 
 __all__ = [
     "SortingField",
@@ -31,4 +32,5 @@ __all__ = [
     "AuthenticationError",
     "DeepSightsError",
     "RateLimitError",
+    "__version__",
 ]

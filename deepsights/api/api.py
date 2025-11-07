@@ -17,12 +17,14 @@ This module contains base API client classes.
 """
 
 import os
+import logging
 from typing import Dict
 
+from functools import wraps
 from ratelimit import limits, sleep_and_retry
 from requests import Session
 from requests.adapters import HTTPAdapter
-from requests.exceptions import ConnectionError, HTTPError, Timeout
+from requests.exceptions import ConnectionError as RequestsConnectionError, HTTPError, Timeout
 from tenacity import (
     retry,
     stop_after_attempt,
@@ -30,6 +32,9 @@ from tenacity import (
 )
 
 from deepsights.exceptions import AuthenticationError, RateLimitError
+from deepsights._version import __version__ as _ds_version
+
+logger = logging.getLogger(__name__)
 
 
 def _should_retry_http_error(exception: Exception) -> bool:
@@ -52,7 +57,7 @@ def _should_retry_http_error(exception: Exception) -> bool:
             return status_code >= 500 or status_code == 429
         return False
     # Always retry connection and timeout errors
-    return isinstance(exception, (ConnectionError, Timeout))
+    return isinstance(exception, (RequestsConnectionError, Timeout))
 
 
 def _handle_http_error(response):
@@ -68,10 +73,9 @@ def _handle_http_error(response):
     """
     if response.status_code == 401:
         raise AuthenticationError("Invalid API key or insufficient permissions")
-    elif response.status_code in [429, 502, 503]:
+    if response.status_code in [429, 502, 503]:
         raise HTTPError(f"Retriable error {response.status_code}", response=response)
-    else:
-        response.raise_for_status()
+    response.raise_for_status()
 
 
 def _handle_persistent_rate_limit(func):
@@ -81,6 +85,7 @@ def _handle_persistent_rate_limit(func):
     This ensures consistent exception handling for both client-side and server-side rate limiting.
     """
 
+    @wraps(func)
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
@@ -90,6 +95,10 @@ def _handle_persistent_rate_limit(func):
                 and e.response is not None
                 and e.response.status_code == 429
             ):
+                logger.warning(
+                    "Persistent 429 after retries in %s; converting to RateLimitError",
+                    getattr(func, "__name__", "<wrapped>"),
+                )
                 raise RateLimitError(
                     "Server rate limit exceeded after retries. Please wait before making another request.",
                     retry_after=None,  # Server didn't provide retry-after info
@@ -111,7 +120,7 @@ class API:
         endpoint_base: str,
         pool_connections: int = 10,
         pool_maxsize: int = 20,
-        default_timeout: int = 15,
+        default_timeout: int | None = None,
     ) -> None:
         """
         Initializes the API client.
@@ -144,12 +153,42 @@ class API:
 
         # set keep-alive headers
         self._session.headers.update(
-            {"Connection": "keep-alive", "User-Agent": "deepsights-api/1.3.10"}
+            {
+                "Connection": "keep-alive",
+                "User-Agent": f"deepsights-api/{_ds_version}",
+            }
         )
 
-        # store default timeout
-        self._default_timeout = default_timeout
+        # store default timeout (env override if none provided)
+        if default_timeout is None:
+            env_timeout = os.environ.get("DEEPSIGHTS_HTTP_TIMEOUT")
+            try:
+                self._default_timeout = int(env_timeout) if env_timeout else 15
+            except (TypeError, ValueError):
+                self._default_timeout = 15
+        else:
+            self._default_timeout = default_timeout
 
+    #######################################
+    def close(self) -> None:
+        """
+        Close the underlying HTTP session.
+        """
+        try:
+            self._session.close()
+        except Exception:  # pylint: disable=broad-exception-caught
+            # Best-effort close; ignore errors
+            pass
+
+    #######################################
+    def __enter__(self):
+        return self
+
+    #######################################
+    def __exit__(self, exc_type, exc, tb):
+        self.close()
+        # Do not suppress exceptions
+        return False
     #######################################
     def _endpoint(self, path: str) -> str:
         """
@@ -175,7 +214,7 @@ class API:
     @sleep_and_retry
     @limits(calls=1000, period=60)
     def get(
-        self, path: str, params: Dict = None, timeout=None, expected_statuscodes=[]
+        self, path: str, params: Dict = None, timeout=None, expected_statuscodes=None
     ) -> Dict:
         """
         Sends a GET request to the specified path with optional parameters.
@@ -195,9 +234,14 @@ class API:
             HTTPError: If the GET request fails with a non-200 status code and not in the expected_statuscodes list.
         """
         timeout = timeout or self._default_timeout
+        expected_statuscodes = expected_statuscodes or []
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug("HTTP GET %s params=%s timeout=%s", path, params, timeout)
         response = self._session.get(
             self._endpoint(path), params=params, timeout=timeout
         )
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug("HTTP GET %s -> %s", path, response.status_code)
 
         if (
             response.status_code not in [200, 201, 202]
@@ -217,7 +261,7 @@ class API:
     @sleep_and_retry
     @limits(calls=1000, period=60)
     def get_content(
-        self, path: str, params: Dict = None, timeout=None, expected_statuscodes=[]
+        self, path: str, params: Dict = None, timeout=None, expected_statuscodes=None
     ) -> bytes:
         """
         Sends a GET request to the specified path and returns the raw response content.
@@ -240,9 +284,14 @@ class API:
             HTTPError: If the GET request fails with a non-200 status code and not in the expected_statuscodes list.
         """
         timeout = timeout or self._default_timeout
+        expected_statuscodes = expected_statuscodes or []
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug("HTTP GET(content) %s params=%s timeout=%s", path, params, timeout)
         response = self._session.get(
             self._endpoint(path), params=params, timeout=timeout
         )
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug("HTTP GET(content) %s -> %s", path, response.status_code)
 
         if (
             response.status_code not in [200, 201, 202]
@@ -261,13 +310,14 @@ class API:
     )
     @sleep_and_retry
     @limits(calls=100, period=60)
+    # pylint: disable-next=too-many-arguments, too-many-positional-arguments
     def post(
         self,
         path: str,
         body: Dict,
         params: Dict = None,
         timeout=None,
-        expected_statuscodes=[],
+        expected_statuscodes=None,
     ) -> Dict:
         """
         Sends a POST request to the specified path with optional parameters.
@@ -288,9 +338,14 @@ class API:
             HTTPError: For other HTTP errors.
         """
         timeout = timeout or self._default_timeout
+        expected_statuscodes = expected_statuscodes or []
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug("HTTP POST %s params=%s timeout=%s", path, params, timeout)
         response = self._session.post(
             self._endpoint(path), params=params, json=body, timeout=timeout
         )
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug("HTTP POST %s -> %s", path, response.status_code)
 
         if (
             response.status_code not in [200, 201, 202]
@@ -309,7 +364,7 @@ class API:
     )
     @sleep_and_retry
     @limits(calls=1000, period=60)
-    def delete(self, path: str, timeout=None, expected_statuscodes=[]):
+    def delete(self, path: str, timeout=None, expected_statuscodes=None):
         """
         Sends a DELETE request to the specified path.
 
@@ -325,7 +380,12 @@ class API:
             HTTPError: If the DELETE request fails with a non-200 status code.
         """
         timeout = timeout or self._default_timeout
+        expected_statuscodes = expected_statuscodes or []
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug("HTTP DELETE %s timeout=%s", path, timeout)
         response = self._session.delete(self._endpoint(path), timeout=timeout)
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug("HTTP DELETE %s -> %s", path, response.status_code)
 
         if (
             response.status_code not in [200, 204]

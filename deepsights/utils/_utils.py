@@ -143,11 +143,23 @@ def poll_for_completion(
 
             # Check if operation is still pending
             if status in pending_statuses:
+                logging.debug(
+                    "Polling %s: status=%s (sleep %ss)",
+                    resource_id,
+                    status,
+                    polling_interval,
+                )
                 time.sleep(polling_interval)
                 continue
 
             # Check if operation failed
             if status.startswith(failure_status_prefix):
+                logging.warning(
+                    "Polling %s: failure status=%s error=%s",
+                    resource_id,
+                    status,
+                    error_message,
+                )
                 raise PollingFailedError(
                     f"Operation failed for resource {resource_id}: {error_message}"
                 )
@@ -172,6 +184,12 @@ def poll_for_completion(
 
     # Timeout reached
     elapsed_time = time.time() - start_time
+    logging.warning(
+        "Polling %s: timeout after %.1fs (interval=%ss)",
+        resource_id,
+        elapsed_time,
+        polling_interval,
+    )
     raise PollingTimeoutError(
         f"Operation for {resource_id} did not complete within {timeout} seconds (elapsed: {elapsed_time:.1f}s)"
     )

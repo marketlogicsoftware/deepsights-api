@@ -57,6 +57,7 @@ class TopicSearchPageReference(DeepSightsBaseModel):
         validation_alias=AliasChoices("text", "page_text"),
     )
     relevance_class: Optional[str] = Field(description="Relevance classification.")
+
     relevance_assessment: Optional[str] = Field(description="Relevance assessment.")
 
 

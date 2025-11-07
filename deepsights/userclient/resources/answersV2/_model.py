@@ -60,24 +60,26 @@ class AnswerV2(DeepSightsIdModel):
         default=None, description="The AI-generated watchouts in markdown format."
     )
     document_sources: List[DocumentEvidence] = Field(
-        default=[], description="List of evidence from documents used in the answer."
+        default_factory=list,
+        description="List of evidence from documents used in the answer.",
     )
     secondary_sources: List[ContentStoreEvidence] = Field(
-        default=[],
+        default_factory=list,
         description="List of evidence from secondary sources used in the answer.",
     )
     news_sources: List[ContentStoreEvidence] = Field(
-        default=[], description="List of evidence from news sources used in the answer."
+        default_factory=list,
+        description="List of evidence from news sources used in the answer.",
     )
     document_suggestions: List[DocumentEvidence] = Field(
-        default=[],
+        default_factory=list,
         description="List of suggestions from documents as further reading for the question.",
     )
     secondary_suggestions: List[ContentStoreEvidence] = Field(
-        default=[],
+        default_factory=list,
         description="List of suggestions from secondary sources as further reading for the question.",
     )
     news_suggestions: List[ContentStoreEvidence] = Field(
-        default=[],
+        default_factory=list,
         description="List of suggestions from news sources as further reading for the question.",
     )

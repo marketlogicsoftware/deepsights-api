@@ -84,5 +84,6 @@ class ContentStoreSearchResult(DeepSightsIdTitleModel):
         default=None, description="The final rank of the item in the search results."
     )
     paragraphs: Optional[List[ContentStoreSearchMatch]] = Field(
-        description="The match paragraphs in the item; may be None.", default=[]
+        description="The match paragraphs in the item; may be None.",
+        default_factory=list,
     )
