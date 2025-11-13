@@ -2,10 +2,11 @@
 
 <!--next-version-placeholder-->
 
-## v1.3.11 (12-Nov-2025)
+## v1.4.0 (13-Nov-2025)
 
 - Add document download for user client
 - Pull page context for documents from API
+- Linting, typechecking, replace pylint w/ ruff, extended pre-commit
 
 ## v1.3.10 (17-Oct-2025)
 
