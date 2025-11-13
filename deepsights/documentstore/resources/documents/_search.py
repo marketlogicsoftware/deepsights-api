@@ -43,6 +43,9 @@ def document_pages_search(
     """
     Searches for document pages based on their vector embeddings.
 
+    Deprecated: This function will be removed in a future version.
+    Use `hybrid_search()` via `ds.documentstore.documents.search(query=...)` instead.
+
     Args:
 
         resource (APIResource): An instance of the DeepSights API resource.
@@ -64,6 +67,13 @@ def document_pages_search(
         raise ValueError("The 'min_score' must be between 0 and 1.")
     if not 0 < max_results <= 100:
         raise ValueError("Maximum results must be between 1 and 100.")
+
+    # emit deprecation warning
+    warnings.warn(
+        "document_pages_search() is deprecated and will be removed in a future version. Use hybrid_search() instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
 
     body = {
         "embeddings": query_embedding,

@@ -63,7 +63,7 @@ def test_document_load_basic(ds_client, test_data):
     assert documents[0].description is not None
     assert documents[0].publication_date is not None
     assert documents[0].creation_date is not None
-    assert documents[0].page_ids is None
+    assert documents[0].page_ids == []
     assert documents[0].number_of_pages > 0
 
     # Verify document is cached
@@ -211,7 +211,7 @@ def test_document_load_pages_for_existing_document(ds_client, test_data):
     )
 
     # Verify no pages are loaded initially
-    assert documents[0].page_ids is None
+    assert documents[0].page_ids == []
 
     # Now load with pages
     documents_with_pages = ds_client.documentstore.documents.load(
@@ -420,7 +420,7 @@ def test_document_load(ds_client, test_data):
     assert documents[0].description is not None
     assert documents[0].publication_date is not None
     assert documents[0].creation_date is not None
-    assert documents[0].page_ids is None
+    assert documents[0].page_ids == []
     assert documents[0].number_of_pages > 0
 
     assert deepsights.documentstore.resources.documents._cache.has_document(
@@ -458,5 +458,6 @@ def test_document_page_load(ds_client, test_data):
     assert deepsights.documentstore.resources.documents._cache.has_document_page(
         test_page_id
     )
+
 
 pytestmark = pytest.mark.integration

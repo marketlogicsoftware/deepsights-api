@@ -74,6 +74,7 @@ def document_pages_load(
         return DocumentPage(
             id=result["id"],
             page_number=result["number"],
+            context=result.get("context"),
             text=segment_landscape_page(result),
         )
 

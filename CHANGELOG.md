@@ -2,10 +2,10 @@
 
 <!--next-version-placeholder-->
 
-## ongoing
+## v1.3.11 (12-Nov-2025)
 
 - Add document download for user client
-
+- Pull page context for documents from API
 
 ## v1.3.10 (17-Oct-2025)
 

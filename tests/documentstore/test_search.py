@@ -77,6 +77,7 @@ def test_document_pages_search_with_loading(ds_client, test_data):
         assert_valid_document_page_result(result)
         assert result.text is not None
         assert result.page_number is not None
+        assert result.context is not None
     assert_descending_scores(results)
 
 

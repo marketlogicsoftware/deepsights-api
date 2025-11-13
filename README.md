@@ -34,6 +34,27 @@ The **Content Store** holds public and paid 3rd party content, including industr
 The **User Client** serves to impersonate existing platform users with their access permissions. The `userclient` API supports obtaining AI-generated answers and reports in response to business questions, as well as document management operations with user-specific permissions including document listing, loading, page access, hybrid search, and topic search capabilities.
 
 
+## Search Methods
+
+| Area | Method | Type | Notes | Returns |
+|--|--|--|--|--|
+| Document Store | `ds.documentstore.documents.search(query, extended_search=False)` | Hybrid | Text + semantic; query ≤512 chars | `List[HybridSearchResult]` |
+| Document Store | `ds.documentstore.documents.search_pages(query_embedding, min_score=0.7, max_results=50, load_pages=False)` | Vector (pages, deprecated) | Deprecated; use hybrid search instead | `List[DocumentPageSearchResult]` |
+| Document Store | `ds.documentstore.documents.search_documents(...)` | Vector (docs) | Deprecated; use hybrid search instead | `List[DocumentSearchResult]` |
+| Content Store (News) | `ds.contentstore.news.search(query, ..., vector_fraction, vector_weight, recency_weight)` | Hybrid | Languages/date filters, optional evidence filter; max_results ≤250 | `List[NewsSearchResult]` |
+| Content Store (News) | `ds.contentstore.news.vector_search(query_embedding, ..., recency_weight)` | Vector | Embedding length 1536; max_results ≤100 | `List[NewsSearchResult]` |
+| Content Store (News) | `ds.contentstore.news.text_search(query, ..., sort_descending, offset)` | Text | `query=None` sorts by date; supports languages/date filters | `List[NewsSearchResult]` |
+| Content Store (Secondary) | `ds.contentstore.secondary.search(query, ..., vector_fraction, vector_weight, recency_weight)` | Hybrid | Same as News; item type REPORTS | `List[SecondarySearchResult]` |
+| Content Store (Secondary) | `ds.contentstore.secondary.vector_search(query_embedding, ..., recency_weight)` | Vector | Embedding length 1536; max_results ≤100 | `List[SecondarySearchResult]` |
+| Content Store (Secondary) | `ds.contentstore.secondary.text_search(query, ..., sort_descending, offset)` | Text | `query=None` sorts by date; supports languages/date filters | `List[SecondarySearchResult]` |
+| User Client | `user_client.documents.search(query, extended_search=False)` | Hybrid (user-context) | Permissions-aware; query ≤512 chars | `List[HybridSearchResult]` |
+| User Client | `user_client.search.topic_search(query, extended_search=False)` | Topic | AI topic analysis; query ≤100 chars | `List[TopicSearchResult]` |
+
+Notes
+- All document/content vector searches require 1536-dimensional embeddings.
+- Content Store search methods support language and date-range filters; vector searches accept optional `recency_weight`.
+- `search_documents(...)` and `search_documents_pages(...)` are deprecated in favor of hybrid search.
+ 
 ## Getting started
 
 ### Installation

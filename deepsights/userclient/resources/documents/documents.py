@@ -188,6 +188,7 @@ def document_pages_load(
                 page = DocumentPage(
                     id=page_data["id"],
                     page_number=page_data["number"],
+                    context=page_data.get("context"),
                     text=_normalize_text(page_data.get("text", "")),
                 )
                 # Cache the page

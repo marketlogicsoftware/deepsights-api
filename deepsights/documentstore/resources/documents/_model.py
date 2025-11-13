@@ -62,6 +62,7 @@ class DocumentPage(DeepSightsIdModel):
 
         page_number (Optional[int], optional): The number of the page.
         text (Optional[str]): The text content of the page (optional).
+        context (Optional[str]): The context of the page (optional).
     """
 
     page_number: Optional[int] = Field(
@@ -70,6 +71,7 @@ class DocumentPage(DeepSightsIdModel):
     text: Optional[str] = Field(
         default=None, description="The text content of the page."
     )
+    context: Optional[str] = Field(default=None, description="The context of the page.")
 
 
 #################################################
@@ -127,9 +129,7 @@ class Document(DeepSightsIdTitleModel):
         origin = kwargs.get("origin") or {}
         publication_data = kwargs.get("publication_data") or {}
         kwargs.setdefault("creation_date", origin.get("creation_time"))
-        kwargs.setdefault(
-            "publication_date", publication_data.get("publication_date")
-        )
+        kwargs.setdefault("publication_date", publication_data.get("publication_date"))
         super().__init__(**kwargs)
 
     @property
@@ -165,6 +165,12 @@ class DocumentPageSearchResult(DeepSightsIdModel):
         """Return page text for this search result if cached, else None."""
         page = get_document_page(self.id)
         return page.text if page else None
+
+    @property
+    def context(self) -> str:
+        """Return page context for this search result if cached, else None."""
+        page = get_document_page(self.id)
+        return page.context if page else None
 
 
 #################################################
