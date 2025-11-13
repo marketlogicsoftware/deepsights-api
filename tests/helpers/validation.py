@@ -267,6 +267,7 @@ def assert_valid_topic_search_result(topic_result):
     """
     assert topic_result.artifact_id is not None
     assert topic_result.artifact_title is not None
+    assert topic_result.artifact_content_type is not None
     assert topic_result.page_references is not None
     assert len(topic_result.page_references) > 0
 
@@ -288,6 +289,7 @@ def assert_valid_hybrid_search_result(hybrid_result):
     """
     assert hybrid_result.artifact_id is not None
     assert hybrid_result.artifact_title is not None
+    assert hybrid_result.artifact_content_type is not None
     assert hybrid_result.page_references is not None
     assert len(hybrid_result.page_references) > 0
 

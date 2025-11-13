@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v1.4.1 (13-Nov-2025)
+
+- Add content_type to document results (search & load)
+
 ## v1.4.0 (13-Nov-2025)
 
 - Add document download for user client

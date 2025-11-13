@@ -61,6 +61,7 @@ def test_document_load_basic(ds_client, test_data):
     assert documents[0].description is not None
     assert documents[0].publication_date is not None
     assert documents[0].creation_date is not None
+    assert documents[0].content_type is not None
     assert documents[0].page_ids == []
     assert documents[0].number_of_pages > 0
 

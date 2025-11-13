@@ -79,6 +79,7 @@ class Document(DeepSightsIdTitleModel):
 
         status (str, optional): The status of the document.
         source (str, optional): The source of the document.
+        content_type (str, optional): The type of the document.
         file_name (str, optional): The name of the file.
         file_size (int, optional): The size of the file.
         description (str, optional): The description of the document.
@@ -94,6 +95,7 @@ class Document(DeepSightsIdTitleModel):
         default="n/a",
         description="The human-readable source of the document.",
     )
+    content_type: Optional[str] = Field(description="The type of the document.")
     file_name: Optional[str] = Field(default=None, description="The name of the file.")
     file_size: Optional[int] = Field(default=None, description="The size of the file in bytes.")
     description: Optional[str] = Field(alias="summary", description="The human-readable summary of the document.")
@@ -242,6 +244,7 @@ class HybridSearchResult(DeepSightsBaseModel):
         artifact_title (str): The title of the artifact.
         artifact_summary (str): Summary of the artifact.
         artifact_source (str): Source of the artifact.
+        artifact_content_type (str): Type of the artifact.
         artifact_publication_date (datetime): Publication date of the artifact.
         page_references (List[HybridSearchPageReference]): Page references.
     """
@@ -250,5 +253,6 @@ class HybridSearchResult(DeepSightsBaseModel):
     artifact_title: str = Field(description="The title of the artifact.")
     artifact_summary: Optional[str] = Field(description="Summary of the artifact.")
     artifact_source: Optional[str] = Field(description="Source of the artifact.")
+    artifact_content_type: Optional[str] = Field(description="Type of the artifact.")
     artifact_publication_date: Optional[datetime] = Field(description="Publication date of the artifact.")
     page_references: List[HybridSearchPageReference] = Field(description="Page references.")
