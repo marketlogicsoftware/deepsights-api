@@ -17,7 +17,7 @@ This module contains the functions to segment the content of a document.
 """
 
 import re
-from typing import Dict, List
+from typing import Dict
 
 
 #############################################
@@ -79,7 +79,7 @@ def _parse_page(content):
 
 
 #############################################
-def segment_landscape_page(page_structure: Dict) -> List[Dict]:
+def segment_landscape_page(page_structure: Dict) -> str:
     """Segmentation strategy that follows pages
 
     Args:
@@ -88,7 +88,7 @@ def segment_landscape_page(page_structure: Dict) -> List[Dict]:
 
     Returns:
 
-        List[Dict]: A list of segmented sections.
+        str: The concatenated text of segmented sections.
 
     """
     # collect font / text tuples by page
@@ -98,15 +98,8 @@ def segment_landscape_page(page_structure: Dict) -> List[Dict]:
             for element in section["semantic_section_elements"]:
                 text = element["text_value"]["text"].strip()
 
-                if (
-                    element.get("normalized_layout", None)
-                    and "height" in element["normalized_layout"]
-                ):
-                    font_size = 2 * int(
-                        500
-                        * float(element["normalized_layout"]["height"])
-                        / len(text.split("\n"))
-                    )
+                if element.get("normalized_layout", None) and "height" in element["normalized_layout"]:
+                    font_size = 2 * int(500 * float(element["normalized_layout"]["height"]) / len(text.split("\n")))
                 else:
                     font_size = 16
 

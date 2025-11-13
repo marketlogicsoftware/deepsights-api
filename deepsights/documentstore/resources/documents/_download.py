@@ -72,9 +72,7 @@ def document_download(
         # Validate URL scheme to prevent using local file paths or unexpected protocols
         parsed_url = urllib.parse.urlparse(response["signed_link"])
         if parsed_url.scheme not in ("http", "https"):
-            raise ValueError(
-                f"Unsupported URL scheme '{parsed_url.scheme}' in signed link."
-            )
+            raise ValueError(f"Unsupported URL scheme '{parsed_url.scheme}' in signed link.")
 
         # The scheme has been validated; the call is considered safe.
         urllib.request.urlretrieve(  # nosec B310

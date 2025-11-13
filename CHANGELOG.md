@@ -26,7 +26,7 @@
 
 ## v1.3.6 (24-Jul-2025)
 
-- Support document page retrieval via user token endpoints 
+- Support document page retrieval via user token endpoints
 
 ## v1.3.5 (11-Jul-2025)
 
@@ -40,7 +40,7 @@
 
 - Auto-refresh token for userclient
 - Streamlined rate limiting and error handling
- 
+
 
 ## v1.3.2 (18-Jun-2025)
 
@@ -81,7 +81,7 @@
 
 ## v1.2.2 (12-Jan-2025)
 
-- Add AI generated title to model 
+- Add AI generated title to model
 
 
 ## v1.2.1 (04-Oct-2024)
@@ -92,12 +92,12 @@
 ## v1.2.0 (02-Oct-2024)
 
 - Compatibility with visual extraction
-- Removed answers V1 
+- Removed answers V1
 
 
 ## v1.1.1 (09-Sep-2024)
 
-- Force contentstore search to retrieve only AI eligible content 
+- Force contentstore search to retrieve only AI eligible content
 
 ## v1.1.0 (16-Aug-2024)
 

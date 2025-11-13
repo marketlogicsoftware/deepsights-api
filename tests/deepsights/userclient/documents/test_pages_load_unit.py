@@ -34,4 +34,3 @@ def test_document_pages_load_missing_pages_raises_404():
     # Should be HTTPError with a 404 status code
     assert hasattr(exc.value, "response")
     assert getattr(exc.value.response, "status_code", None) == 404
-

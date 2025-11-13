@@ -36,6 +36,7 @@ from deepsights.userclient.resources import (
 logger = logging.getLogger(__name__)
 ENDPOINT_BASE = "https://api.deepsights.ai/ds/v1"
 
+
 #################################################
 class UserClient(OAuthTokenAPI):
     """
@@ -52,6 +53,12 @@ class UserClient(OAuthTokenAPI):
         ttl=int(os.environ.get("DEEPSIGHTS_USERCLIENT_CACHE_TTL", "240")),
     )
     _userclients_lock: threading.RLock = threading.RLock()
+
+    # Instance attribute type hints
+    _email: Optional[str]
+    _api_key: Optional[str]
+    _mip_resolver: Optional[MIPIdentityResolver]
+    _refresh_timer: Optional[threading.Timer]
 
     answersV2: AnswerV2Resource
     reports: ReportResource
@@ -89,6 +96,7 @@ class UserClient(OAuthTokenAPI):
             endpoint_base = ENDPOINT_BASE
 
         # Validate input parameters
+        initial_token: Optional[str] = None
         if oauth_token:
             # Direct token mode
             self._auto_refresh_enabled = False
@@ -110,20 +118,16 @@ class UserClient(OAuthTokenAPI):
             initial_token = self._mip_resolver.get_oauth_token(email)
 
             if not initial_token:
-                raise ValueError(
-                    f"Failed to obtain initial OAuth token for email: {email}"
-                )
+                raise ValueError(f"Failed to obtain initial OAuth token for email: {email}")
 
             interval_minutes = auto_refresh_interval_seconds / 60
-            logger.info(
-                f"Auto-refresh enabled for user {email} with {interval_minutes:.1f}-minute intervals"
-            )
+            logger.info(f"Auto-refresh enabled for user {email} with {interval_minutes:.1f}-minute intervals")
         else:
-            raise ValueError(
-                "Must provide either 'oauth_token' for direct mode or both 'email' and 'api_key' for auto-refresh mode"
-            )
+            raise ValueError("Must provide either 'oauth_token' for direct mode or both 'email' and 'api_key' for auto-refresh mode")
 
         # Initialize parent class with the token
+        # mypy: ensure initial_token is not None at this point
+        assert initial_token is not None
         super().__init__(
             endpoint_base=endpoint_base,
             oauth_token=initial_token,
@@ -155,6 +159,9 @@ class UserClient(OAuthTokenAPI):
             with self._refresh_lock:
                 logger.debug(f"Refreshing OAuth token for user {self._email}")
 
+                # Ensure resolver and email are initialized in auto-refresh mode
+                assert self._mip_resolver is not None
+                assert self._email is not None
                 new_token = self._mip_resolver.get_oauth_token(self._email)
 
                 if new_token:
@@ -162,22 +169,14 @@ class UserClient(OAuthTokenAPI):
                     self._oauth_token = new_token
 
                     # Update session headers
-                    self._session.headers.update(
-                        {"Authorization": f"Bearer {new_token}"}
-                    )
+                    self._session.headers.update({"Authorization": f"Bearer {new_token}"})
 
-                    logger.info(
-                        f"Successfully refreshed OAuth token for user {self._email}"
-                    )
+                    logger.info(f"Successfully refreshed OAuth token for user {self._email}")
                 else:
-                    logger.error(
-                        f"Failed to refresh OAuth token for user {self._email}: No token returned"
-                    )
+                    logger.error(f"Failed to refresh OAuth token for user {self._email}: No token returned")
 
         except Exception as e:  # Keep broad catch to avoid crashing background timer
-            logger.exception(
-                "Error refreshing OAuth token for user %s: %s", self._email, str(e)
-            )
+            logger.exception("Error refreshing OAuth token for user %s: %s", self._email, str(e))
         finally:
             # Schedule the next refresh regardless of success/failure
             if self._auto_refresh_enabled:
@@ -200,19 +199,14 @@ class UserClient(OAuthTokenAPI):
         jitter_pct = 0.1
         interval = max(
             1.0,
-            self._auto_refresh_interval_seconds
-            + self._auto_refresh_interval_seconds * random.uniform(-jitter_pct, jitter_pct),
+            self._auto_refresh_interval_seconds + self._auto_refresh_interval_seconds * random.uniform(-jitter_pct, jitter_pct),
         )
 
         self._refresh_timer = threading.Timer(interval, self._refresh_oauth_token)
-        self._refresh_timer.daemon = (
-            True  # Allow program to exit even if timer is running
-        )
+        self._refresh_timer.daemon = True  # Allow program to exit even if timer is running
         self._refresh_timer.start()
 
-        logger.debug(
-            "Scheduled next token refresh in %.1f minutes (with jitter)", interval / 60
-        )
+        logger.debug("Scheduled next token refresh in %.1f minutes (with jitter)", interval / 60)
 
     #######################################
     def stop_auto_refresh(self) -> None:
@@ -222,11 +216,10 @@ class UserClient(OAuthTokenAPI):
         This method can be called to manually stop the auto-refresh mechanism.
         """
         try:
-            if (
-                getattr(self, "_auto_refresh_enabled", False)
-                and getattr(self, "_refresh_timer", None)
-            ):
-                self._refresh_timer.cancel()
+            if getattr(self, "_auto_refresh_enabled", False):
+                timer = getattr(self, "_refresh_timer", None)
+                if isinstance(timer, threading.Timer):
+                    timer.cancel()
         finally:
             if getattr(self, "_auto_refresh_enabled", False):
                 self._auto_refresh_enabled = False
@@ -247,9 +240,7 @@ class UserClient(OAuthTokenAPI):
             ValueError: If auto-refresh is not enabled.
         """
         if not self._auto_refresh_enabled:
-            raise ValueError(
-                "Manual token refresh is only available in auto-refresh mode"
-            )
+            raise ValueError("Manual token refresh is only available in auto-refresh mode")
 
         try:
             old_token = self._oauth_token
@@ -270,9 +261,7 @@ class UserClient(OAuthTokenAPI):
         return {
             "auto_refresh_enabled": self._auto_refresh_enabled,
             "email": self._email if self._auto_refresh_enabled else None,
-            "refresh_interval_seconds": getattr(
-                self, "_auto_refresh_interval_seconds", None
-            ),
+            "refresh_interval_seconds": getattr(self, "_auto_refresh_interval_seconds", None),
             "has_token": bool(self._oauth_token),
         }
 
@@ -315,11 +304,7 @@ class UserClient(OAuthTokenAPI):
 
     #######################################
     @staticmethod
-    def get_userclient(
-        user_email: str,
-        mip_api_key: str,
-        endpoint_base: Optional[str] = None
-    ) -> "UserClient":
+    def get_userclient(user_email: str, mip_api_key: str, endpoint_base: Optional[str] = None) -> "UserClient":
         """
         Retrieves a user client for the given user.
 
@@ -350,10 +335,7 @@ class UserClient(OAuthTokenAPI):
                 if not oauth_token:
                     raise ValueError(f"User not found: {user_email}")
 
-                UserClient._userclients_cache[user_email] = UserClient(
-                    oauth_token=oauth_token,
-                    endpoint_base=endpoint_base
-                )
+                UserClient._userclients_cache[user_email] = UserClient(oauth_token=oauth_token, endpoint_base=endpoint_base)
 
             return UserClient._userclients_cache[user_email]
 

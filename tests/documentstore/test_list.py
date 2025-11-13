@@ -23,7 +23,7 @@ import deepsights.documentstore.resources.documents._model
 def test_document_list_basic(ds_client):
     """
     Test the basic documents list functionality for documentstore.
-    
+
     This function tests the `documents.list` method by performing a basic list
     request and verifying the results structure.
     """
@@ -48,7 +48,7 @@ def test_document_list_basic(ds_client):
 def test_document_list_pagination(ds_client):
     """
     Test the documents list pagination functionality.
-    
+
     This function tests different page sizes and page numbers to verify
     pagination works correctly.
     """
@@ -70,7 +70,7 @@ def test_document_list_pagination(ds_client):
 
     # Both should return the same total count
     assert number_of_results_page1 == number_of_results_page2
-    
+
     # Page 1 should have max 5 documents, page 2 should have max 3
     assert len(documents_page1) <= 5
     assert len(documents_page2) <= 3
@@ -93,7 +93,7 @@ def test_document_list_sorting_by_title(ds_client):
         sort_field=deepsights.documentstore.resources.documents._model.SortingField.TITLE,
     )
 
-    # Test descending order  
+    # Test descending order
     number_of_results_desc, documents_desc = ds_client.documentstore.documents.list(
         page_size=10,
         page_number=0,
@@ -110,7 +110,7 @@ def test_document_list_sorting_by_title(ds_client):
         # (unless there's only one document or all have same title)
         asc_titles = [doc.title or doc.ai_generated_title for doc in documents_asc if doc.title or doc.ai_generated_title]
         desc_titles = [doc.title or doc.ai_generated_title for doc in documents_desc if doc.title or doc.ai_generated_title]
-        
+
         if len(set(asc_titles)) > 1:  # More than one unique title
             assert asc_titles[0] != desc_titles[0] or len(asc_titles) == 1
 
@@ -133,7 +133,7 @@ def test_document_list_sorting_by_publication_date(ds_client):
     docs_with_dates = [doc for doc in documents if doc.publication_date is not None]
     if len(docs_with_dates) > 1:
         for i in range(1, len(docs_with_dates)):
-            assert docs_with_dates[i].publication_date <= docs_with_dates[i-1].publication_date
+            assert docs_with_dates[i].publication_date <= docs_with_dates[i - 1].publication_date
 
 
 def test_document_list_status_filter(ds_client):
@@ -204,7 +204,7 @@ def test_document_list_validation_errors(ds_client):
     with pytest.raises(AssertionError, match="page size must be less than or equal to 100"):
         ds_client.documentstore.documents.list(page_size=101)
 
-    # Test negative page number  
+    # Test negative page number
     with pytest.raises(AssertionError, match="page number must be greater than 0"):
         ds_client.documentstore.documents.list(page_number=-1)
 

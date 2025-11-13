@@ -91,4 +91,3 @@ def test_text_search_max_results_validation(max_results):
             search_result=lambda i: i,
             max_results=max_results,
         )
-

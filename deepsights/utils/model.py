@@ -39,10 +39,7 @@ class DeepSightsBaseModel(BaseModel):
             str: The model's schema.
         """
         return "\n".join(
-            [
-                f"{field_name} ({field.annotation}): {field.description}"
-                for field_name, field in self.__class__.model_fields.items()
-            ]
+            [f"{field_name} ({field.annotation}): {field.description}" for field_name, field in self.__class__.model_fields.items()]
         )
 
     #############################################
@@ -61,9 +58,7 @@ class DeepSightsIdModel(DeepSightsBaseModel):
     """
 
     id: str = Field(
-        validation_alias=AliasChoices(
-            "id", "item_id", "artifact_id", "page_id", "document_id"
-        ),
+        validation_alias=AliasChoices("id", "item_id", "artifact_id", "page_id", "document_id"),
         description="The ID of the item.",
     )
 

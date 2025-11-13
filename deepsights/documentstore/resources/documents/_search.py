@@ -16,8 +16,8 @@
 This module contains the functions to search for documents and document pages based on their vector embeddings.
 """
 
-from typing import List
 import warnings
+from typing import List
 
 from deepsights.api import APIResource
 from deepsights.documentstore.resources.documents._load import (
@@ -81,15 +81,11 @@ def document_pages_search(
         "limit": max_results,
     }
     params = {"ai_model": "ADA", "search_model": "PAGE"}
-    response = resource.api.post(
-        "vector-search-service/vectors/_search", params=params, body=body
-    )
+    response = resource.api.post("vector-search-service/vectors/_search", params=params, body=body)
 
     # parse
     results = [
-        DocumentPageSearchResult(
-            document_id=d["artifact_id"], id=p["part_id"], score=p["score"]
-        )
+        DocumentPageSearchResult(document_id=d["artifact_id"], id=p["part_id"], score=p["score"])
         for d in response["results"]
         for p in d["result_parts"]
     ]
@@ -146,9 +142,7 @@ def documents_search(
     if recency_weight is not None and not 0 <= recency_weight <= 1:
         raise ValueError("Recency weight must be between 0 and 1.")
     if query is not None and not promote_exact_match:
-        raise ValueError(
-            "The 'query' argument is only used when 'promote_exact_match' is set to True."
-        )
+        raise ValueError("The 'query' argument is only used when 'promote_exact_match' is set to True.")
 
     # emit deprecation warning
     warnings.warn(
@@ -167,15 +161,11 @@ def documents_search(
     )
 
     # calculate aggregated document rank score
-    document_rank_score = {}
+    document_rank_score: dict[str, float] = {}
     for rank, page in enumerate(page_matches):
-        document_rank_score[page.document_id] = document_rank_score.get(
-            page.document_id, 0
-        ) + 1.0 / (rank + max_results / 2)
+        document_rank_score[page.document_id] = document_rank_score.get(page.document_id, 0) + 1.0 / (rank + max_results / 2)
 
-    document_rank_score = dict(
-        sorted(document_rank_score.items(), key=lambda item: item[1], reverse=True)
-    )
+    document_rank_score = dict(sorted(document_rank_score.items(), key=lambda item: item[1], reverse=True))
 
     # now construct the document matches in rank order
     results = [
@@ -198,7 +188,11 @@ def documents_search(
 
             # order pages by their number
             for r in results:
-                r.page_matches.sort(key=lambda x: x.page_number)
+                # page_number is expected to be available after loading pages
+                def _page_num_key(x: DocumentPageSearchResult) -> int:
+                    return x.page_number if x.page_number is not None else -1
+
+                r.page_matches.sort(key=_page_num_key)
 
         # apply recency weight
         results = rerank_by_recency(results, recency_weight=recency_weight)
@@ -215,9 +209,7 @@ def documents_search(
 
 
 #################################################
-def hybrid_search(
-    resource: APIResource, query: str, extended_search: bool = False
-) -> List[HybridSearchResult]:
+def hybrid_search(resource: APIResource, query: str, extended_search: bool = False) -> List[HybridSearchResult]:
     """
     Searches for documents using hybrid search combining text and vector search.
 
@@ -240,18 +232,14 @@ def hybrid_search(
     if len(query) == 0:
         raise ValueError("The 'query' cannot be empty.")
     if len(query) > max_query_length:
-        raise ValueError(
-            f"The 'query' must be {max_query_length} characters or less."
-        )
+        raise ValueError(f"The 'query' must be {max_query_length} characters or less.")
 
     body = {
         "query": query,
         "extended_search": extended_search,
     }
 
-    response = resource.api.post(
-        "supercharged-search-service/hybrid-searches", body=body
-    )
+    response = resource.api.post("supercharged-search-service/hybrid-searches", body=body)
 
     # Extract the search results from the response
     search_results = response.get("context", {}).get("search_results", [])

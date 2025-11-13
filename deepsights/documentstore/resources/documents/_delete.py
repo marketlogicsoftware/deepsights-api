@@ -47,9 +47,7 @@ def documents_delete(resource: APIResource, document_ids: List):
 
 
 #################################################
-def document_wait_for_deletion(
-    resource: APIResource, document_id: str, timeout: int = 60
-):
+def document_wait_for_deletion(resource: APIResource, document_id: str, timeout: int = 60):
     """
     Wait for the document to be deleted.
 
@@ -70,7 +68,7 @@ def document_wait_for_deletion(
         try:
             response = resource.api.get(f"/artifact-service/artifacts/{document_id}")
         except requests.exceptions.HTTPError as e:
-            if e.response.status_code == 404:
+            if e.response is not None and e.response.status_code == 404:
                 remove_document(document_id)
                 return
 
@@ -79,8 +77,6 @@ def document_wait_for_deletion(
         if response["status"] in ("DELETING", "SCHEDULED_FOR_DELETING"):
             time.sleep(2)
         elif response["status"].startswith("FAILED"):
-            raise ValueError(
-                f"Document {document_id} failed to delete: {response['error_message']}"
-            )
+            raise ValueError(f"Document {document_id} failed to delete: {response['error_message']}")
 
     raise TimeoutError(f"Document {document_id} failed to delete in {timeout} seconds.")

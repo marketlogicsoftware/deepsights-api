@@ -221,4 +221,5 @@ def test_document_pages_load_parallel_loading(user_client, test_data):
         assert page.text is not None
         assert has_document_page(page.id)
 
+
 pytestmark = pytest.mark.integration

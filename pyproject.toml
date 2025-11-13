@@ -10,6 +10,7 @@ dependencies = [
     "ratelimit>=2.2.1",
     "requests>=2.31.0",
     "tenacity>=8.2.3",
+    "types-cachetools>=6.2.0.20251022",
 ]
 license = { text = "Apache-2.0" }
 authors = [
@@ -33,10 +34,29 @@ test = [
 ]
 lint = [
     "pylint>=3.0.3",
+    "mypy>=1.10.0",
+    "pre-commit>=3.7.0",
+    "ruff>=0.6.9",
+    "types-requests>=2.31.0.20240218",
+    "types-cachetools>=5.3.0",
 ]
 docs = [
     "pdoc>=14.4.0",
 ]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 140
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = []
+
+[tool.ruff.format]
+quote-style = "preserve"
+indent-style = "space"
+skip-magic-trailing-comma = false
+
 
 [build-system]
 requires = ["hatchling"]

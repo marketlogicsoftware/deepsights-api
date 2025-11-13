@@ -25,9 +25,7 @@ import requests
 
 
 #################################################
-def run_in_parallel(
-    fun: Callable[[Any], Any], args: Iterable[Any], max_workers: int = 5
-) -> List[Any]:
+def run_in_parallel(fun: Callable[[Any], Any], args: Iterable[Any], max_workers: int = 5) -> List[Any]:
     """
     Executes the given function in parallel using multiple threads, preserving input order.
 
@@ -49,9 +47,7 @@ def run_in_parallel(
     results = [None] * len(args_list)
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-        future_to_index = {
-            executor.submit(fun, arg): i for i, arg in enumerate(args_list)
-        }
+        future_to_index = {executor.submit(fun, arg): i for i, arg in enumerate(args_list)}
 
         for future in concurrent.futures.as_completed(future_to_index):
             index = future_to_index[future]
@@ -125,10 +121,7 @@ def poll_for_completion(
                 status_dict = response
                 if "minion_job" in response and "status" in response["minion_job"]:
                     status_dict = response["minion_job"]
-                elif (
-                    "desk_research" in response
-                    and "minion_job" in response["desk_research"]
-                ):
+                elif "desk_research" in response and "minion_job" in response["desk_research"]:
                     status_dict = response["desk_research"]["minion_job"]
                 elif "answer_v2" in response and "minion_job" in response["answer_v2"]:
                     status_dict = response["answer_v2"]["minion_job"]
@@ -137,9 +130,7 @@ def poll_for_completion(
             error_message = status_dict.get("error_message")
 
             if status is None:
-                raise PollingFailedError(
-                    f"Could not extract status from response for {resource_id}"
-                )
+                raise PollingFailedError(f"Could not extract status from response for {resource_id}")
 
             # Check if operation is still pending
             if status in pending_statuses:
@@ -160,9 +151,7 @@ def poll_for_completion(
                     status,
                     error_message,
                 )
-                raise PollingFailedError(
-                    f"Operation failed for resource {resource_id}: {error_message}"
-                )
+                raise PollingFailedError(f"Operation failed for resource {resource_id}: {error_message}")
 
             # Check if we have a specific success status requirement
             if success_status is not None and status != success_status:
@@ -177,7 +166,7 @@ def poll_for_completion(
 
         except requests.exceptions.HTTPError as e:
             # Handle 404 for deletion scenarios
-            if e.response.status_code == 404:
+            if e.response is not None and e.response.status_code == 404:
                 raise e
             # Re-raise other HTTP errors
             raise e
@@ -190,6 +179,4 @@ def poll_for_completion(
         elapsed_time,
         polling_interval,
     )
-    raise PollingTimeoutError(
-        f"Operation for {resource_id} did not complete within {timeout} seconds (elapsed: {elapsed_time:.1f}s)"
-    )
+    raise PollingTimeoutError(f"Operation for {resource_id} did not complete within {timeout} seconds (elapsed: {elapsed_time:.1f}s)")

@@ -20,4 +20,3 @@ def test_run_in_parallel_propagates_exception():
 
     with pytest.raises(ValueError):
         run_in_parallel(f, [1, 2, 3], max_workers=3)
-

@@ -50,12 +50,8 @@ class Report(DeepSightsIdModel):
     )
     status: str = Field(description="The processing status of the report.")
     question: str = Field(description="The question that the report is answering.")
-    topic: Optional[str] = Field(
-        default=None, description="The AI-generated topic of the report."
-    )
-    summary: Optional[str] = Field(
-        default=None, description="The summary text of the report in markdown format."
-    )
+    topic: Optional[str] = Field(default=None, description="The AI-generated topic of the report.")
+    summary: Optional[str] = Field(default=None, description="The summary text of the report in markdown format.")
     document_sources: List[DocumentEvidence] = Field(
         default_factory=list,
         description="List of evidence from documents used in the report.",

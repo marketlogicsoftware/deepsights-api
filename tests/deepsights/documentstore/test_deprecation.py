@@ -4,7 +4,6 @@ Unit test for deprecation warning in documents_search.
 
 import warnings
 
-
 from deepsights.api.resource import APIResource
 from deepsights.documentstore.resources.documents._search import documents_search
 
@@ -38,4 +37,3 @@ def test_documents_search_emits_deprecation_warning():
         )
         assert results
         assert any(issubclass(wi.category, DeprecationWarning) for wi in w)
-

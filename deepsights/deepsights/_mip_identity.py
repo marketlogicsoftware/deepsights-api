@@ -37,7 +37,8 @@ class MIPIdentityResolver(APIKeyAPI):
 
         Args:
 
-            api_key (str, optional): The API key to be used for authentication. If not provided, it will be fetched from the environment variable MIP_API_KEY.
+            api_key (str, optional): The API key to be used for authentication. If not provided,
+                it will be fetched from the environment variable MIP_API_KEY.
         """
         super().__init__(
             endpoint_base="https://apigee.mlsdevcloud.com/user-management-api/prod/v1",
@@ -57,9 +58,7 @@ class MIPIdentityResolver(APIKeyAPI):
             ValueError: If the email address is invalid.
         """
         # More robust email validation pattern
-        pattern = (
-            r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9][a-zA-Z0-9.-]*[a-zA-Z0-9]\.[a-zA-Z]{2,}$"
-        )
+        pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9][a-zA-Z0-9.-]*[a-zA-Z0-9]\.[a-zA-Z]{2,}$"
         if not email or not re.match(pattern, email):
             raise ValueError(f"Invalid email address: {email}")
 
@@ -90,7 +89,7 @@ class MIPIdentityResolver(APIKeyAPI):
                 timeout=5,
             )
         except HTTPError as e:
-            if e.response.status_code == 404:
+            if e.response is not None and e.response.status_code == 404:
                 return None
             raise
 

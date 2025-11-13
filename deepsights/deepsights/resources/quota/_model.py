@@ -38,12 +38,8 @@ class APIProfile(DeepSightsBaseModel):
         minute_quota (Optional[int]): The minute request quota limit for the API key.
     """
 
-    app: str = Field(
-        description="The name of the application associated with the API key."
-    )
-    tenant: str = Field(
-        description="The name of the tenant associated with the API key."
-    )
+    app: str = Field(description="The name of the application associated with the API key.")
+    tenant: str = Field(description="The name of the tenant associated with the API key.")
     user: Optional[str] = Field(description="The user ID associated with the API key.")
     day_quota: Optional[int] = Field(
         alias="daily_quota_limit",
@@ -71,12 +67,8 @@ class QuotaInfo(DeepSightsBaseModel):
         alias="quota_limit",
         description="The request quota limit per time period; if None, unlimited.",
     )
-    quota_used: Optional[int] = Field(
-        description="The number of requests used in this time period."
-    )
-    quota_reset_at: datetime = Field(
-        description="The time at which the quota will be reset."
-    )
+    quota_used: Optional[int] = Field(description="The number of requests used in this time period.")
+    quota_reset_at: datetime = Field(description="The time at which the quota will be reset.")
 
 
 #################################################
@@ -90,9 +82,5 @@ class QuotaStatus(DeepSightsBaseModel):
         minute_quota (QuotaInfo): The minute quota limit and status.
     """
 
-    day_quota: QuotaInfo = Field(
-        alias="daily", description="The daily quota limit and status."
-    )
-    minute_quota: QuotaInfo = Field(
-        alias="minute", description="The minute quota limit and status."
-    )
+    day_quota: QuotaInfo = Field(alias="daily", description="The daily quota limit and status.")
+    minute_quota: QuotaInfo = Field(alias="minute", description="The minute quota limit and status.")

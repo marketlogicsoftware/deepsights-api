@@ -29,9 +29,7 @@ class SearchResource(APIResource):
     """
 
     #################################################
-    def topic_search(
-        self, query: str, extended_search: bool = False
-    ) -> List[TopicSearchResult]:
+    def topic_search(self, query: str, extended_search: bool = False) -> List[TopicSearchResult]:
         """
         Searches for documents by topic using AI-powered analysis.
 

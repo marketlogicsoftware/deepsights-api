@@ -227,7 +227,5 @@ def test_documents_load_validation_errors(user_client):
     cache_size = 1000  # Assume reasonable cache size
     large_doc_list = [f"doc_{i}" for i in range(cache_size + 1)]
 
-    with pytest.raises(
-        AssertionError, match="Cannot load more documents than the cache size"
-    ):
+    with pytest.raises(AssertionError, match="Cannot load more documents than the cache size"):
         user_client.documents.load(large_doc_list)

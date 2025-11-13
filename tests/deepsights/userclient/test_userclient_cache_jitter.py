@@ -2,7 +2,6 @@
 Unit tests for UserClient cache behavior and token refresh jitter.
 """
 
-
 from deepsights.userclient.userclient import UserClient
 
 
@@ -57,4 +56,3 @@ def test_userclient_refresh_jitter(monkeypatch):
     assert isinstance(uc._refresh_timer, _DummyTimer)
     assert abs(uc._refresh_timer.interval - 110.0) < 1e-6
     uc.close()
-

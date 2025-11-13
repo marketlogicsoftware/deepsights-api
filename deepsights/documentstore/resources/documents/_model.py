@@ -65,12 +65,8 @@ class DocumentPage(DeepSightsIdModel):
         context (Optional[str]): The context of the page (optional).
     """
 
-    page_number: Optional[int] = Field(
-        default=None, description="The number of the page (one-based)."
-    )
-    text: Optional[str] = Field(
-        default=None, description="The text content of the page."
-    )
+    page_number: Optional[int] = Field(default=None, description="The number of the page (one-based).")
+    text: Optional[str] = Field(default=None, description="The text content of the page.")
     context: Optional[str] = Field(default=None, description="The context of the page.")
 
 
@@ -99,12 +95,8 @@ class Document(DeepSightsIdTitleModel):
         description="The human-readable source of the document.",
     )
     file_name: Optional[str] = Field(default=None, description="The name of the file.")
-    file_size: Optional[int] = Field(
-        default=None, description="The size of the file in bytes."
-    )
-    description: Optional[str] = Field(
-        alias="summary", description="The human-readable summary of the document."
-    )
+    file_size: Optional[int] = Field(default=None, description="The size of the file in bytes.")
+    description: Optional[str] = Field(alias="summary", description="The human-readable summary of the document.")
     publication_date: Optional[datetime] = Field(
         alias="publication_date",
         default=None,
@@ -115,9 +107,7 @@ class Document(DeepSightsIdTitleModel):
         default=None,
         description="The creation date of the document.",
     )
-    page_ids: List[str] = Field(
-        default_factory=list, description="The list of page IDs in the document."
-    )
+    page_ids: List[str] = Field(default_factory=list, description="The list of page IDs in the document.")
     number_of_pages: Optional[int] = Field(
         alias="total_pages",
         default=None,
@@ -149,25 +139,23 @@ class DocumentPageSearchResult(DeepSightsIdModel):
         score (float): The score of the search result.
     """
 
-    document_id: str = Field(
-        description="The ID of the document to which the page belongs."
-    )
+    document_id: str = Field(description="The ID of the document to which the page belongs.")
     score: float = Field(description="The score of the search result.")
 
     @property
-    def page_number(self) -> DocumentPage:
+    def page_number(self) -> Optional[int]:
         """Return page number for this search result if cached, else None."""
         page = get_document_page(self.id)
         return page.page_number if page else None
 
     @property
-    def text(self) -> str:
+    def text(self) -> Optional[str]:
         """Return page text for this search result if cached, else None."""
         page = get_document_page(self.id)
         return page.text if page else None
 
     @property
-    def context(self) -> str:
+    def context(self) -> Optional[str]:
         """Return page context for this search result if cached, else None."""
         page = get_document_page(self.id)
         return page.context if page else None
@@ -188,17 +176,15 @@ class DocumentSearchResult(DeepSightsIdModel):
         default_factory=list,
         description="The matching page search results for the document.",
     )
-    rank: Optional[int] = Field(
-        default=None, description="The final rank of the item in the search results."
-    )
+    rank: Optional[int] = Field(default=None, description="The final rank of the item in the search results.")
 
     @property
-    def document(self) -> Document:
+    def document(self) -> Optional[Document]:
         """Return the cached Document for this result id, if available."""
         return get_document(self.id)
 
     @property
-    def publication_date(self) -> datetime:
+    def publication_date(self) -> Optional[datetime]:
         """Return the document's publication date if available, else None."""
         document = self.document
         return document.publication_date if document else None
@@ -264,9 +250,5 @@ class HybridSearchResult(DeepSightsBaseModel):
     artifact_title: str = Field(description="The title of the artifact.")
     artifact_summary: Optional[str] = Field(description="Summary of the artifact.")
     artifact_source: Optional[str] = Field(description="Source of the artifact.")
-    artifact_publication_date: Optional[datetime] = Field(
-        description="Publication date of the artifact."
-    )
-    page_references: List[HybridSearchPageReference] = Field(
-        description="Page references."
-    )
+    artifact_publication_date: Optional[datetime] = Field(description="Publication date of the artifact.")
+    page_references: List[HybridSearchPageReference] = Field(description="Page references.")

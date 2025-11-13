@@ -175,7 +175,6 @@ class TestAuthenticationErrorHandling:
         """Test that 401 responses are converted to AuthenticationError."""
         from unittest.mock import Mock
 
-
         from deepsights.api.api import _handle_http_error
 
         # Mock a 401 response
@@ -248,9 +247,7 @@ class TestIntegrationPatterns:
         client_error = RateLimitError("Client rate limit", retry_after=60)
 
         # Server-side rate limit (persistent 429)
-        server_error = RateLimitError(
-            "Server rate limit exceeded after retries", retry_after=None
-        )
+        server_error = RateLimitError("Server rate limit exceeded after retries", retry_after=None)
 
         # Both should be RateLimitError and catchable the same way
         for error in [client_error, server_error]:

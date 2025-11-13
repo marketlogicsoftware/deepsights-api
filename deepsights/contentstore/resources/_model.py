@@ -37,13 +37,9 @@ class ContentStoreSearchMatch(DeepSightsBaseModel):
     """
 
     type: str = Field(description="The type of the match paragraph.")
-    page_number: Optional[int] = Field(
-        description="The page number of the match paragraph.", default=None
-    )
+    page_number: Optional[int] = Field(description="The page number of the match paragraph.", default=None)
     text: str = Field(description="The text of the match paragraph.")
-    score: Optional[float] = Field(
-        description="The score of the match paragraph.", default=None
-    )
+    score: Optional[float] = Field(description="The score of the match paragraph.", default=None)
 
 
 #################################################
@@ -63,13 +59,9 @@ class ContentStoreSearchResult(DeepSightsIdTitleModel):
     """
 
     description: str = Field(description="The description of the item.")
-    image_url: Optional[str] = Field(
-        description="The URL of the item's thumbnail image.", default=None
-    )
+    image_url: Optional[str] = Field(description="The URL of the item's thumbnail image.", default=None)
     url: str = Field(description="The URL of the item.")
-    language: Optional[str] = Field(
-        description="The language of the item; may be None.", default=None
-    )
+    language: Optional[str] = Field(description="The language of the item; may be None.", default=None)
     publication_date: Optional[datetime] = Field(
         alias="published_at",
         default=None,
@@ -80,9 +72,7 @@ class ContentStoreSearchResult(DeepSightsIdTitleModel):
         description="The name of the item's source; may be None.",
         default=None,
     )
-    rank: Optional[int] = Field(
-        default=None, description="The final rank of the item in the search results."
-    )
+    rank: Optional[int] = Field(default=None, description="The final rank of the item in the search results.")
     paragraphs: Optional[List[ContentStoreSearchMatch]] = Field(
         description="The match paragraphs in the item; may be None.",
         default_factory=list,

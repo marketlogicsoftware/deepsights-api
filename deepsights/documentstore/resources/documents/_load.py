@@ -37,9 +37,7 @@ from deepsights.utils import run_in_parallel
 
 
 #################################################
-def document_pages_load(
-    resource: APIResource, page_ids: List[str]
-) -> List[DocumentPage]:
+def document_pages_load(resource: APIResource, page_ids: List[str]) -> List[DocumentPage]:
     """
     Load document pages from the cache or fetch them from the API if not cached.
 
@@ -53,18 +51,14 @@ def document_pages_load(
         List[DocumentPage]: A list of loaded document pages.
     """
 
-    assert len(page_ids) < get_document_page_cache_size(), (
-        "Cannot load more document pages than the cache size."
-    )
+    assert len(page_ids) < get_document_page_cache_size(), "Cannot load more document pages than the cache size."
 
     # touch cached document pages
     for page_id in page_ids:
         get_document_page(page_id)
 
     # filter uncached document pages
-    uncached_document_page_ids = [
-        page_id for page_id in page_ids if not has_document_page(page_id)
-    ]
+    uncached_document_page_ids = [page_id for page_id in page_ids if not has_document_page(page_id)]
 
     # load uncached document pages
     def _load_document_page(page_id: str) -> DocumentPage:
@@ -78,9 +72,7 @@ def document_pages_load(
             text=segment_landscape_page(result),
         )
 
-    uncached_document_pages = run_in_parallel(
-        _load_document_page, uncached_document_page_ids, max_workers=5
-    )
+    uncached_document_pages = run_in_parallel(_load_document_page, uncached_document_page_ids, max_workers=5)
 
     # set in cache
     for page in uncached_document_pages:
@@ -111,9 +103,7 @@ def documents_load(
 
         List[Document]: A list of loaded documents.
     """
-    assert len(document_ids) < get_document_cache_size(), (
-        "Cannot load more documents than the cache size."
-    )
+    assert len(document_ids) < get_document_cache_size(), "Cannot load more documents than the cache size."
 
     # Identify documents that need loading or page loading
     docs_to_load = []
@@ -127,9 +117,7 @@ def documents_load(
 
     # Load uncached documents
     def _load_document(document_id: str):
-        result = resource.api.get(
-            f"/artifact-service/artifacts/{document_id}", timeout=5
-        )
+        result = resource.api.get(f"/artifact-service/artifacts/{document_id}", timeout=5)
 
         # capitalize the first letter of the summary
         if result.get("summary") and len(result["summary"]) > 0:
@@ -142,21 +130,15 @@ def documents_load(
 
     # Load pages if requested
     if load_pages:
-        all_docs_needing_pages = newly_loaded_docs + [
-            get_document(doc_id) for doc_id in docs_to_load_pages
-        ]
+        all_docs_needing_pages = newly_loaded_docs + [get_document(doc_id) for doc_id in docs_to_load_pages]
 
         def _load_pages(document: Document):
             if not document.page_ids:
-                result = resource.api.get(
-                    f"/artifact-service/artifacts/{document.id}/page-ids", timeout=5
-                )
+                result = resource.api.get(f"/artifact-service/artifacts/{document.id}/page-ids", timeout=5)
                 document.page_ids = result["ids"]
             return document.page_ids
 
-        all_page_ids = run_in_parallel(
-            _load_pages, all_docs_needing_pages, max_workers=5
-        )
+        all_page_ids = run_in_parallel(_load_pages, all_docs_needing_pages, max_workers=5)
 
         # Flatten page ids
         flat_page_ids = [page_id for page_ids in all_page_ids for page_id in page_ids]

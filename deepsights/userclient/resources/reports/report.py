@@ -55,9 +55,7 @@ class ReportResource(APIResource):
         """
         try:
             body = {"input": question}
-            response = self.api.post(
-                "/end-user-gateway-service/desk-researches", body=body
-            )
+            response = self.api.post("/end-user-gateway-service/desk-researches", body=body)
 
             return response["desk_research"]["minion_job"]["id"]
         except RateLimitException as e:
@@ -87,9 +85,7 @@ class ReportResource(APIResource):
         """
 
         def get_status(resource_id: str):
-            return self.api.get(
-                f"end-user-gateway-service/desk-researches/{resource_id}"
-            )
+            return self.api.get(f"end-user-gateway-service/desk-researches/{resource_id}")
 
         try:
             poll_for_completion(
@@ -99,18 +95,17 @@ class ReportResource(APIResource):
                 pending_statuses=["CREATED", "STARTED"],
                 get_final_result_func=self.get,
             )
-            return self.get(report_id)
+            result = self.get(report_id)
+            if result is None:
+                raise PollingFailedError(f"Report {report_id} was deleted or unavailable after completion.")
+            return result
         except PollingTimeoutError as e:
-            raise PollingTimeoutError(
-                f"Report {report_id} failed to complete within {timeout} seconds."
-            ) from e
+            raise PollingTimeoutError(f"Report {report_id} failed to complete within {timeout} seconds.") from e
         except PollingFailedError as e:
-            raise PollingFailedError(
-                f"Report {report_id} failed to complete: {str(e)}"
-            ) from e
+            raise PollingFailedError(f"Report {report_id} failed to complete: {str(e)}") from e
 
     #################################################
-    def get(self, report_id: str) -> Report:
+    def get(self, report_id: str) -> Report | None:
         """
         Loads a report from the DeepSights API.
 
@@ -130,9 +125,7 @@ class ReportResource(APIResource):
             restricted_data = response.get("restricted_desk_research", {})
             return Report(
                 **{
-                    "permission_validation": response.get(
-                        "permission_validation_result"
-                    ),
+                    "permission_validation": response.get("permission_validation_result"),
                     "id": restricted_data.get("desk_research_id"),
                     "status": "n/a",
                     "question": restricted_data.get("input"),

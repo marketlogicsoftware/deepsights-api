@@ -48,7 +48,7 @@ DeepSights (main client)
 
 **Rate Limiting**: Built-in limits with exponential backoff retry logic via `tenacity`:
 - AI Answers: 10 requests per minute
-- AI Reports: 3 requests per minute  
+- AI Reports: 3 requests per minute
 - GET requests: 1000 per minute
 - POST requests: 100 per minute
 

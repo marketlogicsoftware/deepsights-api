@@ -97,13 +97,9 @@ class AnswerV2Resource(APIResource):
             )
             return self.get(answer_id)
         except PollingTimeoutError as e:
-            raise PollingTimeoutError(
-                f"Answer {answer_id} failed to complete within {timeout} seconds."
-            ) from e
+            raise PollingTimeoutError(f"Answer {answer_id} failed to complete within {timeout} seconds.") from e
         except PollingFailedError as e:
-            raise PollingFailedError(
-                f"Answer {answer_id} failed to complete: {str(e)}"
-            ) from e
+            raise PollingFailedError(f"Answer {answer_id} failed to complete: {str(e)}") from e
 
     #################################################
     def get(self, answer_id: str) -> AnswerV2:

@@ -34,7 +34,8 @@ class DocumentStore(APIKeyAPI):
         Initializes the API client.
 
         Args:
-            api_key (str, optional): The API key to be used for authentication. If not provided, it will be fetched from the environment variable DEEPSIGHTS_API_KEY.
+            api_key (str, optional): The API key to be used for authentication. If not provided, it will be fetched from
+                the environment variable DEEPSIGHTS_API_KEY.
             endpoint_base (str, optional): The base URL of the API endpoint.
                 If not provided, the default endpoint base will be used.
         """

@@ -54,9 +54,7 @@ def document_upload(resource: APIResource, document_filename: str) -> str:
 
     # check proper file extension: must be PDF, PPT, PPTX, DOC, DOCX
     if not any(document_filename.lower().endswith(extension) for extension in mime_map):
-        raise ValueError(
-            f"Document {document_filename} is not a valid file type. Only supporting {', '.join(mime_map)}."
-        )
+        raise ValueError(f"Document {document_filename} is not a valid file type. Only supporting {', '.join(mime_map)}.")
 
     # get file basename
     document_basename = os.path.basename(document_filename)
@@ -82,9 +80,7 @@ def document_upload(resource: APIResource, document_filename: str) -> str:
 
     # check response
     if response.status_code != 200:
-        raise ValueError(
-            f"Document {document_filename} failed to upload: {response.text}"
-        )
+        raise ValueError(f"Document {document_filename} failed to upload: {response.text}")
 
     # create artifact
     response = resource.api.post(
@@ -97,9 +93,7 @@ def document_upload(resource: APIResource, document_filename: str) -> str:
 
 
 #################################################
-def document_wait_for_upload(
-    resource: APIResource, document_id: str, timeout: int = 300
-):
+def document_wait_for_upload(resource: APIResource, document_id: str, timeout: int = 300):
     """
     Wait for the document to be processed and completed.
 
@@ -123,17 +117,13 @@ def document_wait_for_upload(
             break
 
         if response["status"].startswith("FAILED"):
-            raise ValueError(
-                f"Document {document_id} failed to process: {response['error_message']}"
-            )
+            raise ValueError(f"Document {document_id} failed to process: {response['error_message']}")
 
         time.sleep(2)
 
     # timeout?
     if time.time() - start >= timeout:
-        raise TimeoutError(
-            f"Document {document_id} failed to process in {timeout} seconds."
-        )
+        raise TimeoutError(f"Document {document_id} failed to process in {timeout} seconds.")
 
     # now load into cache
     documents_load(resource, [document_id])

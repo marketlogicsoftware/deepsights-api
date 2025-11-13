@@ -19,11 +19,11 @@ This module contains utility functions for ranking search results.
 import re
 import shlex
 from datetime import datetime, timezone
-from typing import Any, Callable, List, Optional
+from typing import Any, Callable, List, Optional, Sequence
 
 
 #################################################
-def rrf_merge_single(items: List, ranks: Callable, weights: List) -> List:
+def rrf_merge_single(items: List, ranks: Callable, weights: Sequence[float]) -> List:
     """
     Merges the given items from a single list but with different ranks using Rank Reciprocal Fusion (RRF).
 
@@ -40,12 +40,7 @@ def rrf_merge_single(items: List, ranks: Callable, weights: List) -> List:
     n_items = len(items)
 
     # calculate sum of ranks
-    rank = {
-        ix: sum(
-            [weight / (rank + n_items / 2) for weight, rank in zip(weights, ranks(item))]
-        )
-        for ix, item in enumerate(items)
-    }
+    rank = {ix: sum([weight / (rank + n_items / 2) for weight, rank in zip(weights, ranks(item))]) for ix, item in enumerate(items)}
 
     # sort by rank
     sorted_rank = sorted(rank.items(), key=lambda x: x[1], reverse=True)
@@ -113,13 +108,8 @@ def promote_exact_matches(query: str, results: List[Any]) -> List[Any]:
         return results
 
     # compile regex patterns once for better performance
-    exact_patterns = [
-        re.compile(rf"(?:\b|\s|^){re.escape(term)}(?:\b|\s|$|\W)", re.IGNORECASE)
-        for term in terms
-    ]
-    substring_patterns = [
-        re.compile(rf"(?:\b|\s|^){re.escape(term)}", re.IGNORECASE) for term in terms
-    ]
+    exact_patterns = [re.compile(rf"(?:\b|\s|^){re.escape(term)}(?:\b|\s|$|\W)", re.IGNORECASE) for term in terms]
+    substring_patterns = [re.compile(rf"(?:\b|\s|^){re.escape(term)}", re.IGNORECASE) for term in terms]
 
     exact_matches = set()
     substring_matches = set()

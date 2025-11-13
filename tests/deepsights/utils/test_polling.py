@@ -2,7 +2,6 @@
 Unit tests for polling utilities.
 """
 
-
 import pytest
 
 from deepsights.utils._utils import (
@@ -65,4 +64,3 @@ def test_poll_for_completion_timeout(monkeypatch):
             timeout=0,
             polling_interval=0,
         )
-

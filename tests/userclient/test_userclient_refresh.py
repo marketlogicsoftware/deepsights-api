@@ -36,9 +36,7 @@ class TestUserClientRefresh:
         test_token = "auto_refresh_token_456"
         test_interval = 30  # 30 seconds for testing
 
-        with patch(
-            "deepsights.userclient.userclient.MIPIdentityResolver"
-        ) as mock_resolver_class:
+        with patch("deepsights.userclient.userclient.MIPIdentityResolver") as mock_resolver_class:
             # Mock the MIP resolver
             mock_resolver = MagicMock()
             mock_resolver.get_oauth_token.return_value = test_token
@@ -69,9 +67,7 @@ class TestUserClientRefresh:
         test_api_key = "test_api_key_123"
         test_token = "test_token_456"
 
-        with patch(
-            "deepsights.userclient.userclient.MIPIdentityResolver"
-        ) as mock_resolver_class:
+        with patch("deepsights.userclient.userclient.MIPIdentityResolver") as mock_resolver_class:
             # Mock the MIP resolver
             mock_resolver = MagicMock()
             mock_resolver.get_oauth_token.return_value = test_token
@@ -103,17 +99,13 @@ class TestUserClientRefresh:
         test_email = "nonexistent@example.com"
         test_api_key = "test_api_key_123"
 
-        with patch(
-            "deepsights.userclient.userclient.MIPIdentityResolver"
-        ) as mock_resolver_class:
+        with patch("deepsights.userclient.userclient.MIPIdentityResolver") as mock_resolver_class:
             # Mock the MIP resolver to return None (failed token retrieval)
             mock_resolver = MagicMock()
             mock_resolver.get_oauth_token.return_value = None
             mock_resolver_class.return_value = mock_resolver
 
-            with pytest.raises(
-                ValueError, match="Failed to obtain initial OAuth token"
-            ):
+            with pytest.raises(ValueError, match="Failed to obtain initial OAuth token"):
                 UserClient(email=test_email, api_key=test_api_key)
 
     def test_manual_token_refresh(self):
@@ -124,9 +116,7 @@ class TestUserClientRefresh:
         refreshed_token = "refreshed_token_456"
         test_interval = 5  # 5 seconds for testing
 
-        with patch(
-            "deepsights.userclient.userclient.MIPIdentityResolver"
-        ) as mock_resolver_class:
+        with patch("deepsights.userclient.userclient.MIPIdentityResolver") as mock_resolver_class:
             # Mock the MIP resolver
             mock_resolver = MagicMock()
             mock_resolver.get_oauth_token.side_effect = [initial_token, refreshed_token]
@@ -147,9 +137,7 @@ class TestUserClientRefresh:
             # Verify refresh was successful
             assert success
             assert client._oauth_token == refreshed_token
-            assert (
-                "Bearer " + refreshed_token in client._session.headers["Authorization"]
-            )
+            assert "Bearer " + refreshed_token in client._session.headers["Authorization"]
 
     def test_manual_refresh_in_direct_mode_raises_error(self):
         """Test that manual refresh raises error in direct token mode."""
@@ -168,9 +156,7 @@ class TestUserClientRefresh:
         test_token = "test_token_123"
         test_interval = 2  # 2 seconds for testing
 
-        with patch(
-            "deepsights.userclient.userclient.MIPIdentityResolver"
-        ) as mock_resolver_class:
+        with patch("deepsights.userclient.userclient.MIPIdentityResolver") as mock_resolver_class:
             # Mock the MIP resolver
             mock_resolver = MagicMock()
             mock_resolver.get_oauth_token.return_value = test_token
@@ -200,9 +186,7 @@ class TestUserClientRefresh:
         # Test various intervals in seconds
         test_intervals = [1, 10, 60, 300, 1800]  # 1s, 10s, 1min, 5min, 30min
 
-        with patch(
-            "deepsights.userclient.userclient.MIPIdentityResolver"
-        ) as mock_resolver_class:
+        with patch("deepsights.userclient.userclient.MIPIdentityResolver") as mock_resolver_class:
             # Mock the MIP resolver
             mock_resolver = MagicMock()
             mock_resolver.get_oauth_token.return_value = test_token
@@ -244,9 +228,7 @@ class TestUserClientRefresh:
         test_token = "test_token_123"
         test_interval = 1  # 1 second for testing
 
-        with patch(
-            "deepsights.userclient.userclient.MIPIdentityResolver"
-        ) as mock_resolver_class:
+        with patch("deepsights.userclient.userclient.MIPIdentityResolver") as mock_resolver_class:
             # Mock the MIP resolver
             mock_resolver = MagicMock()
             mock_resolver.get_oauth_token.return_value = test_token

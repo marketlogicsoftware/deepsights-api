@@ -16,23 +16,24 @@
 This module contains base API client classes.
 """
 
-import os
 import logging
+import os
+from functools import wraps
 from typing import Dict
 
-from functools import wraps
 from ratelimit import limits, sleep_and_retry
 from requests import Session
 from requests.adapters import HTTPAdapter
-from requests.exceptions import ConnectionError as RequestsConnectionError, HTTPError, Timeout
+from requests.exceptions import ConnectionError as RequestsConnectionError
+from requests.exceptions import HTTPError, Timeout
 from tenacity import (
     retry,
     stop_after_attempt,
     wait_random_exponential,
 )
 
-from deepsights.exceptions import AuthenticationError, RateLimitError
 from deepsights._version import __version__ as _ds_version
+from deepsights.exceptions import AuthenticationError, RateLimitError
 
 logger = logging.getLogger(__name__)
 
@@ -90,11 +91,7 @@ def _handle_persistent_rate_limit(func):
         try:
             return func(*args, **kwargs)
         except HTTPError as e:
-            if (
-                hasattr(e, "response")
-                and e.response is not None
-                and e.response.status_code == 429
-            ):
+            if hasattr(e, "response") and e.response is not None and e.response.status_code == 429:
                 logger.warning(
                     "Persistent 429 after retries in %s; converting to RateLimitError",
                     getattr(func, "__name__", "<wrapped>"),
@@ -189,6 +186,7 @@ class API:
         self.close()
         # Do not suppress exceptions
         return False
+
     #######################################
     def _endpoint(self, path: str) -> str:
         """
@@ -213,9 +211,7 @@ class API:
     )
     @sleep_and_retry
     @limits(calls=1000, period=60)
-    def get(
-        self, path: str, params: Dict = None, timeout=None, expected_statuscodes=None
-    ) -> Dict:
+    def get(self, path: str, params: Dict = None, timeout=None, expected_statuscodes=None) -> Dict:
         """
         Sends a GET request to the specified path with optional parameters.
 
@@ -237,16 +233,11 @@ class API:
         expected_statuscodes = expected_statuscodes or []
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug("HTTP GET %s params=%s timeout=%s", path, params, timeout)
-        response = self._session.get(
-            self._endpoint(path), params=params, timeout=timeout
-        )
+        response = self._session.get(self._endpoint(path), params=params, timeout=timeout)
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug("HTTP GET %s -> %s", path, response.status_code)
 
-        if (
-            response.status_code not in [200, 201, 202]
-            and response.status_code not in expected_statuscodes
-        ):
+        if response.status_code not in [200, 201, 202] and response.status_code not in expected_statuscodes:
             _handle_http_error(response)
 
         return response.json()
@@ -260,9 +251,7 @@ class API:
     )
     @sleep_and_retry
     @limits(calls=1000, period=60)
-    def get_content(
-        self, path: str, params: Dict = None, timeout=None, expected_statuscodes=None
-    ) -> bytes:
+    def get_content(self, path: str, params: Dict = None, timeout=None, expected_statuscodes=None) -> bytes:
         """
         Sends a GET request to the specified path and returns the raw response content.
 
@@ -287,16 +276,11 @@ class API:
         expected_statuscodes = expected_statuscodes or []
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug("HTTP GET(content) %s params=%s timeout=%s", path, params, timeout)
-        response = self._session.get(
-            self._endpoint(path), params=params, timeout=timeout
-        )
+        response = self._session.get(self._endpoint(path), params=params, timeout=timeout)
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug("HTTP GET(content) %s -> %s", path, response.status_code)
 
-        if (
-            response.status_code not in [200, 201, 202]
-            and response.status_code not in expected_statuscodes
-        ):
+        if response.status_code not in [200, 201, 202] and response.status_code not in expected_statuscodes:
             _handle_http_error(response)
 
         return response.content
@@ -341,16 +325,11 @@ class API:
         expected_statuscodes = expected_statuscodes or []
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug("HTTP POST %s params=%s timeout=%s", path, params, timeout)
-        response = self._session.post(
-            self._endpoint(path), params=params, json=body, timeout=timeout
-        )
+        response = self._session.post(self._endpoint(path), params=params, json=body, timeout=timeout)
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug("HTTP POST %s -> %s", path, response.status_code)
 
-        if (
-            response.status_code not in [200, 201, 202]
-            and response.status_code not in expected_statuscodes
-        ):
+        if response.status_code not in [200, 201, 202] and response.status_code not in expected_statuscodes:
             _handle_http_error(response)
 
         return response.json()
@@ -387,10 +366,7 @@ class API:
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug("HTTP DELETE %s -> %s", path, response.status_code)
 
-        if (
-            response.status_code not in [200, 204]
-            and response.status_code not in expected_statuscodes
-        ):
+        if response.status_code not in [200, 204] and response.status_code not in expected_statuscodes:
             _handle_http_error(response)
 
 
@@ -401,9 +377,7 @@ class APIKeyAPI(API):
     """
 
     #######################################
-    def __init__(
-        self, endpoint_base: str, api_key: str, api_key_env_var: str = None, **kwargs
-    ) -> None:
+    def __init__(self, endpoint_base: str, api_key: str | None, api_key_env_var: str | None = None, **kwargs) -> None:
         """
         Initializes the API client.
 
@@ -422,15 +396,14 @@ class APIKeyAPI(API):
         super().__init__(endpoint_base, **kwargs)
 
         # set api key
-        assert (
-            api_key or api_key_env_var
-        ), "Must provide either API key or environment variable"
-        if not api_key:
-            api_key = os.environ.get(api_key_env_var)
-        self._api_key = api_key
+        assert api_key or api_key_env_var, "Must provide either API key or environment variable"
+        api_key_value: str | None = api_key if api_key is not None else (os.environ.get(api_key_env_var) if api_key_env_var else None)
+        # store for subclasses
+        self._api_key: str | None = api_key_value
 
-        # add api key to session headers
-        self._session.headers.update({"X-Api-Key": self._api_key})
+        # add api key to session headers if available
+        if self._api_key is not None:
+            self._session.headers.update({"X-Api-Key": self._api_key})
 
 
 #################################################

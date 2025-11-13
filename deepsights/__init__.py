@@ -17,11 +17,11 @@ This module contains the client library to interact with the Market Logic DeepSi
 """
 
 from deepsights import exceptions
+from deepsights._version import __version__
 from deepsights.deepsights import DeepSights
-from deepsights.userclient import UserClient
 from deepsights.documentstore.resources import SortingField, SortingOrder
 from deepsights.exceptions import AuthenticationError, DeepSightsError, RateLimitError
-from deepsights._version import __version__
+from deepsights.userclient import UserClient
 
 __all__ = [
     "SortingField",

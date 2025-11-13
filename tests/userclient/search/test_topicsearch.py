@@ -44,9 +44,7 @@ def test_topic_search_extended(user_client, test_data):
     This function tests the `topic_search.search` method with extended_search=True
     and verifies the results are properly structured.
     """
-    results = user_client.search.topic_search(
-        query=test_data["question"], extended_search=True
-    )
+    results = user_client.search.topic_search(query=test_data["question"], extended_search=True)
 
     assert isinstance(results, list)
     for result in results:

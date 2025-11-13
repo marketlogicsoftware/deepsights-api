@@ -44,9 +44,7 @@ def test_hybrid_search_extended(user_client, test_data):
     This function tests the `hybrid_search.search` method with extended_search=True
     and verifies the results are properly structured.
     """
-    results = user_client.documents.search(
-        query=test_data["question"], extended_search=True
-    )
+    results = user_client.documents.search(query=test_data["question"], extended_search=True)
 
     assert isinstance(results, list)
     for result in results:

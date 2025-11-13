@@ -2,9 +2,8 @@
 Unit tests for API error mapping.
 """
 
-from requests.exceptions import HTTPError
-
 import pytest
+from requests.exceptions import HTTPError
 
 from deepsights.api.api import API, _handle_http_error
 from deepsights.exceptions import AuthenticationError
@@ -41,4 +40,3 @@ def test_api_get_404_passes_http_error(monkeypatch):
 
     with pytest.raises(HTTPError):
         api.get("/not-found")
-

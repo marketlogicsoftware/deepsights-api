@@ -2,8 +2,8 @@
 Unit tests for AnswersV2 and Reports resources (no network).
 """
 
-from ratelimit import RateLimitException
 import pytest
+from ratelimit import RateLimitException
 
 from deepsights.exceptions import RateLimitError
 from deepsights.userclient.resources.answersV2.answerV2 import AnswerV2Resource

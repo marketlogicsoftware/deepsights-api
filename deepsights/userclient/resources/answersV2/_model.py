@@ -53,12 +53,8 @@ class AnswerV2(DeepSightsIdModel):
     )
     status: str = Field(description="The processing status of the answer.")
     question: str = Field(description="The question that the answer is answering.")
-    answer: Optional[str] = Field(
-        default=None, description="The AI-generated answer in markdown format."
-    )
-    watchouts: Optional[str] = Field(
-        default=None, description="The AI-generated watchouts in markdown format."
-    )
+    answer: Optional[str] = Field(default=None, description="The AI-generated answer in markdown format.")
+    watchouts: Optional[str] = Field(default=None, description="The AI-generated watchouts in markdown format.")
     document_sources: List[DocumentEvidence] = Field(
         default_factory=list,
         description="List of evidence from documents used in the answer.",

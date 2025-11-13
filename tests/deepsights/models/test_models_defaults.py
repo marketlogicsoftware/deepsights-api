@@ -4,9 +4,9 @@
 Unit tests for model defaults and defensive parsing.
 """
 
+from deepsights.contentstore.resources._model import ContentStoreSearchResult
 from deepsights.documentstore.resources.documents._model import Document
 from deepsights.userclient.resources.answersV2._model import AnswerV2
-from deepsights.contentstore.resources._model import ContentStoreSearchResult
 
 
 def test_document_defensive_parsing_missing_nested_fields():

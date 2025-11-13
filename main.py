@@ -43,24 +43,16 @@ profile = ds.quota.get_profile()
 quota = ds.quota.get_status()
 
 # hybrid search combining text and vector search
-hybrid_results = ds.documentstore.documents.search(
-    query="consumer behavior trends 2024", extended_search=False
-)
+hybrid_results = ds.documentstore.documents.search(query="consumer behavior trends 2024", extended_search=False)
 
 print("=== Document Store Hybrid Search Results ===")
 for result in hybrid_results:
     print(f"📄 {result.artifact_title}")
-    print(
-        f"📝 {result.artifact_summary[:100]}..."
-        if result.artifact_summary
-        else "No summary"
-    )
+    print(f"📝 {result.artifact_summary[:100]}..." if result.artifact_summary else "No summary")
     print(f"📑 {len(result.page_references)} relevant pages\n")
 
 # search document matches for an ADA-002 query vector (legacy approach)
-document_results = ds.documentstore.documents.search_documents(
-    query_embedding=test_embedding, max_results=10, min_score=0.0
-)
+document_results = ds.documentstore.documents.search_documents(query_embedding=test_embedding, max_results=10, min_score=0.0)
 
 # load the docs with their pages
 documents = ds.documentstore.documents.load(
@@ -115,11 +107,7 @@ print("=== User Client Examples ===")
 
 # Method 1: Traditional approach - obtain a user client for a known email address
 # This gets a token once and uses it (no auto-refresh)
-uc = UserClient.get_userclient(
-    "john.doe@acme.com",
-    os.environ.get('MIP_API_KEY'),
-    ds._endpoint_base
-)
+uc = UserClient.get_userclient("john.doe@acme.com", os.environ.get('MIP_API_KEY'), ds._endpoint_base)
 print("Traditional user client created for john.doe@acme.com")
 
 # Method 2: Auto-refresh mode with configurable interval
@@ -137,9 +125,7 @@ try:
     token_info = auto_uc.get_token_info()
     print(f"Auto-refresh enabled: {token_info['auto_refresh_enabled']}")
     print(f"User email: {token_info['email']}")
-    print(
-        f"Refresh interval: {token_info['refresh_interval_seconds']} seconds ({token_info['refresh_interval_seconds'] / 60:.1f} minutes)"
-    )
+    print(f"Refresh interval: {token_info['refresh_interval_seconds']} seconds ({token_info['refresh_interval_seconds'] / 60:.1f} minutes)")
     print(f"Has valid token: {token_info['has_token']}")
 
     # Example with custom refresh interval (5 minutes for demo)
@@ -167,39 +153,25 @@ except ValueError as e:
     print(f"Auto-refresh mode not available: {e}")
     print("Falling back to traditional mode...")
     # Fall back to traditional method if auto-refresh setup fails
-    uc = UserClient.get_userclient(
-        "john.doe@acme.com",
-        os.environ.get('MIP_API_KEY'),
-        ds._endpoint_base
-    )
+    uc = UserClient.get_userclient("john.doe@acme.com", os.environ.get('MIP_API_KEY'), ds._endpoint_base)
 
 print("\n=== User Client Document Management ===")
 
 # list documents with user-specific access
-total_docs, user_documents = uc.documents.documents_list(
-    page_size=10, sort_field="creation_date", sort_order="DESC"
-)
+total_docs, user_documents = uc.documents.documents_list(page_size=10, sort_field="creation_date", sort_order="DESC")
 print(f"Found {total_docs} documents accessible to user")
 
 # hybrid search through user client
-user_hybrid_results = uc.documents.search(
-    query="consumer behavior insights", extended_search=False
-)
+user_hybrid_results = uc.documents.search(query="consumer behavior insights", extended_search=False)
 print(f"User hybrid search returned {len(user_hybrid_results)} results")
 
 # topic search with AI analysis (user client only)
-topic_results = uc.search.topic_search(
-    query="sustainable packaging trends", extended_search=False
-)
+topic_results = uc.search.topic_search(query="sustainable packaging trends", extended_search=False)
 print(f"Topic search returned {len(topic_results)} results")
 for result in topic_results[:2]:  # Show first 2
     print(f"📄 {result.artifact_title}")
     print(f"📊 Relevance: {result.relevance_class}")
-    print(
-        f"📝 Summary: {result.artifact_summary[:100]}..."
-        if result.artifact_summary
-        else "No summary"
-    )
+    print(f"📝 Summary: {result.artifact_summary[:100]}..." if result.artifact_summary else "No summary")
     print(f"📑 {len(result.page_references)} relevant pages\n")
 
 # load specific documents with pages (if any found)

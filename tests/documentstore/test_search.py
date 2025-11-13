@@ -52,9 +52,7 @@ def test_document_pages_search_cutoff(ds_client, test_data):
     This test verifies that when the `document_pages_search` function is called with a high score cutoff (0.9999),
     it returns an empty list of results.
     """
-    results = ds_client.documentstore.documents.search_pages(
-        test_data["embedding"], min_score=0.9999
-    )
+    results = ds_client.documentstore.documents.search_pages(test_data["embedding"], min_score=0.9999)
 
     assert len(results) == 0
 
@@ -186,9 +184,7 @@ def test_hybrid_search_extended(ds_client, test_data):
     This function tests the `hybrid_search` method with extended_search=True
     and verifies the results are properly structured.
     """
-    results = ds_client.documentstore.documents.search(
-        query=test_data["question"], extended_search=True
-    )
+    results = ds_client.documentstore.documents.search(query=test_data["question"], extended_search=True)
 
     assert isinstance(results, list)
     for result in results:

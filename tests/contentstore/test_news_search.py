@@ -68,7 +68,7 @@ def test_news_download(ds_client):
     results = ds_client.contentstore.news.text_search(
         query="",
         max_results=5,
-        search_to_timestamp=datetime.now(timezone.utc) - timedelta(days=1),
+        search_to_timestamp=datetime.now(timezone.utc) - timedelta(days=10),
     )
 
     content = ds_client.contentstore.news.download(results[0].id)
@@ -315,9 +315,7 @@ def test_news_hybrid_search_only_text(ds_client, test_data):
         recency_weight=0.0,
     )
 
-    text_results = ds_client.contentstore.news.text_search(
-        query=test_data["question"], max_results=results
-    )
+    text_results = ds_client.contentstore.news.text_search(query=test_data["question"], max_results=results)
 
     assert len(hybrid_results) == results
     for ix, hybrid_result in enumerate(hybrid_results):

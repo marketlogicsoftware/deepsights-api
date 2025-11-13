@@ -113,24 +113,14 @@ def test_documents_list_sorting_by_title(user_client):
     if len(documents_asc) > 1 and len(documents_desc) > 1:
         # First document in ascending should be different from first in descending
         # (unless there's only one document or all have same title)
-        asc_titles = [
-            doc.title or doc.ai_generated_title
-            for doc in documents_asc
-            if doc.title or doc.ai_generated_title
-        ]
-        desc_titles = [
-            doc.title or doc.ai_generated_title
-            for doc in documents_desc
-            if doc.title or doc.ai_generated_title
-        ]
+        asc_titles = [doc.title or doc.ai_generated_title for doc in documents_asc if doc.title or doc.ai_generated_title]
+        desc_titles = [doc.title or doc.ai_generated_title for doc in documents_desc if doc.title or doc.ai_generated_title]
 
         if len(set(asc_titles)) > 1:  # More than one unique title
             assert asc_titles[0] != desc_titles[0] or len(asc_titles) == 1
 
 
-@pytest.mark.skip(
-    reason="Skipping sorting by publication date test due server limitation"
-)
+@pytest.mark.skip(reason="Skipping sorting by publication date test due server limitation")
 def test_documents_list_sorting_by_publication_date(user_client):
     """
     Test the documents list sorting by publication date functionality.
@@ -149,10 +139,7 @@ def test_documents_list_sorting_by_publication_date(user_client):
     docs_with_dates = [doc for doc in documents if doc.publication_date is not None]
     if len(docs_with_dates) > 1:
         for i in range(1, len(docs_with_dates)):
-            assert (
-                docs_with_dates[i].publication_date
-                <= docs_with_dates[i - 1].publication_date
-            )
+            assert docs_with_dates[i].publication_date <= docs_with_dates[i - 1].publication_date
 
 
 def test_documents_list_status_filter(user_client):
@@ -160,12 +147,10 @@ def test_documents_list_status_filter(user_client):
     Test the documents list status filtering functionality.
     """
     # Test with COMPLETED status filter
-    number_of_results_completed, documents_completed = (
-        user_client.documents.list(
-            page_size=10,
-            page_number=0,
-            status_filter=["COMPLETED"],
-        )
+    number_of_results_completed, documents_completed = user_client.documents.list(
+        page_size=10,
+        page_number=0,
+        status_filter=["COMPLETED"],
     )
 
     # Test without status filter
@@ -220,9 +205,7 @@ def test_documents_list_validation_errors(user_client):
     Test that documents_list properly validates input parameters.
     """
     # Test page size too large
-    with pytest.raises(
-        AssertionError, match="page size must be less than or equal to 100"
-    ):
+    with pytest.raises(AssertionError, match="page size must be less than or equal to 100"):
         user_client.documents.list(page_size=101)
 
     # Test negative page number

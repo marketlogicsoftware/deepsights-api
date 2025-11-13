@@ -17,7 +17,7 @@ This module contains the base functions to search the ContentStore.
 """
 
 from datetime import datetime
-from typing import Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, TypeVar
 
 from pydantic import BaseModel
 
@@ -66,7 +66,7 @@ def _validate_embedding(query_embedding: List) -> None:
 
 #################################################
 def _get_time_filter(
-    search_from_timestamp: datetime, search_to_timestamp: datetime
+    search_from_timestamp: Optional[datetime], search_to_timestamp: Optional[datetime]
 ) -> Optional[Dict[str, Optional[str]]]:
     """
     Returns a time filter dictionary based on the provided search_from_timestamp and search_to_timestamp.
@@ -82,21 +82,22 @@ def _get_time_filter(
     time_filter = None
     if search_from_timestamp or search_to_timestamp:
         time_filter = {
-            "from": (
-                search_from_timestamp.isoformat() if search_from_timestamp else None
-            ),
+            "from": (search_from_timestamp.isoformat() if search_from_timestamp else None),
             "to": search_to_timestamp.isoformat() if search_to_timestamp else None,
         }
     return time_filter
 
 
 #################################################
- # pylint: disable-next=too-many-arguments, too-many-positional-arguments, too-many-locals
+T = TypeVar("T", bound=BaseModel)
+
+
+# pylint: disable-next=too-many-arguments, too-many-positional-arguments, too-many-locals
 def contentstore_hybrid_search(
     api: API,
     query: str,
     item_type: str,
-    search_result: BaseModel,
+    search_result: Callable[[Any], T],
     max_results: int = 100,
     languages: List[str] = None,
     min_vector_score: float = 0.7,
@@ -107,7 +108,7 @@ def contentstore_hybrid_search(
     search_to_timestamp: datetime = None,
     apply_evidence_filter: bool = False,
     search_only_ai_allowed_content: bool = True,
-) -> List[BaseModel]:
+) -> List[T]:
     """
     Perform a contentstore hybrid search using the provided query.
 
@@ -151,30 +152,29 @@ def contentstore_hybrid_search(
         "k": 60,
         "published_at": _get_time_filter(search_from_timestamp, search_to_timestamp),
         "languages": languages,
-        "content_restrictions": (
-            "ALLOWED_FOR_AI_SUMMARIZATION" if search_only_ai_allowed_content else "NONE"
-        ),
+        "content_restrictions": ("ALLOWED_FOR_AI_SUMMARIZATION" if search_only_ai_allowed_content else "NONE"),
         "use_evidence_filtering": apply_evidence_filter,
     }
     response = api.post("item-service/items/_hybrid-search", body=body)
 
     # parse
-    results = [search_result(i) for i in response["items"]]
+    results: List[T] = [search_result(i) for i in response["items"]]
 
     # record rank
     for rank, result in enumerate(results):
-        result.rank = rank + 1
+        if hasattr(result, "rank"):
+            result.rank = rank + 1
 
     return results
 
 
 #################################################
- # pylint: disable-next=too-many-arguments, too-many-positional-arguments
+# pylint: disable-next=too-many-arguments, too-many-positional-arguments
 def contentstore_vector_search(
     api: API,
     query_embedding: List,
     item_type: str,
-    search_result: BaseModel,
+    search_result: Callable[[Any], T],
     min_score: float = 0.7,
     max_results: int = 100,
     languages: List[str] = None,
@@ -182,7 +182,7 @@ def contentstore_vector_search(
     search_from_timestamp: datetime = None,
     search_to_timestamp: datetime = None,
     search_only_ai_allowed_content: bool = True,
-) -> List[BaseModel]:
+) -> List[T]:
     """
     Perform a contentstore vector search using the provided query embedding.
 
@@ -218,26 +218,24 @@ def contentstore_vector_search(
         "sort": "RELEVANCY_DESC",
         "languages": languages,
         "published_at": _get_time_filter(search_from_timestamp, search_to_timestamp),
-        "content_restrictions": (
-            "ALLOWED_FOR_AI_SUMMARIZATION" if search_only_ai_allowed_content else "NONE"
-        ),
+        "content_restrictions": ("ALLOWED_FOR_AI_SUMMARIZATION" if search_only_ai_allowed_content else "NONE"),
     }
     response = api.post("item-service/items/_vector-search", body=body)
 
     # parse
-    results = [search_result(i) for i in response["items"]]
+    results: List[T] = [search_result(i) for i in response["items"]]
 
     # re-rank
     return rerank_by_recency(results, recency_weight=recency_weight)
 
 
 #################################################
- # pylint: disable-next=too-many-arguments, too-many-positional-arguments, too-many-locals
+# pylint: disable-next=too-many-arguments, too-many-positional-arguments, too-many-locals
 def contentstore_text_search(
     api: API,
-    query: str,
+    query: Optional[str],
     item_type: str,
-    search_result: BaseModel,
+    search_result: Callable[[Any], T],
     max_results: int = 100,
     offset: int = 0,
     languages: List[str] = None,
@@ -245,9 +243,10 @@ def contentstore_text_search(
     search_from_timestamp: datetime = None,
     search_to_timestamp: datetime = None,
     search_only_ai_allowed_content: bool = True,
-) -> List[BaseModel]:
+) -> List[T]:
     """
-    Perform a contentstore text search using the specified query and item type. If the query is None, the search will be sorted by publication date.
+    Perform a contentstore text search using the specified query and item type. If the query is None,
+    the search will be sorted by publication date.
 
     Args:
 
@@ -287,17 +286,16 @@ def contentstore_text_search(
         "sort": sort_order,
         "languages": languages,
         "published_at": _get_time_filter(search_from_timestamp, search_to_timestamp),
-        "content_restrictions": (
-            "ALLOWED_FOR_AI_SUMMARIZATION" if search_only_ai_allowed_content else "NONE"
-        ),
+        "content_restrictions": ("ALLOWED_FOR_AI_SUMMARIZATION" if search_only_ai_allowed_content else "NONE"),
     }
     response = api.post("item-service/items/_text-search", body=body)
 
     # parse
-    results = [search_result(i) for i in response["items"]]
+    results: List[T] = [search_result(i) for i in response["items"]]
 
     # record rank
     for rank, result in enumerate(results):
-        result.rank = rank + 1
+        if hasattr(result, "rank"):
+            result.rank = rank + 1
 
     return results

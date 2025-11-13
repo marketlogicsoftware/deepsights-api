@@ -2,7 +2,6 @@
 Unit tests for API headers and timeout behavior.
 """
 
-
 from deepsights._version import __version__
 from deepsights.api.api import API
 
@@ -36,4 +35,3 @@ def test_default_timeout_env_override(monkeypatch):
     api.get("/ping")
 
     assert captured["timeout"] == 42
-

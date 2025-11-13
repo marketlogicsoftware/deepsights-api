@@ -22,21 +22,20 @@ from typing import List, Optional
 
 from pydantic import Field
 
+# Re-export topic search models from topicsearch module
+from deepsights.userclient.resources.search._model import (
+    TopicSearchPageReference,
+    TopicSearchResult,
+)
 from deepsights.utils import (
     DeepSightsBaseModel,
     DeepSightsIdModel,
     DeepSightsIdTitleModel,
 )
 
-# Re-export topic search models from topicsearch module
-from deepsights.userclient.resources.search._model import (
-    TopicSearchResult,
-    TopicSearchPageReference,
-)
-
 __all__ = [
     "Evidence",
-    "DocumentPageEvidence", 
+    "DocumentPageEvidence",
     "DocumentEvidence",
     "ContentStoreSource",
     "ContentStoreEvidence",
@@ -77,9 +76,7 @@ class Evidence(DeepSightsIdTitleModel):
         default=None,
     )
 
-    publication_date: Optional[datetime] = Field(
-        description="The publication date of the evidence.", default=None
-    )
+    publication_date: Optional[datetime] = Field(description="The publication date of the evidence.", default=None)
     reference: Optional[str] = Field(
         alias="reference_id",
         description="The quotation reference code of the evidence.",
@@ -97,9 +94,7 @@ class DocumentPageEvidence(DeepSightsIdModel):
         page_number (Optional[int], optional): The number of the page.
     """
 
-    page_number: Optional[int] = Field(
-        default=None, description="The number of the page (one-based)."
-    )
+    page_number: Optional[int] = Field(default=None, description="The number of the page (one-based).")
 
 
 #################################################
@@ -135,9 +130,7 @@ class ContentStoreSource(DeepSightsBaseModel):
         alias="title",
         description="The name of the source",
     )
-    image_url: Optional[str] = Field(
-        description="The image url of the source, may be none.", default=None
-    )
+    image_url: Optional[str] = Field(description="The image url of the source, may be none.", default=None)
 
 
 #################################################

@@ -82,9 +82,7 @@ class NewsResource(APIResource):
         return contentstore_vector_search(
             self.api,
             item_type="NEWS",
-            search_result=lambda i: NewsSearchResult(
-                **{"source_name": i["source"]["display_name"], **i}
-            ),
+            search_result=lambda i: NewsSearchResult(**{"source_name": i["source"]["display_name"], **i}),
             query_embedding=query_embedding,
             min_score=min_score,
             max_results=max_results,
@@ -128,9 +126,7 @@ class NewsResource(APIResource):
         return contentstore_text_search(
             self.api,
             item_type="NEWS",
-            search_result=lambda i: NewsSearchResult(
-                **{"source_name": i["source"]["display_name"], **i}
-            ),
+            search_result=lambda i: NewsSearchResult(**{"source_name": i["source"]["display_name"], **i}),
             query=query,
             max_results=max_results,
             sort_descending=sort_descending,
@@ -180,9 +176,7 @@ class NewsResource(APIResource):
         return contentstore_hybrid_search(
             self.api,
             item_type="NEWS",
-            search_result=lambda i: NewsSearchResult(
-                **{"source_name": i["source"]["display_name"], **i}
-            ),
+            search_result=lambda i: NewsSearchResult(**{"source_name": i["source"]["display_name"], **i}),
             query=query,
             max_results=max_results,
             vector_weight=vector_weight,

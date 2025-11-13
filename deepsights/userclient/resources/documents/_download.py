@@ -42,6 +42,7 @@ def document_download(
     from deepsights.userclient.resources.documents.documents import (  # pylint: disable=import-outside-toplevel
         documents_load,
     )
+
     document = documents_load(resource, [document_id])[0]
     # Sanitize filename to prevent path traversal attacks
     safe_filename = os.path.basename(document.file_name or "unknown")
@@ -61,9 +62,7 @@ def document_download(
         # Validate URL scheme to prevent using local file paths or unexpected protocols
         parsed_url = urllib.parse.urlparse(response["signed_link"])
         if parsed_url.scheme not in ("http", "https"):
-            raise ValueError(
-                f"Unsupported URL scheme '{parsed_url.scheme}' in signed link."
-            )
+            raise ValueError(f"Unsupported URL scheme '{parsed_url.scheme}' in signed link.")
 
         # The scheme has been validated; the call is considered safe.
         urllib.request.urlretrieve(  # nosec B310

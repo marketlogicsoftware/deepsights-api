@@ -1,4 +1,4 @@
-# 🤖💡 deepsights-api 
+# 🤖💡 deepsights-api
 
 [![PyPI](https://img.shields.io/pypi/v/deepsights-api.svg)](https://pypi.org/project/deepsights-api/) [![Changelog](https://img.shields.io/github/v/release/marketlogicsoftware/deepsights-api?include_prereleases&label=changelog)](https://github.com/marketlogicsoftware/deepsights-api/releases) [![Tests](https://img.shields.io/github/actions/workflow/status/marketlogicsoftware/deepsights-api/run_tests.yml)](https://github.com/marketlogicsoftware/deepsights-api/actions/workflows/run_tests.yml) [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/marketlogicsoftware/deepsights-api/blob/main/LICENSE)
 
@@ -9,13 +9,13 @@ The official Python client library for the [DeepSights API](https://apiportal.ml
 Transform your market research into actionable business intelligence with AI that delivers **60% higher quality responses** than generic alternatives. DeepSights enables data scientists, analysts, and insight teams to:
 
 - **Boost productivity by 70%** with AI-powered market insights
-- **Save 7+ hours per research session** through intelligent automation  
+- **Save 7+ hours per research session** through intelligent automation
 - **Integrate market intelligence** directly into business systems via AI-to-AI workflows
 - **Trust your results** - only cites verified, trusted sources from your knowledge base
 
 Perfect for B2C brands, enterprises, and research teams who need reliable market insights at scale.
 
-**Requirements:** Python 3.10 - 3.12 | **Support:** [GitHub Issues](https://github.com/marketlogicsoftware/deepsights-api/issues) 
+**Requirements:** Python 3.10 - 3.12 | **Support:** [GitHub Issues](https://github.com/marketlogicsoftware/deepsights-api/issues)
 
 ## Scope
 
@@ -54,7 +54,7 @@ Notes
 - All document/content vector searches require 1536-dimensional embeddings.
 - Content Store search methods support language and date-range filters; vector searches accept optional `recency_weight`.
 - `search_documents(...)` and `search_documents_pages(...)` are deprecated in favor of hybrid search.
- 
+
 ## Getting started
 
 ### Installation
@@ -67,7 +67,7 @@ pip install deepsights-api
 
 ### API keys
 
-[Contact us](https://apiportal.mlsdevcloud.com/get-started#Get_API_key) to obtain your API key(s) (may require commercial add-on). 
+[Contact us](https://apiportal.mlsdevcloud.com/get-started#Get_API_key) to obtain your API key(s) (may require commercial add-on).
 
 | API Key | Scope |
 |--|--|
@@ -75,7 +75,7 @@ pip install deepsights-api
 | CONTENTSTORE | Optional key to access the `contentstore` functions |
 | MIP | Optional key to access the `userclient` functions for customers utilizing the core Market Logic platform |
 
-**Note that your API key may be authorized to access only a subset of the API endpoints.** 
+**Note that your API key may be authorized to access only a subset of the API endpoints.**
 
 Configure your api keys either in your environment, or provide it as an argument to the API constructor.
 
@@ -85,7 +85,7 @@ CONTENTSTORE_API_KEY = <your ContentStore API key; optional>
 MIP_API_KEY = <your MIP API key; optional>
 ```
 
-then 
+then
 
 ```Python
 import deepsights
@@ -96,7 +96,7 @@ ds = deepsights.DeepSights()
 # OR with explicit key
 ds = deepsights.DeepSights(
     ds_api_key="<your DEEPSIGHTS API key>",
-    cs_api_key="<your CONTENTSTORE API key>", 
+    cs_api_key="<your CONTENTSTORE API key>",
     mip_api_key="<your MIP API key>"
 )
 ```
@@ -115,8 +115,8 @@ ds = deepsights.DeepSights()
 
 # Get user client for AI-generated insights
 uc = UserClient.get_userclient(
-    "analyst@company.com", 
-    os.environ.get('MIP_API_KEY'), 
+    "analyst@company.com",
+    os.environ.get('MIP_API_KEY'),
     "https://api.deepsights.ai/ds/v1"
 )
 
@@ -147,8 +147,8 @@ for result in results:
 ```python
 # Access documents through user permissions
 uc = UserClient.get_userclient(
-    "analyst@company.com", 
-    os.environ.get('MIP_API_KEY'), 
+    "analyst@company.com",
+    os.environ.get('MIP_API_KEY'),
     "https://api.deepsights.ai/ds/v1"
 )
 
@@ -179,12 +179,12 @@ search_results = uc.documents.search(
 ```python
 # AI-powered topic search available through user client
 uc = UserClient.get_userclient(
-    "analyst@company.com", 
-    os.environ.get('MIP_API_KEY'), 
+    "analyst@company.com",
+    os.environ.get('MIP_API_KEY'),
     "https://api.deepsights.ai/ds/v1"
 )
 results = uc.search.topic_search(
-    query="sustainable packaging trends", 
+    query="sustainable packaging trends",
     extended_search=True
 )
 
@@ -224,8 +224,8 @@ from deepsights.userclient import UserClient
 
 ds = deepsights.DeepSights()
 uc = UserClient.get_userclient(
-    "analyst@company.com", 
-    os.environ.get('MIP_API_KEY'), 
+    "analyst@company.com",
+    os.environ.get('MIP_API_KEY'),
     "https://api.deepsights.ai/ds/v1"
 )
 
@@ -234,30 +234,30 @@ try:
     for i in range(15):  # Exceeds 10/minute limit for answers
         response = uc.answersV2.create(f"Question {i}: Market trends?")
         print(f"✅ Question {i+1} processed")
-        
+
 except deepsights.RateLimitError as e:
     print(f"🚫 Rate limit exceeded: {e}")
-    
+
     if e.retry_after:
         print(f"⏱️  Client-side limit - wait {e.retry_after} seconds")
         time.sleep(e.retry_after)
     else:
         print("⏱️  Server busy - try again later")
-        
+
 except deepsights.AuthenticationError as e:
     print(f"🔐 Authentication failed: {e}")
-    
+
 except deepsights.DeepSightsError as e:
     print(f"⚠️  API error: {e}")
 
 # Alternative: Handle all rate limiting uniformly
 try:
     response = uc.answersV2.create_and_wait("Your question here")
-    
+
 except deepsights.RateLimitError as e:
     # Handles both client-side (10/min) and server-side (persistent 429) limits
     print(f"Rate limit hit: {e}")
-    
+
     # Implement your retry strategy
     if e.retry_after:
         time.sleep(e.retry_after)  # Known wait time
@@ -269,6 +269,12 @@ All return values are [Pydantic objects](https://docs.pydantic.dev/latest/) with
 
 
 ## Developer Information
+
+### Pre-commit Hooks
+- One-shot runner: `bash scripts/precommit.sh` (uses uv, runs Ruff + Mypy, then validates hooks)
+- Install hooks: `uv pip install pre-commit && pre-commit install`
+- Run on all files: `pre-commit run --all-files`
+- Hooks included: Ruff (lint + format; uses `pyproject.toml`), Mypy (uses `mypy.ini` with local stubs under `typings/`), plus basic whitespace/YAML checks.
 
 ### UserClient Documents Capabilities
 - Supported (end-user gateway): `documents.list`, `documents.load`, `documents.load_pages`, `documents.search` (hybrid), `documents.download`.
@@ -302,13 +308,13 @@ deepsights.DeepSightsError          # Base exception
 # Recommended error handling pattern
 try:
     response = uc.answersV2.create_and_wait("Your question")
-    
+
 except deepsights.RateLimitError as e:
     # Single handler for all rate limiting scenarios
     wait_time = e.retry_after or 60  # Use provided time or conservative fallback
     print(f"Rate limited, waiting {wait_time} seconds...")
     time.sleep(wait_time)
-    
+
 except deepsights.AuthenticationError:
     print("Check your API keys and permissions")
 ```
