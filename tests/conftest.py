@@ -18,6 +18,19 @@ Shared test fixtures and configuration for the DeepSights API test suite.
 
 import json
 import os
+from pathlib import Path
+
+try:
+    # Load local environment variables from .env if available
+    from dotenv import load_dotenv  # type: ignore
+
+    # Load from project root by default
+    dotenv_path = Path(".env")
+    if dotenv_path.exists():
+        load_dotenv(dotenv_path=dotenv_path, override=False)
+except Exception:
+    # If python-dotenv isn't installed or any error occurs, continue without failing
+    pass
 
 import pytest
 
@@ -73,8 +86,10 @@ def user_client():
     """
     if not (os.environ.get("DEEPSIGHTS_RUN_INTEGRATION") or (os.environ.get("MIP_IDENTITY_VALID_EMAIL") and os.environ.get("MIP_API_KEY"))):
         pytest.skip("integration test requires MIP_IDENTITY_VALID_EMAIL and MIP_API_KEY or DEEPSIGHTS_RUN_INTEGRATION=1")
-    valid_email = os.environ.get("MIP_IDENTITY_VALID_EMAIL")
-    mip_api_key = os.environ.get("MIP_API_KEY")
+    from typing import cast
+
+    valid_email = cast(str, os.environ.get("MIP_IDENTITY_VALID_EMAIL"))
+    mip_api_key = cast(str, os.environ.get("MIP_API_KEY"))
     endpoint_base = "https://api.deepsights.ai/ds/v1"  # Default endpoint
     return UserClient.get_userclient(valid_email, mip_api_key, endpoint_base)
 
@@ -89,4 +104,6 @@ def valid_email():
     """
     if not (os.environ.get("DEEPSIGHTS_RUN_INTEGRATION") or os.environ.get("MIP_IDENTITY_VALID_EMAIL")):
         pytest.skip("integration test requires MIP_IDENTITY_VALID_EMAIL or DEEPSIGHTS_RUN_INTEGRATION=1")
-    return os.environ.get("MIP_IDENTITY_VALID_EMAIL")
+    email = os.environ.get("MIP_IDENTITY_VALID_EMAIL")
+    assert email is not None
+    return email

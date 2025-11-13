@@ -65,7 +65,7 @@ class AnswerV2Resource(APIResource):
             ) from e
 
     #################################################
-    def wait_for_answer(self, answer_id: str, timeout=90) -> AnswerV2:
+    def wait_for_answer(self, answer_id: str, timeout: int = 90) -> AnswerV2:
         """
         Waits for the completion of an answer.
 
@@ -84,7 +84,7 @@ class AnswerV2Resource(APIResource):
             PollingFailedError: If the answer fails to complete.
         """
 
-        def get_status(resource_id: str):
+        def get_status(resource_id: str) -> dict:
             return self.api.get(f"end-user-gateway-service/answers-v2/{resource_id}")
 
         try:
@@ -158,7 +158,7 @@ class AnswerV2Resource(APIResource):
 
     #################################################
     @limits(calls=10, period=60)
-    def create_and_wait(self, question: str, timeout=90) -> AnswerV2:
+    def create_and_wait(self, question: str, timeout: int = 90) -> AnswerV2:
         """
         Submits a question to the DeepSights API and waits for the answer to complete.
 

@@ -2,6 +2,8 @@
 Unit test for API.get_content bytes return.
 """
 
+from typing import Any
+
 from deepsights.api.api import API
 
 
@@ -17,8 +19,8 @@ class _Resp:
 def test_get_content_returns_bytes(monkeypatch):
     api = API(endpoint_base="https://example.invalid/")
 
-    def fake_get(url, params=None, timeout=None):
+    def fake_get(url: str, params: Any = None, timeout: Any = None):
         return _Resp(200, b"abc")
 
-    api._session.get = fake_get  # type: ignore[attr-defined]
+    api._session.get = fake_get  # type: ignore[method-assign]
     assert api.get_content("/bin") == b"abc"

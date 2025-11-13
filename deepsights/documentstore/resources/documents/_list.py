@@ -36,7 +36,7 @@ def documents_list(
     sort_order: str = SortingOrder.DESCENDING,
     sort_field: str = SortingField.CREATION_DATE,
     status_filter: List[str] | None = None,
-):
+) -> tuple[int, List[Document]]:
     """
     List documents from the DeepSights API.
 

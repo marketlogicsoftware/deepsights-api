@@ -65,7 +65,7 @@ class ReportResource(APIResource):
             ) from e
 
     #################################################
-    def wait_for_report(self, report_id: str, timeout=600) -> Report:
+    def wait_for_report(self, report_id: str, timeout: int = 600) -> Report:
         """
         Waits for the completion of a report.
 
@@ -84,7 +84,7 @@ class ReportResource(APIResource):
             PollingFailedError: If the report fails to complete.
         """
 
-        def get_status(resource_id: str):
+        def get_status(resource_id: str) -> dict:
             return self.api.get(f"end-user-gateway-service/desk-researches/{resource_id}")
 
         try:

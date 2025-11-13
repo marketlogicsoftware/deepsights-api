@@ -29,7 +29,7 @@ class DocumentStore(APIKeyAPI):
     documents: DocumentResource
 
     #######################################
-    def __init__(self, api_key: str = None, endpoint_base: str = None) -> None:
+    def __init__(self, api_key: str | None = None, endpoint_base: str | None = None) -> None:
         """
         Initializes the API client.
 

@@ -17,7 +17,7 @@ This module contains the model classes for documents.
 """
 
 from datetime import datetime
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from pydantic import AliasChoices, Field
 
@@ -114,10 +114,10 @@ class Document(DeepSightsIdTitleModel):
         description="The total number of pages in the document.",
     )
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         # Defensive extraction: tolerate missing fields from upstream services
-        origin = kwargs.get("origin") or {}
-        publication_data = kwargs.get("publication_data") or {}
+        origin: Dict[str, Any] = kwargs.get("origin") or {}
+        publication_data: Dict[str, Any] = kwargs.get("publication_data") or {}
         kwargs.setdefault("creation_date", origin.get("creation_time"))
         kwargs.setdefault("publication_date", publication_data.get("publication_date"))
         super().__init__(**kwargs)

@@ -28,7 +28,7 @@ class AuthenticationError(DeepSightsError):
 class RateLimitError(DeepSightsError):
     """Raised when API rate limits are exceeded."""
 
-    def __init__(self, message: str = "Rate limit exceeded", retry_after: float = None):
+    def __init__(self, message: str = "Rate limit exceeded", retry_after: float | None = None):
         """
         Initialize RateLimitError.
 

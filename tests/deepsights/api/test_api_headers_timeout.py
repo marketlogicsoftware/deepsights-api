@@ -2,6 +2,8 @@
 Unit tests for API headers and timeout behavior.
 """
 
+from typing import Any
+
 from deepsights._version import __version__
 from deepsights.api.api import API
 
@@ -26,12 +28,12 @@ def test_default_timeout_env_override(monkeypatch):
 
     captured = {}
 
-    def fake_get(url, params=None, timeout=None):
+    def fake_get(url: str, params: Any = None, timeout: Any = None):
         captured["timeout"] = timeout
         return _DummyResponse(200)
 
     # Patch the session.get to avoid network and capture timeout
-    api._session.get = fake_get  # type: ignore[attr-defined]
+    api._session.get = fake_get  # type: ignore[method-assign]
     api.get("/ping")
 
     assert captured["timeout"] == 42

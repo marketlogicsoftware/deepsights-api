@@ -23,6 +23,8 @@ from deepsights.documentstore.resources.documents._model import (
     SortingOrder,
 )
 
+pytestmark = pytest.mark.integration
+
 
 def test_documents_list_basic(user_client):
     """

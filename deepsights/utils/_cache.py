@@ -18,12 +18,21 @@ This module contains caching functions and classes used by the DeepSights API.
 """
 
 import threading
+from typing import Any, Callable, Tuple
 
 from cachetools import LRUCache
 
 
 #################################################
-def create_global_lru_cache(maxsize):
+def create_global_lru_cache(
+    maxsize: int,
+) -> Tuple[
+    Callable[[Any, Any], None],
+    Callable[[Any], bool],
+    Callable[[Any], Any],
+    Callable[[Any], None],
+    Callable[[], int],
+]:
     """
     Create a thread-safe global LRU cache with the specified maximum size.
 
@@ -40,29 +49,29 @@ def create_global_lru_cache(maxsize):
             - _remover: A function that removes a key-value pair from the cache.
             - _size: A function that returns the maximum size of the cache.
     """
-    cache = LRUCache(maxsize=maxsize)
+    cache: LRUCache[Any, Any] = LRUCache(maxsize=maxsize)
     cache_lock = threading.RLock()
 
-    def _setter(key, value):
+    def _setter(key: Any, value: Any) -> None:
         with cache_lock:
             if value is None:
                 cache.pop(key, None)
             else:
                 cache[key] = value
 
-    def _getter(key):
+    def _getter(key: Any) -> Any:
         with cache_lock:
             return cache.get(key)
 
-    def _tester(key):
+    def _tester(key: Any) -> bool:
         with cache_lock:
             return key in cache
 
-    def _remover(key):
+    def _remover(key: Any) -> None:
         with cache_lock:
             cache.pop(key, None)
 
-    def _size():
+    def _size() -> int:
         return maxsize
 
     return _setter, _tester, _getter, _remover, _size

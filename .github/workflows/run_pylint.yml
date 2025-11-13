@@ -1,4 +1,4 @@
-name: deepsights-pylint
+name: deepsights-ruff
 
 on: [push]
 
@@ -19,6 +19,8 @@ jobs:
         python -m pip install --upgrade pip
         pip install uv
         uv pip install --system ".[lint]"
-    - name: Analysing the code with pylint
+    - name: Lint with ruff
       run: |
-        pylint $(git ls-files '*.py')
+        ruff --version
+        ruff check .
+        ruff format --check .

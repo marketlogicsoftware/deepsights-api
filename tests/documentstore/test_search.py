@@ -26,6 +26,8 @@ from tests.helpers.validation import (
     assert_valid_hybrid_search_result,
 )
 
+pytestmark = pytest.mark.integration
+
 
 def test_document_pages_search_plain(ds_client, test_data):
     """

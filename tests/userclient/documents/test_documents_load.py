@@ -25,6 +25,8 @@ from deepsights.documentstore.resources.documents._cache import (
     remove_document,
 )
 
+pytestmark = pytest.mark.integration
+
 
 def test_documents_load_404(user_client):
     """

@@ -4,6 +4,8 @@
 Unit tests for model defaults and defensive parsing.
 """
 
+from typing import Any, cast
+
 from deepsights.contentstore.resources._model import ContentStoreSearchResult
 from deepsights.documentstore.resources.documents._model import Document
 from deepsights.userclient.resources.answersV2._model import AnswerV2
@@ -34,7 +36,7 @@ def test_list_default_factories_not_shared_between_instances():
     )
 
     assert a.document_sources == [] and b.document_sources == []
-    a.document_sources.append(object())
+    a.document_sources.append(cast(Any, object()))
     assert len(a.document_sources) == 1
     assert b.document_sources == []  # not shared
 

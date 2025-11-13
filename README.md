@@ -271,10 +271,17 @@ All return values are [Pydantic objects](https://docs.pydantic.dev/latest/) with
 ## Developer Information
 
 ### Pre-commit Hooks
-- One-shot runner: `bash scripts/precommit.sh` (uses uv, runs Ruff + Mypy, then validates hooks)
+- One-shot runner: `bash scripts/precommit.sh` (uses uv, loads `.env` if present, runs Ruff + Mypy + core tests, then validates hooks)
 - Install hooks: `uv pip install pre-commit && pre-commit install`
 - Run on all files: `pre-commit run --all-files`
-- Hooks included: Ruff (lint + format; uses `pyproject.toml`), Mypy (uses `mypy.ini` with local stubs under `typings/`), plus basic whitespace/YAML checks.
+- Hooks included: Ruff (lint + format), Mypy, core tests (`pytest -m "not heavy and not integration"`), plus basic whitespace/YAML checks.
+
+Pytest markers
+- `integration`: live API credentials + network required
+- `heavy`: expensive operations (uploads, creating answers/reports)
+
+Environment variables
+- You can place credentials in a local `.env` at repo root; these are loaded automatically by tests and pre-commit (no need to export manually).
 
 ### UserClient Documents Capabilities
 - Supported (end-user gateway): `documents.list`, `documents.load`, `documents.load_pages`, `documents.search` (hybrid), `documents.download`.

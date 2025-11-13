@@ -17,11 +17,11 @@ This module contains the functions to segment the content of a document.
 """
 
 import re
-from typing import Dict
+from typing import Dict, List, Tuple
 
 
 #############################################
-def _parse_page(content):
+def _parse_page(content: List[Tuple[int, str]]) -> List[str]:
     """
     Construct segments as semantic units from the given page structure, guessing from font sizes.
     Generates markdown for headings.
@@ -41,10 +41,10 @@ def _parse_page(content):
         return []
 
     # we want to find the next segment now and then recurse on the tail of the content
-    next_segment = ""
+    next_segment: str = ""
 
     # track what font size we had last
-    last_font_size = None
+    last_font_size: int | None = None
 
     # inspect next item
     while len(content) > 0:
@@ -72,7 +72,7 @@ def _parse_page(content):
     segment_text = re.sub(r"\n{3,}", "\n\n", segment_text, re.MULTILINE)
 
     # recurse on tail
-    segments = [segment_text]
+    segments: List[str] = [segment_text]
     segments.extend(_parse_page(content))
 
     return segments

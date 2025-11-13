@@ -11,7 +11,7 @@
 - Install dev deps (preferred): `pip install uv && uv pip install -e ".[test,lint,docs]"`
   - Pip alternative: `pip install -e ".[test,lint,docs]"`
 - Run tests: `pytest` (requires API env vars; see Security section).
-- Lint: `pylint $(git ls-files '*.py')`
+- Lint: `ruff check . && ruff format --check .`
 - Build docs: `pdoc -o docs/ deepsights`
 - Example run: `python main.py`
 
@@ -19,7 +19,7 @@
 - Python 3.10–3.12, 4‑space indentation, max line length 100.
 - Naming: `snake_case` for functions/variables/modules; `PascalCase` for classes; `UPPER_CASE` for constants.
 - Keep functions focused (≤5 args when possible). Favor type hints and Pydantic models.
-- Lint with Pylint (fail-under set to 8 in `.pylintrc`). Fix or silence intentionally with justification.
+- Lint with Ruff (see `pyproject.toml` for config). Fix issues or ignore with justification.
 
 ## Testing Guidelines
 - Framework: pytest. Tests live under `tests/**/test_*.py`.
@@ -30,7 +30,7 @@
 ## Commit & Pull Request Guidelines
 - Commit messages: concise, imperative (“Add hybrid search”), optionally include scope. Tag versions as `vX.Y.Z` when releasing.
 - PRs must: describe changes, note breaking changes, link issues, include tests, and update docs/examples when applicable.
-- CI runs `pytest`, `pylint`, and docs build. Keep CI green.
+- CI runs `pytest`, `ruff`, and docs build. Keep CI green.
 
 ## Security & Configuration Tips
 - Do not commit credentials. Configure via env:

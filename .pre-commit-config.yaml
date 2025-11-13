@@ -23,5 +23,14 @@ repos:
         name: mypy (types)
         args:
           - --config-file=mypy.ini
-        files: ^deepsights/.*\.py$
+        files: ^(deepsights|tests)/.*\.py$
         additional_dependencies: []
+
+  - repo: local
+    hooks:
+      - id: pytest-core
+        name: pytest (core, fast)
+        entry: bash -lc 'set -a; [ -f .env ] && source .env; set +a; uv run pytest -q -m "not heavy"'
+        language: system
+        pass_filenames: false
+        types: [python]

@@ -76,11 +76,11 @@ def document_upload(resource: APIResource, document_filename: str) -> str:
             "Content-Type": mime_map[document_filename.split(".")[-1].lower()],
             "x-goog-if-generation-match": "0",
         }
-        response = requests.put(upload_link, headers=headers, data=f, timeout=30)
+        upload_resp = requests.put(upload_link, headers=headers, data=f, timeout=30)
 
     # check response
-    if response.status_code != 200:
-        raise ValueError(f"Document {document_filename} failed to upload: {response.text}")
+    if upload_resp.status_code != 200:
+        raise ValueError(f"Document {document_filename} failed to upload: {upload_resp.text}")
 
     # create artifact
     response = resource.api.post(
@@ -93,7 +93,7 @@ def document_upload(resource: APIResource, document_filename: str) -> str:
 
 
 #################################################
-def document_wait_for_upload(resource: APIResource, document_id: str, timeout: int = 300):
+def document_wait_for_upload(resource: APIResource, document_id: str, timeout: int = 300) -> None:
     """
     Wait for the document to be processed and completed.
 

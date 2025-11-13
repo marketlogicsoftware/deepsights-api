@@ -2,6 +2,8 @@
 Validation tests for Content Store search functions.
 """
 
+from typing import Any, cast
+
 import pytest
 
 from deepsights.api.resource import APIResource
@@ -26,7 +28,7 @@ class _DummyAPI:
     ],
 )
 def test_hybrid_search_query_validation(query, err_msg):
-    res = APIResource(api=_DummyAPI())
+    res = APIResource(api=cast(Any, _DummyAPI()))
     with pytest.raises(ValueError) as exc:
         contentstore_hybrid_search(
             api=res.api,
@@ -48,7 +50,7 @@ def test_hybrid_search_query_validation(query, err_msg):
     ],
 )
 def test_hybrid_search_bounds_validation(args, err_msg):
-    res = APIResource(api=_DummyAPI())
+    res = APIResource(api=cast(Any, _DummyAPI()))
     with pytest.raises(ValueError) as exc:
         contentstore_hybrid_search(
             api=res.api,
@@ -69,7 +71,7 @@ def test_hybrid_search_bounds_validation(args, err_msg):
     ],
 )
 def test_vector_search_embedding_validation(embedding, err_msg):
-    res = APIResource(api=_DummyAPI())
+    res = APIResource(api=cast(Any, _DummyAPI()))
     with pytest.raises(ValueError) as exc:
         contentstore_vector_search(
             api=res.api,
@@ -82,7 +84,7 @@ def test_vector_search_embedding_validation(embedding, err_msg):
 
 @pytest.mark.parametrize("max_results", [0, 101])
 def test_text_search_max_results_validation(max_results):
-    res = APIResource(api=_DummyAPI())
+    res = APIResource(api=cast(Any, _DummyAPI()))
     with pytest.raises(ValueError):
         contentstore_text_search(
             api=res.api,

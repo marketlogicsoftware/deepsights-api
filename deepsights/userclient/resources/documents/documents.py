@@ -88,7 +88,7 @@ def documents_list(
     sort_order: str = SortingOrder.DESCENDING,
     sort_field: str = SortingField.CREATION_DATE,
     status_filter: List[str] | None = None,
-):
+) -> tuple[int, List[Document]]:
     """
     List documents from the DeepSights API.
 
@@ -190,14 +190,14 @@ def document_pages_load(resource: APIResource, page_ids: List[str]) -> List[Docu
         missing_page_ids = [page_id for page_id in uncached_document_page_ids if not has_document_page(page_id)]
         if missing_page_ids:
             # Create a mock response for the HTTPError
-            response = requests.Response()
-            response.status_code = 404
-            response._content = (  # pylint: disable=protected-access
+            resp = requests.Response()
+            resp.status_code = 404
+            resp._content = (  # pylint: disable=protected-access
                 f"Page(s) not found: {', '.join(missing_page_ids)}".encode()
             )
             raise requests.exceptions.HTTPError(
                 f"404 Client Error: Not Found for page(s): {', '.join(missing_page_ids)}",
-                response=response,
+                response=resp,
             )
 
     # collect results maintaining original order
@@ -235,7 +235,7 @@ def documents_load(
             docs_to_load_pages.append(doc_id)
 
     # Load uncached documents
-    def _load_document(document_id: str):
+    def _load_document(document_id: str) -> Document:
         result = resource.api.get(f"/end-user-gateway-service/artifacts/{document_id}", timeout=5)
 
         # capitalize the first letter of the summary
@@ -251,7 +251,7 @@ def documents_load(
     if load_pages:
         all_docs_needing_pages = newly_loaded_docs + [get_document(doc_id) for doc_id in docs_to_load_pages]
 
-        def _load_pages(document: Document):
+        def _load_pages(document: Document) -> List[str]:
             if not document.page_ids:
                 result = resource.api.get(
                     f"/end-user-gateway-service/artifacts/{document.id}/page-ids",

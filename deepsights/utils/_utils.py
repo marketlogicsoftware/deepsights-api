@@ -79,7 +79,7 @@ def poll_for_completion(
     resource_id: str,
     timeout: int = 300,
     polling_interval: int = 2,
-    pending_statuses: List[str] = None,
+    pending_statuses: Optional[List[str]] = None,
     failure_status_prefix: str = "FAILED",
     success_status: Optional[str] = None,
     get_final_result_func: Optional[Callable[[str], Any]] = None,

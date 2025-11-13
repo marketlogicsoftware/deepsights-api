@@ -18,6 +18,8 @@ This module contains the tests for the DeepSights ContentStore news search funct
 
 from datetime import datetime, timedelta, timezone
 
+import pytest
+
 from tests.helpers.common import equal_results
 from tests.helpers.validation import (
     assert_ascending_publication_dates,
@@ -28,6 +30,8 @@ from tests.helpers.validation import (
     assert_ranked_results,
     assert_valid_contentstore_result,
 )
+
+pytestmark = pytest.mark.integration
 
 
 def test_news_text_search(ds_client, test_data):

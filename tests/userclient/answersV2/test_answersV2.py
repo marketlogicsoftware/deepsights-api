@@ -76,3 +76,6 @@ def test_answerV2_get(user_client, test_data):
     assert_valid_answer_contentstore_suggestions(answer.secondary_suggestions)
     assert_valid_answer_contentstore_sources(answer.news_sources)
     assert_valid_answer_contentstore_suggestions(answer.news_suggestions)
+
+
+pytestmark = [pytest.mark.integration, pytest.mark.heavy]

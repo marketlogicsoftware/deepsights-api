@@ -130,7 +130,7 @@ def promote_exact_matches(query: str, results: List[Any]) -> List[Any]:
             substring_matches.add(item_id)
 
     # re-rank results with optimized key function
-    def sort_key(item):
+    def sort_key(item: Any) -> int:
         if item.id in exact_matches:
             return 0
         elif item.id in substring_matches:

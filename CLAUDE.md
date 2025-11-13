@@ -13,7 +13,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `pytest --lf` - Run only last failed tests
 
 ### Code Quality
-- `pylint $(git ls-files '*.py')` - Run linting on all Python files
+- `ruff check .` - Lint the codebase
+- `ruff format --check .` - Check formatting
 - `pip install uv && uv pip install --system ".[lint]"` - Install linting dependencies
 
 ### Documentation

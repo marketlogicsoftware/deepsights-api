@@ -26,7 +26,7 @@ from deepsights.documentstore.resources.documents._cache import remove_document
 
 
 #################################################
-def documents_delete(resource: APIResource, document_ids: List):
+def documents_delete(resource: APIResource, document_ids: List) -> None:
     """
     Delete documents from the DeepSights API.
 
@@ -47,7 +47,7 @@ def documents_delete(resource: APIResource, document_ids: List):
 
 
 #################################################
-def document_wait_for_deletion(resource: APIResource, document_id: str, timeout: int = 60):
+def document_wait_for_deletion(resource: APIResource, document_id: str, timeout: int = 60) -> None:
     """
     Wait for the document to be deleted.
 

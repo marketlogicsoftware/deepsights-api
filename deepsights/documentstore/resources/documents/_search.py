@@ -104,11 +104,11 @@ def document_pages_search(
 #################################################
 def documents_search(
     resource: APIResource,
-    query: str = None,
-    query_embedding: List = None,
+    query: str | None = None,
+    query_embedding: List | None = None,
     min_score: float = 0.7,
     max_results: int = 50,
-    recency_weight: float = None,
+    recency_weight: float | None = None,
     promote_exact_match: bool = False,
     load_documents: bool = False,
 ) -> List[DocumentSearchResult]:

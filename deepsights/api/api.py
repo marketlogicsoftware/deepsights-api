@@ -19,10 +19,10 @@ This module contains base API client classes.
 import logging
 import os
 from functools import wraps
-from typing import Dict
+from typing import Any, Callable, Dict, List, Literal, Optional, TypeVar
 
 from ratelimit import limits, sleep_and_retry
-from requests import Session
+from requests import Response, Session
 from requests.adapters import HTTPAdapter
 from requests.exceptions import ConnectionError as RequestsConnectionError
 from requests.exceptions import HTTPError, Timeout
@@ -61,7 +61,7 @@ def _should_retry_http_error(exception: Exception) -> bool:
     return isinstance(exception, (RequestsConnectionError, Timeout))
 
 
-def _handle_http_error(response):
+def _handle_http_error(response: Response) -> None:
     """
     Handles HTTP errors and raises appropriate custom exceptions.
 
@@ -79,7 +79,10 @@ def _handle_http_error(response):
     response.raise_for_status()
 
 
-def _handle_persistent_rate_limit(func):
+F = TypeVar("F", bound=Callable[..., Any])
+
+
+def _handle_persistent_rate_limit(func: F) -> F:
     """
     Decorator to catch persistent 429 errors after retries and convert them to RateLimitError.
 
@@ -87,7 +90,7 @@ def _handle_persistent_rate_limit(func):
     """
 
     @wraps(func)
-    def wrapper(*args, **kwargs):
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
         try:
             return func(*args, **kwargs)
         except HTTPError as e:
@@ -102,7 +105,7 @@ def _handle_persistent_rate_limit(func):
                 ) from e
             raise
 
-    return wrapper
+    return wrapper  # type: ignore[return-value]
 
 
 #################################################
@@ -178,11 +181,11 @@ class API:
             pass
 
     #######################################
-    def __enter__(self):
+    def __enter__(self) -> "API":
         return self
 
     #######################################
-    def __exit__(self, exc_type, exc, tb):
+    def __exit__(self, exc_type: Any, exc: Any, tb: Any) -> Literal[False]:
         self.close()
         # Do not suppress exceptions
         return False
@@ -211,7 +214,13 @@ class API:
     )
     @sleep_and_retry
     @limits(calls=1000, period=60)
-    def get(self, path: str, params: Dict = None, timeout=None, expected_statuscodes=None) -> Dict:
+    def get(
+        self,
+        path: str,
+        params: Optional[Dict[str, Any]] = None,
+        timeout: Optional[int] = None,
+        expected_statuscodes: Optional[List[int]] = None,
+    ) -> Dict[str, Any]:
         """
         Sends a GET request to the specified path with optional parameters.
 
@@ -251,7 +260,13 @@ class API:
     )
     @sleep_and_retry
     @limits(calls=1000, period=60)
-    def get_content(self, path: str, params: Dict = None, timeout=None, expected_statuscodes=None) -> bytes:
+    def get_content(
+        self,
+        path: str,
+        params: Optional[Dict[str, Any]] = None,
+        timeout: Optional[int] = None,
+        expected_statuscodes: Optional[List[int]] = None,
+    ) -> bytes:
         """
         Sends a GET request to the specified path and returns the raw response content.
 
@@ -298,11 +313,11 @@ class API:
     def post(
         self,
         path: str,
-        body: Dict,
-        params: Dict = None,
-        timeout=None,
-        expected_statuscodes=None,
-    ) -> Dict:
+        body: Dict[str, Any],
+        params: Optional[Dict[str, Any]] = None,
+        timeout: Optional[int] = None,
+        expected_statuscodes: Optional[List[int]] = None,
+    ) -> Dict[str, Any]:
         """
         Sends a POST request to the specified path with optional parameters.
 
@@ -343,7 +358,7 @@ class API:
     )
     @sleep_and_retry
     @limits(calls=1000, period=60)
-    def delete(self, path: str, timeout=None, expected_statuscodes=None):
+    def delete(self, path: str, timeout: Optional[int] = None, expected_statuscodes: Optional[List[int]] = None) -> None:
         """
         Sends a DELETE request to the specified path.
 
@@ -377,7 +392,13 @@ class APIKeyAPI(API):
     """
 
     #######################################
-    def __init__(self, endpoint_base: str, api_key: str | None, api_key_env_var: str | None = None, **kwargs) -> None:
+    def __init__(
+        self,
+        endpoint_base: str,
+        api_key: str | None,
+        api_key_env_var: str | None = None,
+        **kwargs: Any,
+    ) -> None:
         """
         Initializes the API client.
 
@@ -413,7 +434,7 @@ class OAuthTokenAPI(API):
     """
 
     #######################################
-    def __init__(self, endpoint_base: str, oauth_token: str, **kwargs) -> None:
+    def __init__(self, endpoint_base: str, oauth_token: str, **kwargs: Any) -> None:
         """
         Initializes the API client.
 

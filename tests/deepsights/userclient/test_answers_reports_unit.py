@@ -2,6 +2,8 @@
 Unit tests for AnswersV2 and Reports resources (no network).
 """
 
+from typing import Any, cast
+
 import pytest
 from ratelimit import RateLimitException
 
@@ -49,13 +51,13 @@ class _DummyAPIAnswersRestricted:
 
 
 def test_answers_create_rate_limit_translated():
-    res = AnswerV2Resource(_DummyAPIAnswers())
+    res = AnswerV2Resource(cast(Any, _DummyAPIAnswers()))
     with pytest.raises(RateLimitError):
         res.create("Q")
 
 
 def test_answers_create_and_wait_rate_limit_translated(monkeypatch):
-    res = AnswerV2Resource(_DummyAPIAnswers())
+    res = AnswerV2Resource(cast(Any, _DummyAPIAnswers()))
 
     def raiser(_q):
         raise RateLimitException("Rate limit exceeded", 60)
@@ -66,7 +68,7 @@ def test_answers_create_and_wait_rate_limit_translated(monkeypatch):
 
 
 def test_answers_wait_for_answer_success(monkeypatch):
-    res = AnswerV2Resource(_DummyAPIAnswers())
+    res = AnswerV2Resource(cast(Any, _DummyAPIAnswers()))
     monkeypatch.setattr("time.sleep", lambda s: None)
     ans = res.wait_for_answer("rid", timeout=1)
     assert ans.status == "COMPLETED"
@@ -75,7 +77,7 @@ def test_answers_wait_for_answer_success(monkeypatch):
 
 
 def test_answers_get_restricted():
-    res = AnswerV2Resource(_DummyAPIAnswersRestricted())
+    res = AnswerV2Resource(cast(Any, _DummyAPIAnswersRestricted()))
     ans = res.get("rid")
     assert ans.permission_validation in ("RESTRICTED",)
     assert ans.status == "n/a"
@@ -123,13 +125,13 @@ class _DummyAPIReportsDeleted:
 
 
 def test_reports_create_rate_limit_translated():
-    res = ReportResource(_DummyAPIReports())
+    res = ReportResource(cast(Any, _DummyAPIReports()))
     with pytest.raises(RateLimitError):
         res.create("Q")
 
 
 def test_reports_wait_for_report_success(monkeypatch):
-    res = ReportResource(_DummyAPIReports())
+    res = ReportResource(cast(Any, _DummyAPIReports()))
     monkeypatch.setattr("time.sleep", lambda s: None)
     rep = res.wait_for_report("rid", timeout=1)
     assert rep.status == "COMPLETED"
@@ -139,7 +141,7 @@ def test_reports_wait_for_report_success(monkeypatch):
 
 
 def test_reports_get_restricted():
-    res = ReportResource(_DummyAPIReportsRestricted())
+    res = ReportResource(cast(Any, _DummyAPIReportsRestricted()))
     rep = res.get("rid")
     assert rep.permission_validation in ("RESTRICTED",)
     assert rep.status == "n/a"

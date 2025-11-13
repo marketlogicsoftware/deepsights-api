@@ -31,9 +31,9 @@ Repository = "https://github.com/marketlogicsoftware/deepsights-api"
 [project.optional-dependencies]
 test = [
     "pytest>=8.0.2",
+    "python-dotenv>=1.0.1",
 ]
 lint = [
-    "pylint>=3.0.3",
     "mypy>=1.10.0",
     "pre-commit>=3.7.0",
     "ruff>=0.6.9",

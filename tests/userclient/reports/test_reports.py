@@ -60,3 +60,6 @@ def test_report_get(user_client, test_data):
     assert_valid_report_document_sources(report.document_sources)
     assert_valid_report_contentstore_sources(report.secondary_sources)
     assert_valid_report_contentstore_sources(report.news_sources)
+
+
+pytestmark = [pytest.mark.integration, pytest.mark.heavy]

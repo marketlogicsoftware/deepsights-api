@@ -56,7 +56,7 @@ def test_documents_delete_404(ds_client):
             ["aaa"],
         )
 
-    assert exc.value.response.status_code == 404
+    assert exc.value.response is not None and exc.value.response.status_code == 404
 
 
 def test_documents_upload_and_delete(ds_client):
@@ -94,7 +94,7 @@ def test_documents_upload_and_delete(ds_client):
         assert doc.status in ("DELETING", "SCHEDULED_FOR_DELETING")
     except requests.exceptions.HTTPError as e:
         # already deleted
-        assert e.response.status_code == 404
+        assert e.response is not None and e.response.status_code == 404
 
     # wait for deletion
     ds_client.documentstore.documents.wait_for_delete(artifact_id, timeout=120)
@@ -105,4 +105,4 @@ def test_documents_upload_and_delete(ds_client):
         print(docs)
 
 
-pytestmark = pytest.mark.integration
+pytestmark = [pytest.mark.integration, pytest.mark.heavy]

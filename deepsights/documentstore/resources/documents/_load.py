@@ -116,7 +116,7 @@ def documents_load(
             docs_to_load_pages.append(doc_id)
 
     # Load uncached documents
-    def _load_document(document_id: str):
+    def _load_document(document_id: str) -> Document:
         result = resource.api.get(f"/artifact-service/artifacts/{document_id}", timeout=5)
 
         # capitalize the first letter of the summary
@@ -132,7 +132,7 @@ def documents_load(
     if load_pages:
         all_docs_needing_pages = newly_loaded_docs + [get_document(doc_id) for doc_id in docs_to_load_pages]
 
-        def _load_pages(document: Document):
+        def _load_pages(document: Document) -> List[str]:
             if not document.page_ids:
                 result = resource.api.get(f"/artifact-service/artifacts/{document.id}/page-ids", timeout=5)
                 document.page_ids = result["ids"]
