@@ -13,7 +13,7 @@ from deepsights.userclient.resources.answersV2._model import AnswerV2
 
 def test_document_defensive_parsing_missing_nested_fields():
     # Should not raise when origin/publication_data are missing
-    doc = Document(id="doc-1", title="Test", status="AVAILABLE", content_type="doc", summary=None)
+    doc = Document(id="doc-1", title="Test", status="AVAILABLE", content_type="doc", summary=None, external_metadata={})
     assert doc.creation_date is None
     assert doc.publication_date is None
     # page_ids now default to empty list

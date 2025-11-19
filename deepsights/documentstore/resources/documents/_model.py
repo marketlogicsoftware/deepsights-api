@@ -70,6 +70,17 @@ class DocumentPage(DeepSightsIdModel):
     context: Optional[str] = Field(default=None, description="The context of the page.")
 
 
+# Nested model for external_metadata
+class ArtifactExternalMetadata(DeepSightsBaseModel):
+    """External metadata for artifacts - matches OpenAPI spec ArtifactExternalMetadata"""
+
+    external_id: Optional[str] = None
+    external_type: Optional[str] = None
+    import_batch_id: Optional[str] = None
+    external_properties: Optional[Dict[str, str]] = None
+    external_source_url: Optional[str] = None
+
+
 #################################################
 class Document(DeepSightsIdTitleModel):
     """
@@ -97,6 +108,7 @@ class Document(DeepSightsIdTitleModel):
     )
     content_type: Optional[str] = Field(description="The type of the document.")
     file_name: Optional[str] = Field(default=None, description="The name of the file.")
+    original_file_name: Optional[str] = Field(default=None, description="The original name of the file at ingestion.")
     file_size: Optional[int] = Field(default=None, description="The size of the file in bytes.")
     description: Optional[str] = Field(alias="summary", description="The human-readable summary of the document.")
     publication_date: Optional[datetime] = Field(
@@ -115,6 +127,10 @@ class Document(DeepSightsIdTitleModel):
         default=None,
         description="The total number of pages in the document.",
     )
+    file_type: Optional[str] = Field(
+        description="The class of artifact [ORIGINAL_PDF, CONVERTIBLE_TO_PDF, NON_BINARY]", alias="type", default=None
+    )
+    external_metadata: Optional[ArtifactExternalMetadata] = Field(description="The artifact's metadata", default=None)
 
     def __init__(self, **kwargs: Any) -> None:
         # Defensive extraction: tolerate missing fields from upstream services
