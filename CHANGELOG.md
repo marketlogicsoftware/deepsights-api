@@ -2,6 +2,11 @@
 
 <!--next-version-placeholder-->
 
+## v1.4.3 (24-Nov-2025)
+
+- Secondary and news item URL resolution for SSO redirects
+
+
 ## v1.4.2 (19-Nov-2025)
 
 - Add artifact_type and external_metadata to document results

@@ -2,4 +2,4 @@ __all__ = ["__version__"]
 
 # Single-source version for the package.
 # Update this value when releasing.
-__version__ = "1.4.2"
+__version__ = "1.4.3"

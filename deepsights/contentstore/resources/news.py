@@ -27,6 +27,7 @@ from deepsights.contentstore.resources._search import (
     contentstore_text_search,
     contentstore_vector_search,
 )
+from deepsights.contentstore.resources._url import contentstore_get_url
 
 
 #################################################
@@ -189,3 +190,16 @@ class NewsResource(APIResource):
             search_only_ai_allowed_content=search_only_ai_allowed_content,
             apply_evidence_filter=apply_evidence_filter,
         )
+
+    def get_item_url(self, item_id: str) -> str | None:
+        """
+        Return the redirect or download URL for a contentstore item.
+
+        Args:
+            api: The API to use
+            item_id: The id of the item
+
+        Returns:
+            URL of the item or None if not resolveable
+        """
+        return contentstore_get_url(self.api, item_id)

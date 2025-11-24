@@ -77,3 +77,6 @@ class ContentStoreSearchResult(DeepSightsIdTitleModel):
         description="The match paragraphs in the item; may be None.",
         default_factory=list,
     )
+    access_mode: Optional[str] = Field(
+        default="", alias="accessible_by", description="Access path for the asset: PUBLIC, DOWNLOAD, REDIRECT"
+    )

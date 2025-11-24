@@ -34,6 +34,21 @@ from tests.helpers.validation import (
 pytestmark = pytest.mark.integration
 
 
+def test_secondary_get_item_url(ds_client, test_data):
+    """
+    Test case for retrieving an item URL.
+    """
+    results = ds_client.contentstore.secondary.text_search(
+        query=test_data["question"],
+        max_results=1,
+    )
+
+    assert len(results) == 1
+
+    url = ds_client.contentstore.secondary.get_item_url(results[0].id)
+    assert url is not None
+
+
 def test_secondary_text_search(ds_client, test_data):
     """
     Test case for performing a text search on secondary content.
