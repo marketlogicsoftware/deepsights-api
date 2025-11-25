@@ -39,6 +39,7 @@ The **User Client** serves to impersonate existing platform users with their acc
 | Area | Method | Type | Notes | Returns |
 |--|--|--|--|--|
 | Document Store | `ds.documentstore.documents.search(query, extended_search=False)` | Hybrid | Text + semantic; query ≤512 chars | `List[HybridSearchResult]` |
+| Document Store | `ds.documentstore.documents.topic_search(query, extended_search=False)` | Topic | AI topic analysis; query ≤100 chars | `List[TopicSearchResult]` |
 | Document Store | `ds.documentstore.documents.search_pages(query_embedding, min_score=0.7, max_results=50, load_pages=False)` | Vector (pages, deprecated) | Deprecated; use hybrid search instead | `List[DocumentPageSearchResult]` |
 | Document Store | `ds.documentstore.documents.search_documents(...)` | Vector (docs) | Deprecated; use hybrid search instead | `List[DocumentSearchResult]` |
 | Content Store (News) | `ds.contentstore.news.search(query, ..., vector_fraction, vector_weight, recency_weight)` | Hybrid | Languages/date filters, optional evidence filter; max_results ≤250 | `List[NewsSearchResult]` |

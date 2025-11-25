@@ -24,6 +24,7 @@ from tests.helpers.validation import (
     assert_valid_document_page_result,
     assert_valid_document_result,
     assert_valid_hybrid_search_result,
+    assert_valid_topic_search_result,
 )
 
 pytestmark = pytest.mark.integration
@@ -217,3 +218,54 @@ def test_hybrid_search_validation_errors(ds_client):
     # Test query too long
     with pytest.raises(ValueError, match="query.*512 characters"):
         ds_client.documentstore.documents.search(query="x" * 601)
+
+
+def test_topic_search_basic(ds_client, test_data):
+    """
+    Test the basic topic search functionality.
+
+    This function tests the `topic_search` method by performing a basic search
+    with a simple query and verifying the results structure.
+    """
+    results = ds_client.documentstore.documents.topic_search(query=test_data["question"])
+
+    assert isinstance(results, list)
+    for result in results:
+        assert_valid_topic_search_result(result)
+        assert result.artifact_title is not None
+        assert len(result.artifact_title) > 0
+
+
+def test_topic_search_extended(ds_client, test_data):
+    """
+    Test the topic search functionality with extended search enabled.
+
+    This function tests the `topic_search` method with extended_search=True
+    and verifies the results are properly structured.
+    """
+    results = ds_client.documentstore.documents.topic_search(query=test_data["question"], extended_search=True)
+
+    assert isinstance(results, list)
+    for result in results:
+        assert_valid_topic_search_result(result)
+        assert result.artifact_title is not None
+        assert len(result.artifact_title) > 0
+
+
+def test_topic_search_validation_errors(ds_client):
+    """
+    Test that topic search properly validates input parameters.
+
+    This function tests various invalid inputs to ensure proper error handling.
+    """
+    # Test non-string query
+    with pytest.raises(ValueError, match="query.*string"):
+        ds_client.documentstore.documents.topic_search(query=123)
+
+    # Test empty query
+    with pytest.raises(ValueError, match="query.*empty"):
+        ds_client.documentstore.documents.topic_search(query="   ")
+
+    # Test query too long
+    with pytest.raises(ValueError, match="query.*100 characters"):
+        ds_client.documentstore.documents.topic_search(query="x" * 101)

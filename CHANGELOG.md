@@ -2,6 +2,11 @@
 
 <!--next-version-placeholder-->
 
+## v1.4.4 (25-Nov-2025)
+
+- Add topic_search to B2B client documentstore
+
+
 ## v1.4.3 (24-Nov-2025)
 
 - Secondary and news item URL resolution for SSO redirects

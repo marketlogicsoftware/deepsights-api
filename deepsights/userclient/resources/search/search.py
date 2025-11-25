@@ -19,7 +19,7 @@ This module contains the functions to perform topic searches via the DeepSights 
 from typing import List
 
 from deepsights.api import APIResource
-from deepsights.userclient.resources.search._model import TopicSearchResult
+from deepsights.documentstore.resources.documents._model import TopicSearchResult
 
 
 #################################################
