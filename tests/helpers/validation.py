@@ -57,6 +57,7 @@ def assert_valid_contentstore_result(cs_result):
     assert cs_result.id is not None
     assert cs_result.source is not None
     assert cs_result.rank is not None
+    assert cs_result.relevance_class is not None
 
 
 def assert_valid_answer_result(answer):

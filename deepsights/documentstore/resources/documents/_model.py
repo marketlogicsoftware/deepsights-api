@@ -337,3 +337,4 @@ class TopicSearchResult(DeepSightsBaseModel):
     artifact_publication_date: Optional[datetime] = Field(description="Publication date of the artifact.")
     page_references: List[TopicSearchPageReference] = Field(description="Page references.")
     relevance_class: Optional[str] = Field(description="Relevance classification.")
+    relevance_assessment: Optional[str] = Field(description="Reasoning for relevance class", default="")

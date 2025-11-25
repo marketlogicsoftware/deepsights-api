@@ -2,6 +2,11 @@
 
 <!--next-version-placeholder-->
 
+## v1.4.5 (25-Nov-2025)
+
+- Add relevance_class and relevance_assessment to search results
+
+
 ## v1.4.4 (25-Nov-2025)
 
 - Add topic_search to B2B client documentstore

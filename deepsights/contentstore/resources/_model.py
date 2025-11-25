@@ -17,7 +17,7 @@ This module contains the base models for the content store.
 """
 
 from datetime import datetime
-from typing import List, Optional
+from typing import Any, List, Optional
 
 from pydantic import Field
 
@@ -73,6 +73,8 @@ class ContentStoreSearchResult(DeepSightsIdTitleModel):
         default=None,
     )
     rank: Optional[int] = Field(default=None, description="The final rank of the item in the search results.")
+    relevance_class: Optional[str] = Field(description="Relevance classification.", default="UNKNOWN")
+    relevance_assessment: Optional[str] = Field(description="Reasoning for relevance class", default="", alias="reasoning")
     paragraphs: Optional[List[ContentStoreSearchMatch]] = Field(
         description="The match paragraphs in the item; may be None.",
         default_factory=list,
@@ -80,3 +82,9 @@ class ContentStoreSearchResult(DeepSightsIdTitleModel):
     access_mode: Optional[str] = Field(
         default="", alias="accessible_by", description="Access path for the asset: PUBLIC, DOWNLOAD, REDIRECT"
     )
+
+    def model_post_init(self, __context: Any) -> None:
+        if self.relevance_class is None:
+            self.relevance_class = "UNKNOWN"
+        if self.relevance_assessment is None:
+            self.relevance_assessment = ""
