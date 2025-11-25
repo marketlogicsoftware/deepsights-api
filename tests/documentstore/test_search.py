@@ -267,5 +267,5 @@ def test_topic_search_validation_errors(ds_client):
         ds_client.documentstore.documents.topic_search(query="   ")
 
     # Test query too long
-    with pytest.raises(ValueError, match="query.*100 characters"):
-        ds_client.documentstore.documents.topic_search(query="x" * 101)
+    with pytest.raises(ValueError, match="query.*512 characters"):
+        ds_client.documentstore.documents.topic_search(query="x" * 513)

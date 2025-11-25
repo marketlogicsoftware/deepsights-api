@@ -46,8 +46,8 @@ class SearchResource(APIResource):
         query = query.strip()
         if len(query) == 0:
             raise ValueError("The 'query' cannot be empty.")
-        if len(query) > 100:
-            raise ValueError("The 'query' must be 100 characters or less.")
+        if len(query) > 512:
+            raise ValueError("The 'query' must be 512 characters or less.")
 
         body = {
             "query": query,

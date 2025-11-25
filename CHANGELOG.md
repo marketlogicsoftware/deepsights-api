@@ -2,6 +2,11 @@
 
 <!--next-version-placeholder-->
 
+## v1.4.6 (25-Nov-2025)
+
+- Max query length for topic search relaxed
+
+
 ## v1.4.5 (25-Nov-2025)
 
 - Add relevance_class and relevance_assessment to search results

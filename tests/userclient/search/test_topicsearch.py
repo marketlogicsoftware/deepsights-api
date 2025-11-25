@@ -68,5 +68,5 @@ def test_topic_search_validation_errors(user_client):
         user_client.search.topic_search(query="   ")
 
     # Test query too long
-    with pytest.raises(ValueError, match="query.*100 characters"):
-        user_client.search.topic_search(query="x" * 101)
+    with pytest.raises(ValueError, match="query.*512 characters"):
+        user_client.search.topic_search(query="x" * 513)
