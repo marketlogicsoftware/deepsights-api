@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v1.4.7 (28-Nov-2025)
+
+- Package alignment for userclient
+
 ## v1.4.6 (25-Nov-2025)
 
 - Max query length for topic search relaxed
