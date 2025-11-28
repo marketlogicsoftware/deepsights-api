@@ -23,7 +23,7 @@ from typing import List, Optional
 from pydantic import Field
 
 # Re-export topic search models from topicsearch module
-from deepsights.userclient.resources.search._model import (
+from deepsights.documentstore.resources.documents._model import (
     TopicSearchPageReference,
     TopicSearchResult,
 )

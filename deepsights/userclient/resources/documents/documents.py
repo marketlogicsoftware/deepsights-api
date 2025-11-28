@@ -38,11 +38,45 @@ from deepsights.documentstore.resources.documents._model import (
     HybridSearchResult,
     SortingField,
     SortingOrder,
+    TopicSearchResult,
 )
 from deepsights.userclient.resources.documents._download import document_download
 from deepsights.utils import run_in_parallel
 
 MAX_QUERY_LENGTH = 512
+
+
+#################################################
+def topic_search(resource: APIResource, query: str, extended_search: bool = False) -> List[TopicSearchResult]:
+    """
+    Searches for documents by topic using AI-powered analysis.
+
+    Args:
+        query (str): The search query topic.
+        extended_search (bool, optional): Whether to perform extended search. Defaults to False.
+
+    Returns:
+        List[TopicSearchResult]: The list of topic search results.
+    """
+    # Input validation
+    if not isinstance(query, str):
+        raise ValueError("The 'query' must be a string.")
+    query = query.strip()
+    if len(query) == 0:
+        raise ValueError("The 'query' cannot be empty.")
+    if len(query) > MAX_QUERY_LENGTH:
+        raise ValueError(f"The 'query' must be {MAX_QUERY_LENGTH} characters or less.")
+
+    body = {
+        "query": query,
+        "extended_search": extended_search,
+    }
+
+    response = resource.api.post("end-user-gateway-service/topic-searches", body=body)
+
+    # Extract the search results from the response
+    search_results = response.get("context", {}).get("search_results", [])
+    return [TopicSearchResult(**result) for result in search_results if len(result) > 0]
 
 
 #################################################
@@ -287,6 +321,7 @@ class DocumentResource(APIResource):
     load = documents_load
     load_pages = document_pages_load
     search = hybrid_search
+    topic_search = topic_search
     list = documents_list
     download = document_download
 

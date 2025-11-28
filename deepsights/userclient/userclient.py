@@ -30,7 +30,6 @@ from deepsights.userclient.resources import (
     AnswerV2Resource,
     DocumentResource,
     ReportResource,
-    SearchResource,
 )
 
 logger = logging.getLogger(__name__)
@@ -62,7 +61,6 @@ class UserClient(OAuthTokenAPI):
 
     answersV2: AnswerV2Resource
     reports: ReportResource
-    search: SearchResource
     documents: DocumentResource
 
     #######################################
@@ -136,7 +134,6 @@ class UserClient(OAuthTokenAPI):
         # Initialize resource classes
         self.answersV2 = AnswerV2Resource(self)
         self.reports = ReportResource(self)
-        self.search = SearchResource(self)
         self.documents = DocumentResource(self)
 
         # Start auto-refresh if enabled

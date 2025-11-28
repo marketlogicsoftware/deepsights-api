@@ -25,10 +25,10 @@ def test_topic_search_basic(user_client, test_data):
     """
     Test the basic topic search functionality for user client.
 
-    This function tests the `topic_search.search` method by performing a basic search
+    This function tests the `documents.topic_search` method by performing a basic search
     with a simple query and verifying the results structure.
     """
-    results = user_client.search.topic_search(query=test_data["question"])
+    results = user_client.documents.topic_search(query=test_data["question"])
 
     assert isinstance(results, list)
     for result in results:
@@ -41,10 +41,10 @@ def test_topic_search_extended(user_client, test_data):
     """
     Test the topic search functionality with extended search enabled.
 
-    This function tests the `topic_search.search` method with extended_search=True
+    This function tests the `documents.topic_search` method with extended_search=True
     and verifies the results are properly structured.
     """
-    results = user_client.search.topic_search(query=test_data["question"], extended_search=True)
+    results = user_client.documents.topic_search(query=test_data["question"], extended_search=True)
 
     assert isinstance(results, list)
     for result in results:
@@ -61,12 +61,12 @@ def test_topic_search_validation_errors(user_client):
     """
     # Test non-string query
     with pytest.raises(ValueError, match="query.*string"):
-        user_client.search.topic_search(query=123)
+        user_client.documents.topic_search(query=123)
 
     # Test empty query
     with pytest.raises(ValueError, match="query.*empty"):
-        user_client.search.topic_search(query="   ")
+        user_client.documents.topic_search(query="   ")
 
     # Test query too long
     with pytest.raises(ValueError, match="query.*512 characters"):
-        user_client.search.topic_search(query="x" * 513)
+        user_client.documents.topic_search(query="x" * 513)

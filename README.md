@@ -49,7 +49,7 @@ The **User Client** serves to impersonate existing platform users with their acc
 | Content Store (Secondary) | `ds.contentstore.secondary.vector_search(query_embedding, ..., recency_weight)` | Vector | Embedding length 1536; max_results ≤100 | `List[SecondarySearchResult]` |
 | Content Store (Secondary) | `ds.contentstore.secondary.text_search(query, ..., sort_descending, offset)` | Text | `query=None` sorts by date; supports languages/date filters | `List[SecondarySearchResult]` |
 | User Client | `user_client.documents.search(query, extended_search=False)` | Hybrid (user-context) | Permissions-aware; query ≤512 chars | `List[HybridSearchResult]` |
-| User Client | `user_client.search.topic_search(query, extended_search=False)` | Topic | AI topic analysis; query ≤100 chars | `List[TopicSearchResult]` |
+| User Client | `user_client.documents.topic_search(query, extended_search=False)` | Topic | AI topic analysis; query ≤512 chars | `List[TopicSearchResult]` |
 
 Notes
 - All document/content vector searches require 1536-dimensional embeddings.
@@ -184,7 +184,7 @@ uc = UserClient.get_userclient(
     os.environ.get('MIP_API_KEY'),
     "https://api.deepsights.ai/ds/v1"
 )
-results = uc.search.topic_search(
+results = uc.documents.topic_search(
     query="sustainable packaging trends",
     extended_search=True
 )

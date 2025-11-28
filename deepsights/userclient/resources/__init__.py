@@ -19,11 +19,9 @@ This module contains the resource to retrieve answers from the DeepSights API.
 from deepsights.userclient.resources.answersV2 import AnswerV2Resource
 from deepsights.userclient.resources.documents import DocumentResource
 from deepsights.userclient.resources.reports import ReportResource
-from deepsights.userclient.resources.search import SearchResource
 
 __all__ = [
     "AnswerV2Resource",
     "ReportResource",
-    "SearchResource",
     "DocumentResource",
 ]
