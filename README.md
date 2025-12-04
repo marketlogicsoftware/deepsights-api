@@ -45,8 +45,8 @@ The **User Client** serves to impersonate existing platform users with their acc
 
 | Area | Method | Type | Notes | Returns |
 |--|--|--|--|--|
-| Document Store | `ds.documentstore.documents.search(query, extended_search=False)` | Hybrid | Text + semantic; query ≤512 chars | `List[HybridSearchResult]` |
-| Document Store | `ds.documentstore.documents.topic_search(query, extended_search=False)` | Topic | AI topic analysis; query ≤512 chars | `List[TopicSearchResult]` |
+| Document Store | `ds.documentstore.documents.search(query, extended_search=False, taxonomy_filters=None)` | Hybrid | Text + semantic; query ≤512 chars; optional taxonomy filtering | `List[HybridSearchResult]` |
+| Document Store | `ds.documentstore.documents.topic_search(query, extended_search=False, taxonomy_filters=None)` | Topic | AI topic analysis; query ≤512 chars; optional taxonomy filtering | `List[TopicSearchResult]` |
 | Document Store | `ds.documentstore.documents.search_pages(query_embedding, min_score=0.7, max_results=50, load_pages=False)` | Vector (pages, deprecated) | Deprecated; use hybrid search instead | `List[DocumentPageSearchResult]` |
 | Document Store | `ds.documentstore.documents.search_documents(...)` | Vector (docs) | Deprecated; use hybrid search instead | `List[DocumentSearchResult]` |
 | Content Store (News) | `ds.contentstore.news.search(query, ..., vector_fraction, vector_weight, recency_weight)` | Hybrid | Languages/date filters, optional evidence filter; max_results ≤250 | `List[NewsSearchResult]` |
@@ -267,6 +267,33 @@ ds.documentstore.taxons.delete(child_taxon.id)
 ds.documentstore.taxons.delete(parent_taxon.id)
 ds.documentstore.taxon_types.delete(taxon_type.id)
 ds.documentstore.taxonomies.delete(taxonomy.id)
+```
+
+#### Document Taxonomy Assignment
+```python
+from deepsights.documentstore.resources.documents import TaxonomyFilter
+
+# Assign taxons to a document
+ds.documentstore.documents.set_taxonomy(
+    document_id="doc-id",
+    taxonomy_id=taxonomy.id,
+    taxon_ids=[taxon.id],
+    excluded_taxon_ids=[]  # Optional: exclude specific taxons
+)
+
+# Get taxonomy assignments from a document
+taxonomies = ds.documentstore.documents.get_taxonomies("doc-id")
+for t in taxonomies:
+    print(f"Taxonomy: {t.taxonomy_id}, Effective: {t.effective}")
+
+# Clear taxonomy from a document
+ds.documentstore.documents.clear_taxonomy("doc-id", taxonomy.id)
+
+# Search with taxonomy filters
+results = ds.documentstore.documents.search(
+    query="consumer trends",
+    taxonomy_filters=[TaxonomyFilter(field=taxonomy.id, values=[taxon.id])]
+)
 ```
 
 #### Error Handling & Rate Limiting
