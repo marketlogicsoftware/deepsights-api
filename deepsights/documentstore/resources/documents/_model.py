@@ -82,6 +82,88 @@ class ArtifactExternalMetadata(DeepSightsBaseModel):
 
 
 #################################################
+class DocumentTaxonomy(DeepSightsBaseModel):
+    """
+    Represents taxonomy data assigned to a document in search results.
+
+    Attributes:
+        taxonomy_id (str): The ID of the taxonomy.
+        taxons (List[str]): List of taxon IDs assigned to this document.
+    """
+
+    taxonomy_id: str = Field(description="The ID of the taxonomy.")
+    taxons: List[str] = Field(default_factory=list, description="List of taxon IDs assigned to this document.")
+
+    def __init__(self, **kwargs: Any) -> None:
+        # Handle null -> empty list for taxons from API
+        if kwargs.get("taxons") is None:
+            kwargs["taxons"] = []
+        super().__init__(**kwargs)
+
+
+#################################################
+class DocumentTaxonomyData(DeepSightsBaseModel):
+    """
+    Represents detailed taxonomy data from document/artifact response.
+
+    Attributes:
+        taxonomy_id (str): The ID of the taxonomy.
+        effective (List[str]): Effective taxon IDs (computed from all sources).
+        externally_provided (List[str]): Taxon IDs provided externally/manually.
+        externally_excluded (List[str]): Taxon IDs explicitly excluded.
+        ai_provided (List[str]): Taxon IDs provided by AI classification.
+    """
+
+    taxonomy_id: str = Field(description="The ID of the taxonomy.")
+    effective: List[str] = Field(default_factory=list, description="Effective taxon IDs.")
+    externally_provided: List[str] = Field(default_factory=list, description="Taxon IDs provided externally/manually.")
+    externally_excluded: List[str] = Field(default_factory=list, description="Taxon IDs explicitly excluded.")
+    ai_provided: List[str] = Field(default_factory=list, description="Taxon IDs provided by AI classification.")
+
+    def __init__(self, **kwargs: Any) -> None:
+        # Handle null -> empty list for list fields from API
+        if kwargs.get("effective") is None:
+            kwargs["effective"] = []
+        if kwargs.get("externally_provided") is None:
+            kwargs["externally_provided"] = []
+        if kwargs.get("externally_excluded") is None:
+            kwargs["externally_excluded"] = []
+        if kwargs.get("ai_provided") is None:
+            kwargs["ai_provided"] = []
+        super().__init__(**kwargs)
+
+
+#################################################
+class CustomTaxonomyUpdate(DeepSightsBaseModel):
+    """
+    Request model for updating taxonomy assignments on a document.
+
+    Attributes:
+        taxonomy_id (str): The ID of the taxonomy to update.
+        provided_taxon_ids (List[str]): Taxon IDs to assign to the document.
+        excluded_taxon_ids (List[str]): Taxon IDs to explicitly exclude.
+    """
+
+    taxonomy_id: str = Field(description="The ID of the taxonomy.")
+    provided_taxon_ids: List[str] = Field(default_factory=list, description="Taxon IDs to assign.")
+    excluded_taxon_ids: List[str] = Field(default_factory=list, description="Taxon IDs to exclude.")
+
+
+#################################################
+class TaxonomyFilter(DeepSightsBaseModel):
+    """
+    Filter for search requests to filter by taxonomy.
+
+    Attributes:
+        field (str): The taxonomy ID to filter by.
+        values (List[str]): List of taxon IDs to match.
+    """
+
+    field: str = Field(description="The taxonomy ID to filter by.")
+    values: List[str] = Field(default_factory=list, description="List of taxon IDs to match.")
+
+
+#################################################
 class Document(DeepSightsIdTitleModel):
     """
     Represents a document.
@@ -131,6 +213,7 @@ class Document(DeepSightsIdTitleModel):
         description="The class of artifact [ORIGINAL_PDF, CONVERTIBLE_TO_PDF, NON_BINARY]", alias="type", default=None
     )
     external_metadata: Optional[ArtifactExternalMetadata] = Field(description="The artifact's metadata", default=None)
+    custom_taxonomies_data: List[DocumentTaxonomyData] = Field(default_factory=list, description="Taxonomy assignments for this document.")
 
     def __init__(self, **kwargs: Any) -> None:
         # Defensive extraction: tolerate missing fields from upstream services
@@ -138,6 +221,9 @@ class Document(DeepSightsIdTitleModel):
         publication_data: Dict[str, Any] = kwargs.get("publication_data") or {}
         kwargs.setdefault("creation_date", origin.get("creation_time"))
         kwargs.setdefault("publication_date", publication_data.get("publication_date"))
+        # Handle null -> empty list for custom_taxonomies_data
+        if kwargs.get("custom_taxonomies_data") is None:
+            kwargs["custom_taxonomies_data"] = []
         super().__init__(**kwargs)
 
     @property
@@ -311,6 +397,7 @@ class HybridSearchResult(DeepSightsBaseModel):
     artifact_content_type: Optional[str] = Field(description="Type of the artifact.")
     artifact_publication_date: Optional[datetime] = Field(description="Publication date of the artifact.")
     page_references: List[HybridSearchPageReference] = Field(description="Page references.")
+    custom_taxonomies: List[DocumentTaxonomy] = Field(default_factory=list, description="Taxonomy assignments for this document.")
 
 
 #################################################
@@ -338,3 +425,4 @@ class TopicSearchResult(DeepSightsBaseModel):
     page_references: List[TopicSearchPageReference] = Field(description="Page references.")
     relevance_class: Optional[str] = Field(description="Relevance classification.")
     relevance_assessment: Optional[str] = Field(description="Reasoning for relevance class", default="")
+    custom_taxonomies: List[DocumentTaxonomy] = Field(default_factory=list, description="Taxonomy assignments for this document.")

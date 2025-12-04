@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v1.5.1 (04-Dec-2025)
+
+- Support for taxonomy filtering and document operations
+
 ## v1.5.0 (04-Dec-2025)
 
 - Support for taxonomy management

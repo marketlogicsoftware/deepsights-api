@@ -409,6 +409,58 @@ class API:
         retry=_should_retry_http_error,
     )
     @sleep_and_retry
+    @limits(calls=100, period=60)
+    # pylint: disable-next=too-many-arguments, too-many-positional-arguments
+    def patch(
+        self,
+        path: str,
+        body: Dict[str, Any],
+        params: Optional[Dict[str, Any]] = None,
+        timeout: Optional[int] = None,
+        expected_statuscodes: Optional[List[int]] = None,
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Sends a PATCH request to the specified path with optional parameters.
+
+        Args:
+            path (str): The path to send the PATCH request to.
+            body (Dict): The JSON body to include in the request.
+            params (Dict, optional): Optional parameters to include in the request. Defaults to None.
+            timeout (int, optional): The timeout in seconds for the request. Defaults to 15.
+            expected_statuscodes (List[int], optional): List of expected status codes. Defaults to an empty list.
+
+        Returns:
+            Optional[Dict]: The JSON body of the server's response, or None for 204 No Content.
+
+        Raises:
+            AuthenticationError: If the request fails with a 401 status code.
+            RateLimitError: If the request fails with persistent 429 status code after retries.
+            HTTPError: For other HTTP errors.
+        """
+        timeout = timeout or self._default_timeout
+        expected_statuscodes = expected_statuscodes or []
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug("HTTP PATCH %s params=%s body=%s timeout=%s", path, params, body, timeout)
+        response = self._session.patch(self._endpoint(path), params=params, json=body, timeout=timeout)  # type: ignore[attr-defined]
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug("HTTP PATCH %s -> %s", path, response.status_code)
+
+        if response.status_code not in [200, 201, 202, 204] and response.status_code not in expected_statuscodes:
+            _handle_http_error(response)
+
+        # Return None for 204 No Content or empty response body
+        if response.status_code == 204 or not response.content:
+            return None
+        return response.json()
+
+    #######################################
+    @_handle_persistent_rate_limit
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_random_exponential(max=5),
+        retry=_should_retry_http_error,
+    )
+    @sleep_and_retry
     @limits(calls=1000, period=60)
     def delete(self, path: str, timeout: Optional[int] = None, expected_statuscodes: Optional[List[int]] = None) -> None:
         """

@@ -35,6 +35,12 @@ from deepsights.documentstore.resources.documents._search import (
     hybrid_search,
     topic_search,
 )
+from deepsights.documentstore.resources.documents._taxonomy import (
+    document_clear_taxonomy,
+    document_get_taxonomies,
+    document_set_taxonomy,
+    document_update_taxonomies,
+)
 from deepsights.documentstore.resources.documents._upload import (
     document_upload,
     document_wait_for_upload,
@@ -59,3 +65,7 @@ class DocumentResource(APIResource):
     search = hybrid_search
     topic_search = topic_search
     list = documents_list
+    get_taxonomies = document_get_taxonomies
+    update_taxonomies = document_update_taxonomies
+    set_taxonomy = document_set_taxonomy
+    clear_taxonomy = document_clear_taxonomy

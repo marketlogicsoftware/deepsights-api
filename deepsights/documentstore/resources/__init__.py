@@ -17,7 +17,11 @@ This module contains models and resources for interacting with the document stor
 """
 
 from deepsights.documentstore.resources.documents import (
+    CustomTaxonomyUpdate,
     DocumentResource,
+    DocumentTaxonomy,
+    DocumentTaxonomyData,
+    TaxonomyFilter,
 )
 from deepsights.documentstore.resources.documents._model import (
     SortingField,
@@ -48,4 +52,8 @@ __all__ = [
     "TaxonomyStatus",
     "Origin",
     "Translation",
+    "DocumentTaxonomy",
+    "DocumentTaxonomyData",
+    "CustomTaxonomyUpdate",
+    "TaxonomyFilter",
 ]

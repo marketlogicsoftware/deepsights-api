@@ -28,6 +28,7 @@ from deepsights.documentstore.resources.documents._model import (
     DocumentPageSearchResult,
     DocumentSearchResult,
     HybridSearchResult,
+    TaxonomyFilter,
     TopicSearchResult,
 )
 from deepsights.utils import promote_exact_matches, rerank_by_recency
@@ -210,7 +211,12 @@ def documents_search(
 
 
 #################################################
-def hybrid_search(resource: APIResource, query: str, extended_search: bool = False) -> List[HybridSearchResult]:
+def hybrid_search(
+    resource: APIResource,
+    query: str,
+    extended_search: bool = False,
+    taxonomy_filters: List[TaxonomyFilter] | None = None,
+) -> List[HybridSearchResult]:
     """
     Searches for documents using hybrid search combining text and vector search.
 
@@ -218,6 +224,7 @@ def hybrid_search(resource: APIResource, query: str, extended_search: bool = Fal
         resource (APIResource): An instance of the DeepSights API resource.
         query (str): The search query.
         extended_search (bool, optional): Whether to perform extended search. Defaults to False.
+        taxonomy_filters (List[TaxonomyFilter], optional): Taxonomy filters to apply. Defaults to None.
 
     Returns:
         List[HybridSearchResult]: The list of hybrid search results.
@@ -235,10 +242,14 @@ def hybrid_search(resource: APIResource, query: str, extended_search: bool = Fal
     if len(query) > max_query_length:
         raise ValueError(f"The 'query' must be {max_query_length} characters or less.")
 
-    body = {
+    body: dict = {
         "query": query,
         "extended_search": extended_search,
     }
+
+    # Add taxonomy filters if provided
+    if taxonomy_filters:
+        body["taxonomy_filters"] = [{"field": tf.field, "values": tf.values} for tf in taxonomy_filters]
 
     response = resource.api.post("supercharged-search-service/hybrid-searches", body=body)
 
@@ -248,7 +259,12 @@ def hybrid_search(resource: APIResource, query: str, extended_search: bool = Fal
 
 
 #################################################
-def topic_search(resource: APIResource, query: str, extended_search: bool = False) -> List[TopicSearchResult]:
+def topic_search(
+    resource: APIResource,
+    query: str,
+    extended_search: bool = False,
+    taxonomy_filters: List[TaxonomyFilter] | None = None,
+) -> List[TopicSearchResult]:
     """
     Searches for documents by topic using AI-powered analysis.
 
@@ -256,6 +272,7 @@ def topic_search(resource: APIResource, query: str, extended_search: bool = Fals
         resource (APIResource): An instance of the DeepSights API resource.
         query (str): The search query topic.
         extended_search (bool, optional): Whether to perform extended search. Defaults to False.
+        taxonomy_filters (List[TaxonomyFilter], optional): Taxonomy filters to apply. Defaults to None.
 
     Returns:
         List[TopicSearchResult]: The list of topic search results.
@@ -269,10 +286,14 @@ def topic_search(resource: APIResource, query: str, extended_search: bool = Fals
     if len(query) > 512:
         raise ValueError("The 'query' must be 512 characters or less.")
 
-    body = {
+    body: dict = {
         "query": query,
         "extended_search": extended_search,
     }
+
+    # Add taxonomy filters if provided
+    if taxonomy_filters:
+        body["taxonomy_filters"] = [{"field": tf.field, "values": tf.values} for tf in taxonomy_filters]
 
     response = resource.api.post("supercharged-search-service/topic-searches", body=body)
 

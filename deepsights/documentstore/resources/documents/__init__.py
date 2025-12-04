@@ -17,10 +17,14 @@ This module contains the resource to interact with documents via the DeepSights 
 """
 
 from deepsights.documentstore.resources.documents._model import (
+    CustomTaxonomyUpdate,
+    DocumentTaxonomy,
+    DocumentTaxonomyData,
     HybridSearchPageReference,
     HybridSearchResult,
     SortingField,
     SortingOrder,
+    TaxonomyFilter,
 )
 from deepsights.documentstore.resources.documents.documents import (
     DocumentResource,
@@ -32,4 +36,8 @@ __all__ = [
     "SortingOrder",
     "HybridSearchResult",
     "HybridSearchPageReference",
+    "DocumentTaxonomy",
+    "DocumentTaxonomyData",
+    "CustomTaxonomyUpdate",
+    "TaxonomyFilter",
 ]

@@ -363,3 +363,28 @@ def assert_language_filter(results, expected_languages):
     """
     for result in results:
         assert result.language in expected_languages
+
+
+def assert_valid_document_taxonomy(taxonomy):
+    """
+    Validate a document taxonomy has required fields.
+
+    Args:
+        taxonomy: Document taxonomy object to validate (from search results).
+    """
+    assert taxonomy.taxonomy_id is not None
+    assert isinstance(taxonomy.taxons, list)
+
+
+def assert_valid_document_taxonomy_data(taxonomy_data):
+    """
+    Validate document taxonomy data has required fields.
+
+    Args:
+        taxonomy_data: Document taxonomy data object to validate (from artifact response).
+    """
+    assert taxonomy_data.taxonomy_id is not None
+    assert isinstance(taxonomy_data.effective, list)
+    assert isinstance(taxonomy_data.externally_provided, list)
+    assert isinstance(taxonomy_data.externally_excluded, list)
+    assert isinstance(taxonomy_data.ai_provided, list)
