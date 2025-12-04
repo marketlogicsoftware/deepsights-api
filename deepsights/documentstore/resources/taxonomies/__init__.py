@@ -13,32 +13,24 @@
 # limitations under the License.
 
 """
-This module contains models and resources for interacting with the document store in the DeepSights API.
+Custom taxonomy resources and models.
 """
 
-from deepsights.documentstore.resources.documents import (
-    DocumentResource,
-)
-from deepsights.documentstore.resources.documents._model import (
-    SortingField,
-    SortingOrder,
-)
-from deepsights.documentstore.resources.taxonomies import (
+from deepsights.documentstore.resources.taxonomies._model import (
     Origin,
     Taxon,
     Taxonomy,
-    TaxonomyResource,
     TaxonomyStatus,
-    TaxonResource,
     TaxonType,
-    TaxonTypeResource,
     Translation,
+)
+from deepsights.documentstore.resources.taxonomies.taxonomies import (
+    TaxonomyResource,
+    TaxonResource,
+    TaxonTypeResource,
 )
 
 __all__ = [
-    "DocumentResource",
-    "SortingField",
-    "SortingOrder",
     "TaxonomyResource",
     "TaxonTypeResource",
     "TaxonResource",

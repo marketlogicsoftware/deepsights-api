@@ -18,6 +18,11 @@ This module contains the client to interact with the document store in the DeepS
 
 from deepsights.api.api import APIKeyAPI
 from deepsights.documentstore.resources import DocumentResource
+from deepsights.documentstore.resources.taxonomies import (
+    TaxonomyResource,
+    TaxonResource,
+    TaxonTypeResource,
+)
 
 
 #################################################
@@ -27,6 +32,9 @@ class DocumentStore(APIKeyAPI):
     """
 
     documents: DocumentResource
+    taxonomies: TaxonomyResource
+    taxon_types: TaxonTypeResource
+    taxons: TaxonResource
 
     #######################################
     def __init__(self, api_key: str | None = None, endpoint_base: str | None = None) -> None:
@@ -46,3 +54,6 @@ class DocumentStore(APIKeyAPI):
         )
 
         self.documents = DocumentResource(self)
+        self.taxonomies = TaxonomyResource(self)
+        self.taxon_types = TaxonTypeResource(self)
+        self.taxons = TaxonResource(self)

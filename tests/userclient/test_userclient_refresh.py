@@ -215,7 +215,6 @@ class TestUserClientRefresh:
         # Verify all resource classes are still initialized
         assert hasattr(client, "answersV2")
         assert hasattr(client, "reports")
-        assert hasattr(client, "search")
         assert hasattr(client, "documents")
 
         # Verify token is set

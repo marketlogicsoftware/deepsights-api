@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v1.5.0 (04-Dec-2025)
+
+- Support for taxonomy management
+
 ## v1.4.7 (28-Nov-2025)
 
 - Package alignment for userclient

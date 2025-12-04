@@ -23,7 +23,14 @@ Perfect for B2C brands, enterprises, and research teams who need reliable market
 
 ### Document Store
 
-The **Document Store** hosts all customer-owned documents, such as presentations and reports. The `documentstore` API exposes lifecycle management, search and access to documents.
+The **Document Store** hosts all customer-owned documents, such as presentations and reports. The `documentstore` API exposes lifecycle management, search and access to documents, as well as custom taxonomy management for organizing and classifying content.
+
+### Custom Taxonomies
+
+The **Custom Taxonomies** feature allows you to create and manage hierarchical classification systems for your documents. Taxonomies consist of:
+- **Taxonomy**: A named classification system (e.g., "Product Categories", "Regions")
+- **Taxon Types**: Classification levels within a taxonomy (e.g., "Country", "City")
+- **Taxons**: Individual classification values with optional parent-child relationships (e.g., "Germany" → "Berlin")
 
 ### Content Store
 
@@ -214,6 +221,52 @@ reports = ds.contentstore.secondary.search(
 )
 for item in reports:
     print(f"{item.title} - {item.source}")
+```
+
+#### Custom Taxonomy Management
+```python
+# Create a custom taxonomy for document classification
+taxonomy = ds.documentstore.taxonomies.create(
+    name="Product Categories",
+    external_id="product-categories-v1"
+)
+print(f"Created taxonomy: {taxonomy.id}")
+
+# Add a taxon type (classification level)
+taxon_type = ds.documentstore.taxon_types.create(
+    taxonomy_id=taxonomy.id,
+    name="Category",
+    description="Product category level"
+)
+
+# Add taxons (classification values)
+parent_taxon = ds.documentstore.taxons.create(
+    taxonomy_id=taxonomy.id,
+    taxon_type_id=taxon_type.id,
+    name="Electronics"
+)
+
+# Create child taxon with parent relationship
+child_taxon = ds.documentstore.taxons.create(
+    taxonomy_id=taxonomy.id,
+    taxon_type_id=taxon_type.id,
+    name="Smartphones",
+    parent_ids=[parent_taxon.id]
+)
+
+# Search taxonomies
+total, taxonomies = ds.documentstore.taxonomies.search(page_size=10)
+for t in taxonomies:
+    print(f"Taxonomy: {t.name} (status: {t.status})")
+
+# Update a taxonomy
+ds.documentstore.taxonomies.update(taxonomy.id, name="Updated Categories")
+
+# Clean up (delete in reverse order: taxons, taxon types, taxonomy)
+ds.documentstore.taxons.delete(child_taxon.id)
+ds.documentstore.taxons.delete(parent_taxon.id)
+ds.documentstore.taxon_types.delete(taxon_type.id)
+ds.documentstore.taxonomies.delete(taxonomy.id)
 ```
 
 #### Error Handling & Rate Limiting
