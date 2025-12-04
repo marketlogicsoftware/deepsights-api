@@ -108,9 +108,9 @@ def test_document_taxonomy_lifecycle(ds_client):
             # Find our taxonomy
             our_taxonomy = next((t for t in taxonomies if t.taxonomy_id == taxonomy.id), None)
             assert our_taxonomy is not None, f"Taxonomy {taxonomy.id} not found in document taxonomies"
-            assert (
-                taxon.id in our_taxonomy.externally_provided
-            ), f"Taxon {taxon.id} not in externally_provided: {our_taxonomy.externally_provided}"
+            assert taxon.id in our_taxonomy.externally_provided, (
+                f"Taxon {taxon.id} not in externally_provided: {our_taxonomy.externally_provided}"
+            )
 
             # Clear taxonomy
             ds_client.documentstore.documents.clear_taxonomy(
