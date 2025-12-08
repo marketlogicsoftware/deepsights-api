@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v1.6.1 (08-Dec-2025)
+
+Add lazy service initialization and unified token support to DeepSights client
+
 ## v1.6.0 (08-Dec-2025)
 
 - Support for unified token in Market Logic ecosystem
