@@ -20,6 +20,7 @@ import json
 import os
 
 import deepsights
+from deepsights.contentstore import ContentStore
 from deepsights.userclient import UserClient
 
 # get the test embedding from JSON
@@ -99,11 +100,86 @@ cs_hybrid_results = ds.contentstore.secondary.search(
 
 
 #################################################
+# UNIFIED TOKEN AUTHENTICATION
+#
+# For custom token management (e.g., external auth systems), ContentStore and UserClient
+# support unified token authentication with automatic refresh on 401 responses.
+
+print("=== Unified Token Authentication ===")
+
+
+def example_refresh_callback():
+    """
+    Example refresh callback - replace with your actual token refresh logic.
+
+    IMPORTANT: Your callback MUST implement its own timeout to avoid blocking indefinitely.
+
+    Returns:
+        str: New token on success
+        None: To signal permanent auth failure (stops retrying)
+    """
+    # In a real implementation, you would call your auth server here:
+    # response = requests.post("https://auth.example.com/token", timeout=10)
+    # return response.json()["access_token"]
+
+    # For demo purposes, return a placeholder
+    print("  (refresh callback invoked - would fetch new token here)")
+    return "refreshed_token_placeholder"
+
+
+# Option 1: Via main DeepSights client (for ContentStore)
+# This allows using unified token for ContentStore while using API key for DocumentStore
+print("\nOption 1: DeepSights client with unified token for ContentStore")
+try:
+    ds_unified = deepsights.DeepSights(
+        ds_api_key=os.environ.get("DEEPSIGHTS_API_KEY"),
+        cs_unified_token="example_unified_token",
+        cs_refresh_callback=example_refresh_callback,
+    )
+    print(f"  ContentStore configured: {ds_unified._contentstore is not None}")
+    print(f"  ContentStore unified mode: {ds_unified._contentstore._unified_token_mode if ds_unified._contentstore else 'N/A'}")
+except Exception as e:
+    print(f"  Could not create unified client: {e}")
+
+# Option 2: Direct ContentStore with unified token
+print("\nOption 2: Direct ContentStore with unified token")
+cs_unified = ContentStore.with_unified_token(
+    unified_token="example_unified_token",
+    refresh_callback=example_refresh_callback,
+)
+print(f"  ContentStore unified mode: {cs_unified._unified_token_mode}")
+print(f"  Current token property: {cs_unified.unified_token[:20]}..." if cs_unified.unified_token else "N/A")
+
+# Option 3: UserClient with unified token
+print("\nOption 3: UserClient with unified token")
+uc_unified = UserClient.with_unified_token(
+    unified_token="example_unified_token",
+    refresh_callback=example_refresh_callback,
+)
+print(f"  UserClient unified mode: {uc_unified._unified_token_mode}")
+print(f"  Token info: {uc_unified.get_token_info()}")
+
+# Demonstrate lazy initialization (partial auth)
+print("\n=== Lazy Service Initialization ===")
+print("DeepSights client can be initialized with partial credentials:")
+
+# DS key only - contentstore will raise on access
+ds_partial = deepsights.DeepSights(ds_api_key=os.environ.get("DEEPSIGHTS_API_KEY"))
+print(f"  DocumentStore configured: {ds_partial._documentstore is not None}")
+print(f"  ContentStore configured: {ds_partial._contentstore is not None}")
+
+try:
+    _ = ds_partial.contentstore  # This will raise
+except ValueError as e:
+    print(f"  Accessing unconfigured contentstore raises: {str(e)[:60]}...")
+
+
+#################################################
 # USERCLIENT API
 #
 # for this to work, we assume the api key for user resolution was set in the environment as MIP_API_KEY
 
-print("=== User Client Examples ===")
+print("\n=== User Client Examples ===")
 
 # Method 1: Traditional approach - obtain a user client for a known email address
 # This gets a token once and uses it (no auto-refresh)

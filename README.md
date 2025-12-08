@@ -423,6 +423,7 @@ DeepSights supports multiple authentication methods:
 For scenarios requiring custom token management (e.g., integrating with external auth systems), ContentStore and UserClient support unified token authentication with automatic refresh:
 
 ```python
+import deepsights
 from deepsights.contentstore import ContentStore
 from deepsights.userclient import UserClient
 
@@ -431,13 +432,22 @@ def my_refresh_callback():
     new_token = get_token_from_auth_server(timeout=10)
     return new_token  # Return None to signal permanent auth failure
 
-# ContentStore with unified token
+# Option 1: Via main DeepSights client (for ContentStore)
+ds = deepsights.DeepSights(
+    ds_api_key="your_deepsights_key",
+    cs_unified_token="your_bearer_token",
+    cs_refresh_callback=my_refresh_callback
+)
+# Access contentstore normally
+news = ds.contentstore.news.search(query="market trends")
+
+# Option 2: Direct ContentStore with unified token
 cs = ContentStore.with_unified_token(
     unified_token="your_bearer_token",
     refresh_callback=my_refresh_callback
 )
 
-# UserClient with unified token
+# Option 3: UserClient with unified token
 uc = UserClient.with_unified_token(
     unified_token="your_bearer_token",
     refresh_callback=my_refresh_callback
@@ -445,6 +455,21 @@ uc = UserClient.with_unified_token(
 ```
 
 The unified token mode automatically refreshes the token on 401 responses (up to 2 attempts) and is thread-safe for multi-threaded applications.
+
+#### Lazy Service Initialization
+The main DeepSights client supports partial authentication - you can initialize with credentials for only the services you need:
+
+```python
+# Only DeepSights/DocumentStore credentials
+ds = deepsights.DeepSights(ds_api_key="your_key")
+ds.documentstore.documents.search(...)  # Works
+ds.contentstore.news.search(...)  # Raises ValueError with helpful message
+
+# Only ContentStore credentials
+ds = deepsights.DeepSights(cs_api_key="your_cs_key")
+ds.contentstore.news.search(...)  # Works
+ds.documentstore.documents.search(...)  # Raises ValueError
+```
 
 ### Response Format
 All API responses are strongly-typed [Pydantic models](https://docs.pydantic.dev/latest/) with:
