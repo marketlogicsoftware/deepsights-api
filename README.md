@@ -417,6 +417,34 @@ DeepSights supports multiple authentication methods:
 - **API Key**: Primary authentication (set `DEEPSIGHTS_API_KEY`)
 - **OAuth Token**: Enterprise integration support
 - **Service-specific keys**: Optional keys for ContentStore and MIP access
+- **Unified Token**: Bearer token with automatic refresh on 401 (for ContentStore and UserClient)
+
+#### Unified Token Authentication
+For scenarios requiring custom token management (e.g., integrating with external auth systems), ContentStore and UserClient support unified token authentication with automatic refresh:
+
+```python
+from deepsights.contentstore import ContentStore
+from deepsights.userclient import UserClient
+
+def my_refresh_callback():
+    # Your logic to obtain a new token (must implement timeout!)
+    new_token = get_token_from_auth_server(timeout=10)
+    return new_token  # Return None to signal permanent auth failure
+
+# ContentStore with unified token
+cs = ContentStore.with_unified_token(
+    unified_token="your_bearer_token",
+    refresh_callback=my_refresh_callback
+)
+
+# UserClient with unified token
+uc = UserClient.with_unified_token(
+    unified_token="your_bearer_token",
+    refresh_callback=my_refresh_callback
+)
+```
+
+The unified token mode automatically refreshes the token on 401 responses (up to 2 attempts) and is thread-safe for multi-threaded applications.
 
 ### Response Format
 All API responses are strongly-typed [Pydantic models](https://docs.pydantic.dev/latest/) with:

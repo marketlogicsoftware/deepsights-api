@@ -87,7 +87,7 @@ def test_secondary_download(ds_client):
     results = ds_client.contentstore.secondary.text_search(
         query="",
         max_results=1,
-        search_to_timestamp=datetime.now(timezone.utc) - timedelta(days=100),
+        search_to_timestamp=datetime.now(timezone.utc) - timedelta(days=10),
     )
 
     content = ds_client.contentstore.secondary.download(results[-1].id)
