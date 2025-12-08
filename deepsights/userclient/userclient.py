@@ -20,11 +20,12 @@ import logging
 import os
 import random
 import threading
-from typing import Optional
+from typing import Callable, Optional
 
 from cachetools import TTLCache
 
-from deepsights.api.api import OAuthTokenAPI
+from deepsights.api.api import API, OAuthTokenAPI
+from deepsights.api.unified_token import UnifiedTokenMixin
 from deepsights.deepsights._mip_identity import MIPIdentityResolver
 from deepsights.userclient.resources import (
     AnswerV2Resource,
@@ -37,13 +38,14 @@ ENDPOINT_BASE = "https://api.deepsights.ai/ds/v1"
 
 
 #################################################
-class UserClient(OAuthTokenAPI):
+class UserClient(UnifiedTokenMixin, OAuthTokenAPI):
     """
     This class defined the user client for DeepSights APIs, impersonating a given user.
 
-    Supports two modes:
+    Supports three authentication modes (mutually exclusive):
     1. Direct OAuth token (manual refresh)
-    2. Auto-refresh mode using email + API key (automatic token refresh)
+    2. Auto-refresh mode using email + API key (automatic token refresh via MIP)
+    3. Unified token mode with refresh callback (automatic refresh on 401)
     """
 
     # Class-level static cache for user clients
@@ -71,6 +73,8 @@ class UserClient(OAuthTokenAPI):
         email: Optional[str] = None,
         api_key: Optional[str] = None,
         auto_refresh_interval_seconds: int = 600,
+        unified_token: Optional[str] = None,
+        refresh_callback: Optional[Callable[[], Optional[str]]] = None,
     ) -> None:
         """
         Initializes the API client.
@@ -81,29 +85,70 @@ class UserClient(OAuthTokenAPI):
             oauth_token (str, optional): The OAuth token to be used for authentication.
                 If provided, the client will use this token directly without auto-refresh.
             email (str, optional): Email address for auto-refresh mode.
-                Required if oauth_token is not provided.
+                Required if oauth_token is not provided and unified_token is not provided.
             api_key (str, optional): API key for auto-refresh mode.
-                Required if oauth_token is not provided.
+                Required if oauth_token is not provided and unified_token is not provided.
             auto_refresh_interval_seconds (int): Interval in seconds for automatic token refresh.
                 Only used in auto-refresh mode. Defaults to 600 seconds (10 minutes).
+            unified_token (str, optional): Bearer token for unified token authentication.
+                Mutually exclusive with oauth_token and email+api_key.
+            refresh_callback (Callable, optional): Callback function that returns a new
+                token string, or None to signal permanent auth failure (stops retrying).
+                Required when using unified_token. The callback MUST implement its own
+                timeout to avoid blocking indefinitely.
 
         Raises:
-            ValueError: If neither oauth_token nor (email + api_key) is provided.
+            ValueError: If not exactly one authentication mode is provided, or if
+                unified_token is provided without refresh_callback.
         """
         if endpoint_base is None:
             endpoint_base = ENDPOINT_BASE
 
-        # Validate input parameters
-        initial_token: Optional[str] = None
-        if oauth_token:
-            # Direct token mode
+        # Count provided auth modes
+        mode_count = sum(
+            [
+                oauth_token is not None,
+                (email is not None and api_key is not None),
+                unified_token is not None,
+            ]
+        )
+
+        if mode_count != 1:
+            raise ValueError("Must provide exactly one of: 'oauth_token', 'email+api_key', or 'unified_token+refresh_callback'")
+
+        if unified_token is not None:
+            # Mode 3: Unified token mode
+            if refresh_callback is None:
+                raise ValueError("refresh_callback is required when using unified_token")
+
             self._auto_refresh_enabled = False
             self._email = None
             self._api_key = None
             self._mip_resolver = None
-            initial_token = oauth_token
-        elif email and api_key:
-            # Auto-refresh mode
+            self._refresh_timer = None
+
+            # Initialize base API class directly (skip OAuthTokenAPI)
+            API.__init__(self, endpoint_base=endpoint_base)
+            # Initialize unified token mixin
+            self.__init_unified_token__(unified_token, refresh_callback)
+
+        elif oauth_token is not None:
+            # Mode 1: Direct token mode (existing)
+            self._auto_refresh_enabled = False
+            self._email = None
+            self._api_key = None
+            self._mip_resolver = None
+            self._refresh_timer = None
+
+            super().__init__(
+                endpoint_base=endpoint_base,
+                oauth_token=oauth_token,
+            )
+
+        else:
+            # Mode 2: Auto-refresh mode (existing)
+            assert email is not None and api_key is not None
+
             self._auto_refresh_enabled = True
             self._email = email
             self._api_key = api_key
@@ -120,23 +165,18 @@ class UserClient(OAuthTokenAPI):
 
             interval_minutes = auto_refresh_interval_seconds / 60
             logger.info(f"Auto-refresh enabled for user {email} with {interval_minutes:.1f}-minute intervals")
-        else:
-            raise ValueError("Must provide either 'oauth_token' for direct mode or both 'email' and 'api_key' for auto-refresh mode")
 
-        # Initialize parent class with the token
-        # mypy: ensure initial_token is not None at this point
-        assert initial_token is not None
-        super().__init__(
-            endpoint_base=endpoint_base,
-            oauth_token=initial_token,
-        )
+            super().__init__(
+                endpoint_base=endpoint_base,
+                oauth_token=initial_token,
+            )
 
         # Initialize resource classes
         self.answersV2 = AnswerV2Resource(self)
         self.reports = ReportResource(self)
         self.documents = DocumentResource(self)
 
-        # Start auto-refresh if enabled
+        # Start auto-refresh if enabled (Mode 2 only)
         if self._auto_refresh_enabled:
             self._schedule_token_refresh()
 
@@ -255,11 +295,13 @@ class UserClient(OAuthTokenAPI):
         Returns:
             dict: Dictionary containing token info and refresh settings.
         """
+        # Check for token - could be _oauth_token (OAuth mode) or _unified_token (unified mode)
+        has_token = bool(getattr(self, "_oauth_token", None) or getattr(self, "_unified_token", None))
         return {
             "auto_refresh_enabled": self._auto_refresh_enabled,
             "email": self._email if self._auto_refresh_enabled else None,
             "refresh_interval_seconds": getattr(self, "_auto_refresh_interval_seconds", None),
-            "has_token": bool(self._oauth_token),
+            "has_token": has_token,
         }
 
     #######################################
@@ -348,6 +390,33 @@ class UserClient(OAuthTokenAPI):
                 If not provided, the default endpoint base will be used.
         """
         return UserClient(oauth_token=oauth_token, endpoint_base=endpoint_base)
+
+    #######################################
+    @classmethod
+    def with_unified_token(
+        cls,
+        unified_token: str,
+        refresh_callback: Callable[[], Optional[str]],
+        endpoint_base: Optional[str] = None,
+    ) -> "UserClient":
+        """
+        Alternative constructor for unified token authentication.
+
+        Args:
+            unified_token: Bearer token string for authentication.
+            refresh_callback: Callback function that returns a new token on 401,
+                or None to signal permanent failure (stops retrying). Must implement
+                its own timeout to avoid blocking indefinitely.
+            endpoint_base: Optional custom endpoint base URL.
+
+        Returns:
+            UserClient instance configured with unified token authentication.
+        """
+        return cls(
+            unified_token=unified_token,
+            refresh_callback=refresh_callback,
+            endpoint_base=endpoint_base,
+        )
 
     #######################################
     def __del__(self) -> None:

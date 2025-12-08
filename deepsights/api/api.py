@@ -220,6 +220,7 @@ class API:
         params: Optional[Dict[str, Any]] = None,
         timeout: Optional[int] = None,
         expected_statuscodes: Optional[List[int]] = None,
+        headers: Optional[Dict[str, str]] = None,
     ) -> Dict[str, Any]:
         """
         Sends a GET request to the specified path with optional parameters.
@@ -229,6 +230,7 @@ class API:
             params (Dict, optional): Optional parameters to include in the request. Defaults to None.
             timeout (int, optional): The timeout in seconds for the request. Defaults to 15.
             expected_statuscodes (List[int], optional): List of expected status codes. Defaults to an empty list.
+            headers (Dict[str, str], optional): Additional headers for this request only.
 
         Returns:
             The JSON body of the server's response to the request.
@@ -242,7 +244,7 @@ class API:
         expected_statuscodes = expected_statuscodes or []
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug("HTTP GET %s params=%s timeout=%s", path, params, timeout)
-        response = self._session.get(self._endpoint(path), params=params, timeout=timeout)
+        response = self._session.get(self._endpoint(path), params=params, timeout=timeout, headers=headers)  # type: ignore[call-arg]
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug("HTTP GET %s -> %s", path, response.status_code)
 
@@ -266,6 +268,7 @@ class API:
         params: Optional[Dict[str, Any]] = None,
         timeout: Optional[int] = None,
         expected_statuscodes: Optional[List[int]] = None,
+        headers: Optional[Dict[str, str]] = None,
     ) -> bytes:
         """
         Sends a GET request to the specified path and returns the raw response content.
@@ -278,6 +281,7 @@ class API:
             params (Dict, optional): Optional parameters to include in the request. Defaults to None.
             timeout (int, optional): The timeout in seconds for the request. Defaults to 15.
             expected_statuscodes (List[int], optional): List of expected status codes. Defaults to an empty list.
+            headers (Dict[str, str], optional): Additional headers for this request only.
 
         Returns:
             bytes: The raw content of the server's response.
@@ -291,7 +295,7 @@ class API:
         expected_statuscodes = expected_statuscodes or []
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug("HTTP GET(content) %s params=%s timeout=%s", path, params, timeout)
-        response = self._session.get(self._endpoint(path), params=params, timeout=timeout)
+        response = self._session.get(self._endpoint(path), params=params, timeout=timeout, headers=headers)  # type: ignore[call-arg]
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug("HTTP GET(content) %s -> %s", path, response.status_code)
 
@@ -317,6 +321,7 @@ class API:
         params: Optional[Dict[str, Any]] = None,
         timeout: Optional[int] = None,
         expected_statuscodes: Optional[List[int]] = None,
+        headers: Optional[Dict[str, str]] = None,
     ) -> Dict[str, Any]:
         """
         Sends a POST request to the specified path with optional parameters.
@@ -327,6 +332,7 @@ class API:
             params (Dict, optional): Optional parameters to include in the request. Defaults to None.
             timeout (int, optional): The timeout in seconds for the request. Defaults to 15.
             expected_statuscodes (List[int], optional): List of expected status codes. Defaults to an empty list.
+            headers (Dict[str, str], optional): Additional headers for this request only.
 
         Returns:
             Dict: The JSON body of the server's response to the request.
@@ -340,7 +346,7 @@ class API:
         expected_statuscodes = expected_statuscodes or []
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug("HTTP POST %s params=%s body=%s timeout=%s", path, params, body, timeout)
-        response = self._session.post(self._endpoint(path), params=params, json=body, timeout=timeout)
+        response = self._session.post(self._endpoint(path), params=params, json=body, timeout=timeout, headers=headers)  # type: ignore[call-arg]
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug("HTTP POST %s -> %s", path, response.status_code)
 
@@ -366,6 +372,7 @@ class API:
         params: Optional[Dict[str, Any]] = None,
         timeout: Optional[int] = None,
         expected_statuscodes: Optional[List[int]] = None,
+        headers: Optional[Dict[str, str]] = None,
     ) -> Optional[Dict[str, Any]]:
         """
         Sends a PUT request to the specified path with optional parameters.
@@ -376,6 +383,7 @@ class API:
             params (Dict, optional): Optional parameters to include in the request. Defaults to None.
             timeout (int, optional): The timeout in seconds for the request. Defaults to 15.
             expected_statuscodes (List[int], optional): List of expected status codes. Defaults to an empty list.
+            headers (Dict[str, str], optional): Additional headers for this request only.
 
         Returns:
             Optional[Dict]: The JSON body of the server's response, or None for 204 No Content.
@@ -389,7 +397,7 @@ class API:
         expected_statuscodes = expected_statuscodes or []
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug("HTTP PUT %s params=%s body=%s timeout=%s", path, params, body, timeout)
-        response = self._session.put(self._endpoint(path), params=params, json=body, timeout=timeout)  # type: ignore[attr-defined]
+        response = self._session.put(self._endpoint(path), params=params, json=body, timeout=timeout, headers=headers)  # type: ignore[attr-defined]
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug("HTTP PUT %s -> %s", path, response.status_code)
 
@@ -418,6 +426,7 @@ class API:
         params: Optional[Dict[str, Any]] = None,
         timeout: Optional[int] = None,
         expected_statuscodes: Optional[List[int]] = None,
+        headers: Optional[Dict[str, str]] = None,
     ) -> Optional[Dict[str, Any]]:
         """
         Sends a PATCH request to the specified path with optional parameters.
@@ -428,6 +437,7 @@ class API:
             params (Dict, optional): Optional parameters to include in the request. Defaults to None.
             timeout (int, optional): The timeout in seconds for the request. Defaults to 15.
             expected_statuscodes (List[int], optional): List of expected status codes. Defaults to an empty list.
+            headers (Dict[str, str], optional): Additional headers for this request only.
 
         Returns:
             Optional[Dict]: The JSON body of the server's response, or None for 204 No Content.
@@ -441,7 +451,7 @@ class API:
         expected_statuscodes = expected_statuscodes or []
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug("HTTP PATCH %s params=%s body=%s timeout=%s", path, params, body, timeout)
-        response = self._session.patch(self._endpoint(path), params=params, json=body, timeout=timeout)  # type: ignore[attr-defined]
+        response = self._session.patch(self._endpoint(path), params=params, json=body, timeout=timeout, headers=headers)  # type: ignore[attr-defined]
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug("HTTP PATCH %s -> %s", path, response.status_code)
 
@@ -462,17 +472,23 @@ class API:
     )
     @sleep_and_retry
     @limits(calls=1000, period=60)
-    def delete(self, path: str, timeout: Optional[int] = None, expected_statuscodes: Optional[List[int]] = None) -> None:
+    def delete(
+        self,
+        path: str,
+        timeout: Optional[int] = None,
+        expected_statuscodes: Optional[List[int]] = None,
+        headers: Optional[Dict[str, str]] = None,
+    ) -> None:
         """
         Sends a DELETE request to the specified path.
 
         Args:
-
             path (str): The path to send the DELETE request to.
             timeout (int, optional): The timeout for the request in seconds. Defaults to 5.
+            expected_statuscodes (List[int], optional): List of expected status codes. Defaults to an empty list.
+            headers (Dict[str, str], optional): Additional headers for this request only.
 
         Raises:
-
             AuthenticationError: If the request fails with a 401 status code.
             RateLimitError: If the request fails with persistent 429 status code after retries.
             HTTPError: If the DELETE request fails with a non-200 status code.
@@ -481,7 +497,7 @@ class API:
         expected_statuscodes = expected_statuscodes or []
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug("HTTP DELETE %s timeout=%s", path, timeout)
-        response = self._session.delete(self._endpoint(path), timeout=timeout)
+        response = self._session.delete(self._endpoint(path), timeout=timeout, headers=headers)  # type: ignore[call-arg]
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug("HTTP DELETE %s -> %s", path, response.status_code)
 

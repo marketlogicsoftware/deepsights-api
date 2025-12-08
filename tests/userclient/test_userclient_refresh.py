@@ -83,15 +83,15 @@ class TestUserClientRefresh:
         """Test that UserClient raises appropriate errors for invalid parameters."""
 
         # Test with no parameters
-        with pytest.raises(ValueError, match="Must provide either 'oauth_token'"):
+        with pytest.raises(ValueError, match="Must provide exactly one of"):
             UserClient()
 
         # Test with only email (missing api_key)
-        with pytest.raises(ValueError, match="Must provide either 'oauth_token'"):
+        with pytest.raises(ValueError, match="Must provide exactly one of"):
             UserClient(email="test@example.com")
 
         # Test with only api_key (missing email)
-        with pytest.raises(ValueError, match="Must provide either 'oauth_token'"):
+        with pytest.raises(ValueError, match="Must provide exactly one of"):
             UserClient(api_key="test_api_key")
 
     def test_failed_initial_token_retrieval(self):

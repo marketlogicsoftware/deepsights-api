@@ -19,7 +19,7 @@ class _Resp:
 def test_get_content_returns_bytes(monkeypatch):
     api = API(endpoint_base="https://example.invalid/")
 
-    def fake_get(url: str, params: Any = None, timeout: Any = None):
+    def fake_get(url: str, params: Any = None, timeout: Any = None, headers: Any = None):
         return _Resp(200, b"abc")
 
     api._session.get = fake_get  # type: ignore[method-assign]

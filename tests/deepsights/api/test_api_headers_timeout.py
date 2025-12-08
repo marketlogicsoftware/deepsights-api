@@ -28,7 +28,7 @@ def test_default_timeout_env_override(monkeypatch):
 
     captured = {}
 
-    def fake_get(url: str, params: Any = None, timeout: Any = None):
+    def fake_get(url: str, params: Any = None, timeout: Any = None, headers: Any = None):
         captured["timeout"] = timeout
         return _DummyResponse(200)
 

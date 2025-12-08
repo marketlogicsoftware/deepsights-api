@@ -38,3 +38,7 @@ class RateLimitError(DeepSightsError):
         """
         super().__init__(message)
         self.retry_after = retry_after
+
+
+class TokenRefreshError(DeepSightsError):
+    """Raised when unified token refresh fails."""

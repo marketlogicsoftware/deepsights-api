@@ -36,7 +36,7 @@ def test_handle_http_error_429_maps_to_http_error():
 def test_api_get_404_passes_http_error(monkeypatch):
     api = API(endpoint_base="https://example.invalid/")
 
-    def fake_get(url: str, params: Any = None, timeout: Any = None):
+    def fake_get(url: str, params: Any = None, timeout: Any = None, headers: Any = None):
         return _Resp(404)
 
     api._session.get = fake_get  # type: ignore[method-assign]

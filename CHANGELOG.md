@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v1.6.0 (08-Dec-2025)
+
+- Support for unified token in Market Logic ecosystem
+
 ## v1.5.1 (04-Dec-2025)
 
 - Support for taxonomy filtering and document operations
