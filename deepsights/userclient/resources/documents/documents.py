@@ -38,6 +38,7 @@ from deepsights.documentstore.resources.documents._model import (
     HybridSearchResult,
     SortingField,
     SortingOrder,
+    TaxonomyFilter,
     TopicSearchResult,
 )
 from deepsights.userclient.resources.documents._download import document_download
@@ -47,13 +48,19 @@ MAX_QUERY_LENGTH = 512
 
 
 #################################################
-def topic_search(resource: APIResource, query: str, extended_search: bool = False) -> List[TopicSearchResult]:
+def topic_search(
+    resource: APIResource,
+    query: str,
+    extended_search: bool = False,
+    taxonomy_filters: List[TaxonomyFilter] | None = None,
+) -> List[TopicSearchResult]:
     """
     Searches for documents by topic using AI-powered analysis.
 
     Args:
         query (str): The search query topic.
         extended_search (bool, optional): Whether to perform extended search. Defaults to False.
+        taxonomy_filters (List[TaxonomyFilter], optional): Taxonomy filters to apply. Defaults to None.
 
     Returns:
         List[TopicSearchResult]: The list of topic search results.
@@ -67,10 +74,14 @@ def topic_search(resource: APIResource, query: str, extended_search: bool = Fals
     if len(query) > MAX_QUERY_LENGTH:
         raise ValueError(f"The 'query' must be {MAX_QUERY_LENGTH} characters or less.")
 
-    body = {
+    body: dict = {
         "query": query,
         "extended_search": extended_search,
     }
+
+    # Add taxonomy filters if provided
+    if taxonomy_filters:
+        body["taxonomy_filters"] = [{"field": tf.field, "values": tf.values} for tf in taxonomy_filters]
 
     response = resource.api.post("end-user-gateway-service/topic-searches", body=body)
 

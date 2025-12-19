@@ -56,7 +56,7 @@ The **User Client** serves to impersonate existing platform users with their acc
 | Content Store (Secondary) | `ds.contentstore.secondary.vector_search(query_embedding, ..., recency_weight)` | Vector | Embedding length 1536; max_results ≤100 | `List[SecondarySearchResult]` |
 | Content Store (Secondary) | `ds.contentstore.secondary.text_search(query, ..., sort_descending, offset)` | Text | `query=None` sorts by date; supports languages/date filters | `List[SecondarySearchResult]` |
 | User Client | `user_client.documents.search(query, extended_search=False)` | Hybrid (user-context) | Permissions-aware; query ≤512 chars | `List[HybridSearchResult]` |
-| User Client | `user_client.documents.topic_search(query, extended_search=False)` | Topic | AI topic analysis; query ≤512 chars | `List[TopicSearchResult]` |
+| User Client | `user_client.documents.topic_search(query, extended_search=False, taxonomy_filters=None)` | Topic | AI topic analysis; query ≤512 chars; optional taxonomy filtering | `List[TopicSearchResult]` |
 
 Notes
 - All document/content vector searches require 1536-dimensional embeddings.
@@ -185,6 +185,8 @@ search_results = uc.documents.search(
 
 #### Topic Search with AI Analysis
 ```python
+from deepsights.documentstore.resources.documents import TaxonomyFilter
+
 # AI-powered topic search available through user client
 uc = UserClient.get_userclient(
     "analyst@company.com",
@@ -201,6 +203,16 @@ for result in results:
     print(f"📊 Relevance: {result.relevance_class}")
     print(f"📝 Summary: {result.artifact_summary[:100]}...")
     print(f"📑 {len(result.page_references)} relevant pages found\n")
+
+# Topic search with taxonomy filtering
+taxonomy_filter = TaxonomyFilter(
+    field="your-taxonomy-id",
+    values=["taxon-id-1", "taxon-id-2"]
+)
+filtered_results = uc.documents.topic_search(
+    query="sustainable packaging trends",
+    taxonomy_filters=[taxonomy_filter]
+)
 ```
 
 #### Content Store Access

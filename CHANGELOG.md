@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v1.6.2 (19-Dec-2025)
+
+Add taxonomy filtering to topic search in userclient
+
 ## v1.6.1 (08-Dec-2025)
 
 Add lazy service initialization and unified token support to DeepSights client

@@ -87,7 +87,6 @@ def test_documents_list_pagination(user_client):
             assert documents_page1[i].id == documents_page2[i].id
 
 
-@pytest.mark.skip(reason="Skipping sorting by title test due server limitation")
 def test_documents_list_sorting_by_title(user_client):
     """
     Test the documents list sorting by title functionality.
@@ -122,7 +121,6 @@ def test_documents_list_sorting_by_title(user_client):
             assert asc_titles[0] != desc_titles[0] or len(asc_titles) == 1
 
 
-@pytest.mark.skip(reason="Skipping sorting by publication date test due server limitation")
 def test_documents_list_sorting_by_publication_date(user_client):
     """
     Test the documents list sorting by publication date functionality.

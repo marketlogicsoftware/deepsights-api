@@ -18,6 +18,7 @@ This module contains the tests for the user client topic search functions.
 
 import pytest
 
+from deepsights.documentstore.resources.documents import TaxonomyFilter
 from tests.helpers.validation import assert_valid_topic_search_result
 
 
@@ -70,3 +71,60 @@ def test_topic_search_validation_errors(user_client):
     # Test query too long
     with pytest.raises(ValueError, match="query.*512 characters"):
         user_client.documents.topic_search(query="x" * 513)
+
+
+def test_topic_search_with_taxonomy_filter(user_client, test_data):
+    """
+    Test topic search with a taxonomy filter.
+
+    This function tests the `documents.topic_search` method with taxonomy filtering
+    to verify that filters are properly passed to the API.
+    """
+    # Use a non-existent taxonomy filter - should return filtered (likely empty) results
+    taxonomy_filter = TaxonomyFilter(
+        field="non-existent-taxonomy-id",
+        values=["non-existent-taxon-id"],
+    )
+
+    results = user_client.documents.topic_search(
+        query=test_data["question"],
+        taxonomy_filters=[taxonomy_filter],
+    )
+
+    # Should return empty or filtered results, not error
+    assert isinstance(results, list)
+
+
+def test_topic_search_with_multiple_taxonomy_filters(user_client, test_data):
+    """
+    Test topic search with multiple taxonomy filters.
+
+    This function tests that multiple taxonomy filters are properly handled.
+    """
+    taxonomy_filters = [
+        TaxonomyFilter(field="taxonomy-1", values=["taxon-1", "taxon-2"]),
+        TaxonomyFilter(field="taxonomy-2", values=["taxon-3"]),
+    ]
+
+    results = user_client.documents.topic_search(
+        query=test_data["question"],
+        taxonomy_filters=taxonomy_filters,
+    )
+
+    # Should handle multiple filters without error
+    assert isinstance(results, list)
+
+
+def test_topic_search_without_taxonomy_filter(user_client, test_data):
+    """
+    Test that topic search still works when taxonomy_filters is explicitly None.
+    """
+    results = user_client.documents.topic_search(
+        query=test_data["question"],
+        taxonomy_filters=None,
+    )
+
+    assert isinstance(results, list)
+    for result in results:
+        assert_valid_topic_search_result(result)
+        assert result.artifact_title is not None
