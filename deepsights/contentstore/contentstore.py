@@ -23,7 +23,7 @@ from deepsights.api.api import API, APIKeyAPI
 from deepsights.api.unified_token import UnifiedTokenMixin
 from deepsights.contentstore.resources import NewsResource, SecondaryResource
 
-DEFAULT_ENDPOINT = "https://apigee.mlsdevcloud.com/secondary-content/api/"
+DEFAULT_ENDPOINT = "https://api.deepsights.ai/secondary-content/api/"
 
 
 #################################################

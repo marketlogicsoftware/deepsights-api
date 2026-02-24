@@ -41,7 +41,7 @@ class MIPIdentityResolver(APIKeyAPI):
                 it will be fetched from the environment variable MIP_API_KEY.
         """
         super().__init__(
-            endpoint_base="https://apigee.mlsdevcloud.com/user-management-api/prod/v1",
+            endpoint_base="https://api.deepsights.ai/user-management-api/prod/v1",
             api_key=api_key,
             api_key_env_var="MIP_API_KEY",
         )
