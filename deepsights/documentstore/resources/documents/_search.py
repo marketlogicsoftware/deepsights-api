@@ -264,6 +264,7 @@ def topic_search(
     query: str,
     extended_search: bool = False,
     taxonomy_filters: List[TaxonomyFilter] | None = None,
+    content_types: List[str] | None = None,
 ) -> List[TopicSearchResult]:
     """
     Searches for documents by topic using AI-powered analysis.
@@ -273,6 +274,7 @@ def topic_search(
         query (str): The search query topic.
         extended_search (bool, optional): Whether to perform extended search. Defaults to False.
         taxonomy_filters (List[TaxonomyFilter], optional): Taxonomy filters to apply. Defaults to None.
+        content_types (List[str], optional): Artifact content types to filter by. Defaults to None.
 
     Returns:
         List[TopicSearchResult]: The list of topic search results.
@@ -294,6 +296,10 @@ def topic_search(
     # Add taxonomy filters if provided
     if taxonomy_filters:
         body["taxonomy_filters"] = [{"field": tf.field, "values": tf.values} for tf in taxonomy_filters]
+
+    # Add content type filter if provided
+    if content_types:
+        body["content_type_filter"] = {"content_types": content_types}
 
     response = resource.api.post("supercharged-search-service/topic-searches", body=body)
 

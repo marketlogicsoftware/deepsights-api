@@ -46,7 +46,7 @@ The **User Client** serves to impersonate existing platform users with their acc
 | Area | Method | Type | Notes | Returns |
 |--|--|--|--|--|
 | Document Store | `ds.documentstore.documents.search(query, extended_search=False, taxonomy_filters=None)` | Hybrid | Text + semantic; query ≤512 chars; optional taxonomy filtering | `List[HybridSearchResult]` |
-| Document Store | `ds.documentstore.documents.topic_search(query, extended_search=False, taxonomy_filters=None)` | Topic | AI topic analysis; query ≤512 chars; optional taxonomy filtering | `List[TopicSearchResult]` |
+| Document Store | `ds.documentstore.documents.topic_search(query, extended_search=False, taxonomy_filters=None, content_types=None)` | Topic | AI topic analysis; query ≤512 chars; optional taxonomy and content type filtering | `List[TopicSearchResult]` |
 | Document Store | `ds.documentstore.documents.search_pages(query_embedding, min_score=0.7, max_results=50, load_pages=False)` | Vector (pages, deprecated) | Deprecated; use hybrid search instead | `List[DocumentPageSearchResult]` |
 | Document Store | `ds.documentstore.documents.search_documents(...)` | Vector (docs) | Deprecated; use hybrid search instead | `List[DocumentSearchResult]` |
 | Content Store (News) | `ds.contentstore.news.search(query, ..., vector_fraction, vector_weight, recency_weight)` | Hybrid | Languages/date filters, optional evidence filter; max_results ≤250 | `List[NewsSearchResult]` |
@@ -56,7 +56,7 @@ The **User Client** serves to impersonate existing platform users with their acc
 | Content Store (Secondary) | `ds.contentstore.secondary.vector_search(query_embedding, ..., recency_weight)` | Vector | Embedding length 1536; max_results ≤100 | `List[SecondarySearchResult]` |
 | Content Store (Secondary) | `ds.contentstore.secondary.text_search(query, ..., sort_descending, offset)` | Text | `query=None` sorts by date; supports languages/date filters | `List[SecondarySearchResult]` |
 | User Client | `user_client.documents.search(query, extended_search=False)` | Hybrid (user-context) | Permissions-aware; query ≤512 chars | `List[HybridSearchResult]` |
-| User Client | `user_client.documents.topic_search(query, extended_search=False, taxonomy_filters=None)` | Topic | AI topic analysis; query ≤512 chars; optional taxonomy filtering | `List[TopicSearchResult]` |
+| User Client | `user_client.documents.topic_search(query, extended_search=False, taxonomy_filters=None, content_types=None)` | Topic | AI topic analysis; query ≤512 chars; optional taxonomy and content type filtering | `List[TopicSearchResult]` |
 
 Notes
 - All document/content vector searches require 1536-dimensional embeddings.
@@ -212,6 +212,11 @@ taxonomy_filter = TaxonomyFilter(
 filtered_results = uc.documents.topic_search(
     query="sustainable packaging trends",
     taxonomy_filters=[taxonomy_filter]
+)
+
+article_results = uc.documents.topic_search(
+    query="sustainable packaging trends",
+    content_types=["atlas_article"]
 )
 ```
 
