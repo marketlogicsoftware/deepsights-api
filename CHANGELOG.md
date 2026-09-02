@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v1.7.3 (02-Sep-2026)
+
+- Exclude the production OpenAPI specification from source distributions.
+
 ## v1.7.2 (12-May-2026)
 
 - Add optional content type filtering to topic search for userclient and documentstore clients.
