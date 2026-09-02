@@ -2,6 +2,14 @@
 
 <!--next-version-placeholder-->
 
+## v1.7.2 (12-May-2026)
+
+- Add optional content type filtering to topic search for userclient and documentstore clients.
+
+## v1.7.1 (24-Feb-2026)
+
+- Update default API subdomains from apigee.mlsdevcloud.com to api.deepsights.ai
+
 ## v1.7.0 (16-Jan-2026)
 
 - Unified token refresh callbacks now receive the current unified token as a parameter.
