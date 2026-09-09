@@ -158,7 +158,8 @@ def contentstore_hybrid_search(
     response = api.post("item-service/items/_hybrid-search", body=body)
 
     # parse
-    results: List[T] = [search_result(i) for i in response["items"]]
+    # a degraded backend may return HTTP 200 with "items": null; treat as empty
+    results: List[T] = [search_result(i) for i in response.get("items") or []]
 
     # record rank
     for rank, result in enumerate(results):
@@ -223,7 +224,8 @@ def contentstore_vector_search(
     response = api.post("item-service/items/_vector-search", body=body)
 
     # parse
-    results: List[T] = [search_result(i) for i in response["items"]]
+    # a degraded backend may return HTTP 200 with "items": null; treat as empty
+    results: List[T] = [search_result(i) for i in response.get("items") or []]
 
     # re-rank
     return rerank_by_recency(results, recency_weight=recency_weight)
@@ -291,7 +293,8 @@ def contentstore_text_search(
     response = api.post("item-service/items/_text-search", body=body)
 
     # parse
-    results: List[T] = [search_result(i) for i in response["items"]]
+    # a degraded backend may return HTTP 200 with "items": null; treat as empty
+    results: List[T] = [search_result(i) for i in response.get("items") or []]
 
     # record rank
     for rank, result in enumerate(results):

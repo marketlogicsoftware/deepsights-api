@@ -253,8 +253,9 @@ def hybrid_search(
 
     response = resource.api.post("supercharged-search-service/hybrid-searches", body=body)
 
-    # Extract the search results from the response
-    search_results = response.get("context", {}).get("search_results", [])
+    # Extract the search results from the response; a degraded backend may return
+    # HTTP 200 with "context": null or "search_results": null, treat both as empty
+    search_results = (response.get("context") or {}).get("search_results") or []
     return [HybridSearchResult(**result) for result in search_results]
 
 
@@ -303,6 +304,7 @@ def topic_search(
 
     response = resource.api.post("supercharged-search-service/topic-searches", body=body)
 
-    # Extract the search results from the response
-    search_results = response.get("context", {}).get("search_results", [])
-    return [TopicSearchResult(**result) for result in search_results if len(result) > 0]
+    # Extract the search results from the response; a degraded backend may return
+    # HTTP 200 with "context": null or "search_results": null, treat both as empty
+    search_results = (response.get("context") or {}).get("search_results") or []
+    return [TopicSearchResult(**result) for result in search_results if result]

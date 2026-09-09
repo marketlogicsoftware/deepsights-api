@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v1.7.4 (09-Sep-2026)
+
+- Treat null `context`, `search_results`, and `items` in search responses as empty result sets instead of crashing when the backend is degraded (documentstore, userclient, and contentstore search functions).
+
 ## v1.7.3 (02-Sep-2026)
 
 - Exclude the production OpenAPI specification from source distributions.

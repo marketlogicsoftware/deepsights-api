@@ -91,9 +91,10 @@ def topic_search(
 
     response = resource.api.post("end-user-gateway-service/topic-searches", body=body)
 
-    # Extract the search results from the response
-    search_results = response.get("context", {}).get("search_results", [])
-    return [TopicSearchResult(**result) for result in search_results if len(result) > 0]
+    # Extract the search results from the response; a degraded backend may return
+    # HTTP 200 with "context": null or "search_results": null, treat both as empty
+    search_results = (response.get("context") or {}).get("search_results") or []
+    return [TopicSearchResult(**result) for result in search_results if result]
 
 
 #################################################
@@ -125,8 +126,9 @@ def hybrid_search(resource: APIResource, query: str, extended_search: bool = Fal
     # Temporarily allow 5xx responses to debug the error
     response = resource.api.post("end-user-gateway-service/hybrid-searches", body=body)
 
-    # Extract the search results from the response
-    search_results = response.get("context", {}).get("search_results", [])
+    # Extract the search results from the response; a degraded backend may return
+    # HTTP 200 with "context": null or "search_results": null, treat both as empty
+    search_results = (response.get("context") or {}).get("search_results") or []
     return [HybridSearchResult(**result) for result in search_results]
 
 
