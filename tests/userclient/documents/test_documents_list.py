@@ -219,3 +219,24 @@ def test_documents_list_validation_errors(user_client):
     # Test invalid sort field
     with pytest.raises(AssertionError, match="sort field must be"):
         user_client.documents.list(sort_field="invalid_field")
+
+
+def test_documents_list_search_term(user_client):
+    """
+    Test that the search_term filter narrows the listing to matching documents.
+
+    Lists one completed document, then re-lists with its title as search_term and
+    asserts the document is found while the result set is filtered.
+    """
+    total_all, documents = user_client.documents.list(page_size=1, status_filter=["COMPLETED"])
+    if not documents or not documents[0].title:
+        pytest.skip("no completed document with a title available in the test corpus")
+
+    document = documents[0]
+    total_filtered, filtered = user_client.documents.list(
+        page_size=100,
+        search_term=document.title,
+    )
+
+    assert 0 < total_filtered <= total_all
+    assert document.id in [d.id for d in filtered]

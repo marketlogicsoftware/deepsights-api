@@ -438,3 +438,77 @@ class TopicSearchResult(DeepSightsBaseModel):
     relevance_class: Optional[str] = Field(description="Relevance classification.")
     relevance_assessment: Optional[str] = Field(description="Reasoning for relevance class", default="")
     custom_taxonomies: List[DocumentTaxonomy] = Field(default_factory=list, description="Taxonomy assignments for this document.")
+
+
+#################################################
+class TextSearchHighlightText(DeepSightsBaseModel):
+    """
+    Represents one text fragment of a text search highlight.
+
+    Attributes:
+        text (str): The highlighted text fragment.
+        type (str): Type of the fragment; HIT for a matched term, TEXT for surrounding context.
+    """
+
+    text: Optional[str] = Field(default=None, description="The highlighted text fragment.")
+    type: Optional[str] = Field(default=None, description="Type of the fragment; HIT for a matched term, TEXT for surrounding context.")
+
+
+#################################################
+class TextSearchHighlight(DeepSightsBaseModel):
+    """
+    Represents a highlight in a text search result, explaining where the query matched.
+
+    Attributes:
+        field (str): The indexed field in which text was highlighted (e.g. title, file_name).
+        texts (List[TextSearchHighlightText]): The highlighted text fragments.
+        score (float): Search score of the highlight.
+    """
+
+    field: Optional[str] = Field(default=None, description="The indexed field in which text was highlighted.")
+    texts: List[TextSearchHighlightText] = Field(default_factory=list, description="The highlighted text fragments.")
+    score: Optional[float] = Field(default=None, description="Search score of the highlight.")
+
+
+#################################################
+class IndexedArtifact(DeepSightsBaseModel):
+    """
+    Represents an indexed artifact returned by text search.
+
+    Attributes:
+        id (str): The ID of the artifact.
+        title (str): Title of the indexed artifact.
+        content_type (str): Type of the artifact content.
+        file_name (str): File name of the artifact's binary.
+        source (str): AI generated source of the artifact.
+        publication_date (datetime): Date and time of artifact publication.
+        summary (str): AI generated summary of the artifact.
+        description (str): Human provided description of the artifact.
+    """
+
+    id: str = Field(description="The ID of the artifact.")
+    title: Optional[str] = Field(default=None, description="Title of the indexed artifact.")
+    content_type: Optional[str] = Field(default=None, description="Type of the artifact content.")
+    file_name: Optional[str] = Field(default=None, description="File name of the artifact's binary.")
+    source: Optional[str] = Field(default=None, description="AI generated source of the artifact.")
+    publication_date: Optional[datetime] = Field(default=None, description="Date and time of artifact publication.")
+    summary: Optional[str] = Field(default=None, description="AI generated summary of the artifact.")
+    description: Optional[str] = Field(default=None, description="Human provided description of the artifact.")
+
+
+#################################################
+class TextSearchResult(DeepSightsBaseModel):
+    """
+    Represents a text search result for an indexed artifact.
+
+    Attributes:
+        artifact (IndexedArtifact): The found artifact.
+        score (float): Search score of the found artifact.
+        highlights (List[TextSearchHighlight]): Highlights explaining where the query matched.
+        rank (int): The rank of the result in the search response.
+    """
+
+    artifact: IndexedArtifact = Field(description="The found artifact.")
+    score: Optional[float] = Field(default=None, description="Search score of the found artifact.")
+    highlights: List[TextSearchHighlight] = Field(default_factory=list, description="Highlights explaining where the query matched.")
+    rank: Optional[int] = Field(default=None, description="The rank of the result in the search response.")

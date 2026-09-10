@@ -16,6 +16,8 @@
 Test the documents_list function
 """
 
+import pytest
+
 import deepsights
 import deepsights.documentstore.resources.documents._model
 
@@ -234,3 +236,24 @@ def test_document_list(ds_client):
         assert document.id is not None
         assert document.title is not None or document.ai_generated_title is not None
         assert document.status is not None
+
+
+def test_document_list_search_term(ds_client):
+    """
+    Test that the search_term filter narrows the listing to matching documents.
+
+    Lists one completed document, then re-lists with its title as search_term and
+    asserts the document is found while the result set is filtered.
+    """
+    total_all, documents = ds_client.documentstore.documents.list(page_size=1, status_filter=["COMPLETED"])
+    if not documents or not documents[0].title:
+        pytest.skip("no completed document with a title available in the test corpus")
+
+    document = documents[0]
+    total_filtered, filtered = ds_client.documentstore.documents.list(
+        page_size=100,
+        search_term=document.title,
+    )
+
+    assert 0 < total_filtered <= total_all
+    assert document.id in [d.id for d in filtered]

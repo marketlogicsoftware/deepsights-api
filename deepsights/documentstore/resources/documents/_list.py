@@ -36,6 +36,9 @@ def documents_list(
     sort_order: str = SortingOrder.DESCENDING,
     sort_field: str = SortingField.CREATION_DATE,
     status_filter: List[str] | None = None,
+    search_term: str | None = None,
+    content_types: List[str] | None = None,
+    external_ids: List[str] | None = None,
 ) -> tuple[int, List[Document]]:
     """
     List documents from the DeepSights API.
@@ -48,6 +51,11 @@ def documents_list(
         sort_order (str): The sorting order.
         sort_field (str): The sorting field.
         status_filter (str): The optional status filter.
+        search_term (str, optional): Filter documents by id/external_id/title/ai_generated_title/
+            file_name/original_file_name. Phrase match for all fields except 'id' and 'external_id',
+            which match exactly. Max 128 characters.
+        content_types (List[str], optional): Content types to filter by (exact match).
+        external_ids (List[str], optional): External identifiers to filter by (exact match).
 
     Returns:
         tuple: A tuple containing the total number of results and the list of documents
@@ -55,6 +63,7 @@ def documents_list(
     """
     assert page_size <= 100, "The page size must be less than or equal to 100."
     assert page_number >= 0, "The page number must be greater than 0."
+    assert search_term is None or len(search_term) <= 128, "The search term must be at most 128 characters."
     assert sort_order in [
         SortingOrder.ASCENDING,
         SortingOrder.DESCENDING,
@@ -73,6 +82,12 @@ def documents_list(
     }
     if status_filter:
         body["statuses"] = status_filter
+    if search_term:
+        body["search_term"] = search_term
+    if content_types:
+        body["content_types"] = content_types
+    if external_ids:
+        body["external_ids"] = external_ids
 
     # fetch ids
     result = resource.api.post(

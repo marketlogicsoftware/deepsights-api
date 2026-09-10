@@ -389,3 +389,22 @@ def assert_valid_document_taxonomy_data(taxonomy_data):
     assert isinstance(taxonomy_data.externally_provided, list)
     assert isinstance(taxonomy_data.externally_excluded, list)
     assert isinstance(taxonomy_data.ai_provided, list)
+
+
+def assert_valid_text_search_result(text_result):
+    """
+    Validate a text search result has required fields.
+
+    Args:
+        text_result: Text search result object to validate.
+    """
+    assert text_result.artifact is not None
+    assert text_result.artifact.id is not None
+    assert text_result.rank is not None and text_result.rank > 0
+    if text_result.score is not None:
+        assert text_result.score >= 0
+
+    for highlight in text_result.highlights:
+        assert highlight.field is not None
+        for text in highlight.texts:
+            assert text.type in ("HIT", "TEXT")

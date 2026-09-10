@@ -22,9 +22,13 @@ from deepsights.documentstore.resources.documents._model import (
     DocumentTaxonomyData,
     HybridSearchPageReference,
     HybridSearchResult,
+    IndexedArtifact,
     SortingField,
     SortingOrder,
     TaxonomyFilter,
+    TextSearchHighlight,
+    TextSearchHighlightText,
+    TextSearchResult,
 )
 from deepsights.documentstore.resources.documents.documents import (
     DocumentResource,
@@ -40,4 +44,8 @@ __all__ = [
     "DocumentTaxonomyData",
     "CustomTaxonomyUpdate",
     "TaxonomyFilter",
+    "TextSearchResult",
+    "TextSearchHighlight",
+    "TextSearchHighlightText",
+    "IndexedArtifact",
 ]

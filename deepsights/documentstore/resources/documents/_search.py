@@ -17,7 +17,8 @@ This module contains the functions to search for documents and document pages ba
 """
 
 import warnings
-from typing import List
+from datetime import datetime
+from typing import List, Optional
 
 from deepsights.api import APIResource
 from deepsights.documentstore.resources.documents._load import (
@@ -29,9 +30,14 @@ from deepsights.documentstore.resources.documents._model import (
     DocumentSearchResult,
     HybridSearchResult,
     TaxonomyFilter,
+    TextSearchResult,
     TopicSearchResult,
 )
 from deepsights.utils import promote_exact_matches, rerank_by_recency
+
+TEXT_SEARCH_METADATA_FIELDS = ("title", "file_name", "source", "summary")
+TEXT_SEARCH_SORT_OPTIONS = ("RELEVANCY", "RECENCY")
+MAX_TEXT_SEARCH_QUERY_LENGTH = 512
 
 
 #################################################
@@ -308,3 +314,102 @@ def topic_search(
     # HTTP 200 with "context": null or "search_results": null, treat both as empty
     search_results = (response.get("context") or {}).get("search_results") or []
     return [TopicSearchResult(**result) for result in search_results if result]
+
+
+#################################################
+# pylint: disable-next=too-many-arguments, too-many-positional-arguments, too-many-locals, too-many-branches
+def text_search(
+    resource: APIResource,
+    metadata_query: Optional[str] = None,
+    metadata_fields: Optional[List[str]] = None,
+    content_query: Optional[str] = None,
+    includes: Optional[List[str]] = None,
+    excludes: Optional[List[str]] = None,
+    content_types: Optional[List[str]] = None,
+    taxonomy_filters: Optional[List[TaxonomyFilter]] = None,
+    from_date: Optional[datetime] = None,
+    to_date: Optional[datetime] = None,
+    limit: int = 10,
+    sort_by: str = "RELEVANCY",
+) -> List[TextSearchResult]:
+    """
+    Searches indexed artifacts by lexical text search.
+
+    Unlike topic or hybrid search, this is a plain text search with no AI relevance
+    judgment: results are scored by lexical relevancy (or recency) and carry highlights
+    explaining where the query matched. Use it to locate documents by name, title,
+    file name, or literal content — e.g. finding a specific (or older) edition of a
+    named report that semantic search would rank away.
+
+    Args:
+
+        resource (APIResource): An instance of the DeepSights API resource.
+        metadata_query (str, optional): Search query applied to the metadata fields.
+        metadata_fields (List[str], optional): Metadata fields to search; any of
+            'title', 'file_name', 'source', 'summary'. Defaults to ['title', 'file_name']
+            when a metadata_query is given.
+        content_query (str, optional): Search query applied to the content of indexed artifacts.
+        includes (List[str], optional): Keywords that found documents must include.
+        excludes (List[str], optional): Keywords that found documents must not include.
+        content_types (List[str], optional): Artifact content types to filter by.
+        taxonomy_filters (List[TaxonomyFilter], optional): Taxonomy filters to apply.
+        from_date (datetime, optional): Only return artifacts published on or after this date.
+        to_date (datetime, optional): Only return artifacts published on or before this date.
+        limit (int, optional): The maximum number of results to return (1-100). Defaults to 10.
+        sort_by (str, optional): 'RELEVANCY' or 'RECENCY'. Defaults to 'RELEVANCY'.
+
+    Returns:
+
+        List[TextSearchResult]: The list of text search results with scores and highlights.
+    """
+    # Input validation
+    metadata_query = metadata_query.strip() if metadata_query else None
+    content_query = content_query.strip() if content_query else None
+    if not metadata_query and not content_query:
+        raise ValueError("At least one of 'metadata_query' or 'content_query' is required.")
+    for name, query in (("metadata_query", metadata_query), ("content_query", content_query)):
+        if query is not None and len(query) > MAX_TEXT_SEARCH_QUERY_LENGTH:
+            raise ValueError(f"The '{name}' must be {MAX_TEXT_SEARCH_QUERY_LENGTH} characters or less.")
+    if metadata_fields is not None:
+        invalid_fields = [field for field in metadata_fields if field not in TEXT_SEARCH_METADATA_FIELDS]
+        if invalid_fields:
+            raise ValueError(f"Invalid metadata fields {invalid_fields}; supported: {list(TEXT_SEARCH_METADATA_FIELDS)}.")
+    if not 0 < limit <= 100:
+        raise ValueError("The 'limit' must be between 1 and 100.")
+    if sort_by not in TEXT_SEARCH_SORT_OPTIONS:
+        raise ValueError(f"The 'sort_by' must be one of {list(TEXT_SEARCH_SORT_OPTIONS)}.")
+
+    body: dict = {
+        "limit": limit,
+        "sort_by": sort_by,
+    }
+    if metadata_query:
+        body["metadata_query"] = metadata_query
+        body["metadata_fields_to_search"] = metadata_fields if metadata_fields is not None else ["title", "file_name"]
+    if content_query:
+        body["content_query"] = content_query
+    if includes:
+        body["includes"] = includes
+    if excludes:
+        body["excludes"] = excludes
+    if content_types:
+        body["content_type_filter"] = {"content_types": content_types}
+    if taxonomy_filters:
+        body["taxonomy_filters"] = [{"field": tf.field, "values": tf.values} for tf in taxonomy_filters]
+    if from_date or to_date:
+        date_filter = {}
+        if from_date:
+            date_filter["from"] = from_date.isoformat()
+        if to_date:
+            date_filter["to"] = to_date.isoformat()
+        body["publication_date_filter"] = date_filter
+
+    response = resource.api.post("end-user-gateway-service/text-searches/_search", body=body)
+
+    results = [TextSearchResult(**result) for result in response.get("results") or []]
+
+    # record rank
+    for rank, result in enumerate(results):
+        result.rank = rank + 1
+
+    return results

@@ -33,6 +33,7 @@ from deepsights.documentstore.resources.documents._search import (
     document_pages_search,
     documents_search,
     hybrid_search,
+    text_search,
     topic_search,
 )
 from deepsights.documentstore.resources.documents._taxonomy import (
@@ -64,6 +65,7 @@ class DocumentResource(APIResource):
     search_pages = document_pages_search
     search = hybrid_search
     topic_search = topic_search
+    text_search = text_search
     list = documents_list
     get_taxonomies = document_get_taxonomies
     update_taxonomies = document_update_taxonomies
