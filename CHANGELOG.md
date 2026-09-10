@@ -2,6 +2,13 @@
 
 <!--next-version-placeholder-->
 
+## v1.8.0 (10-Sep-2026)
+
+- Add `text_search()` to the documentstore and userclient document resources: lexical search over indexed artifacts with metadata queries (title/file_name/source/summary), content queries, include/exclude keywords, content type, taxonomy and publication date filters, RELEVANCY/RECENCY sorting, and per-field match highlights. Unlike topic/hybrid search there is no AI relevance judgment, making it the right instrument for locating documents by name.
+- Add `search_term` (phrase match over id/external_id/title/ai_generated_title/file_name/original_file_name), `content_types`, and `external_ids` filters to `documents_list()` for both clients.
+- New models: `TextSearchResult`, `IndexedArtifact`, `TextSearchHighlight`, `TextSearchHighlightText`.
+- Exclude all production OpenAPI specifications from source distributions.
+
 ## v1.7.4 (09-Sep-2026)
 
 - Treat null `context`, `search_results`, and `items` in search responses as empty result sets instead of crashing when the backend is degraded (documentstore, userclient, and contentstore search functions).

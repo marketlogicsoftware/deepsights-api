@@ -38,7 +38,7 @@ The **Content Store** holds public and paid 3rd party content, including industr
 
 ### User Client
 
-The **User Client** serves to impersonate existing platform users with their access permissions. The `userclient` API supports obtaining AI-generated answers and reports in response to business questions, as well as document management operations with user-specific permissions including document listing, loading, page access, hybrid search, and topic search capabilities.
+The **User Client** serves to impersonate existing platform users with their access permissions. The `userclient` API supports obtaining AI-generated answers and reports in response to business questions, as well as document management operations with user-specific permissions including document listing, loading, page access, hybrid search, topic search, and lexical text search capabilities.
 
 
 ## Search Methods
@@ -47,6 +47,7 @@ The **User Client** serves to impersonate existing platform users with their acc
 |--|--|--|--|--|
 | Document Store | `ds.documentstore.documents.search(query, extended_search=False, taxonomy_filters=None)` | Hybrid | Text + semantic; query ≤512 chars; optional taxonomy filtering | `List[HybridSearchResult]` |
 | Document Store | `ds.documentstore.documents.topic_search(query, extended_search=False, taxonomy_filters=None, content_types=None)` | Topic | AI topic analysis; query ≤512 chars; optional taxonomy and content type filtering | `List[TopicSearchResult]` |
+| Document Store | `ds.documentstore.documents.text_search(metadata_query=None, metadata_fields=None, content_query=None, ...)` | Text | Lexical, no AI relevance judgment; metadata fields title/file_name/source/summary; include/exclude keywords, content type/taxonomy/date filters; RELEVANCY or RECENCY sort; limit ≤100; per-field match highlights | `List[TextSearchResult]` |
 | Document Store | `ds.documentstore.documents.search_pages(query_embedding, min_score=0.7, max_results=50, load_pages=False)` | Vector (pages, deprecated) | Deprecated; use hybrid search instead | `List[DocumentPageSearchResult]` |
 | Document Store | `ds.documentstore.documents.search_documents(...)` | Vector (docs) | Deprecated; use hybrid search instead | `List[DocumentSearchResult]` |
 | Content Store (News) | `ds.contentstore.news.search(query, ..., vector_fraction, vector_weight, recency_weight)` | Hybrid | Languages/date filters, optional evidence filter; max_results ≤250 | `List[NewsSearchResult]` |
@@ -57,11 +58,13 @@ The **User Client** serves to impersonate existing platform users with their acc
 | Content Store (Secondary) | `ds.contentstore.secondary.text_search(query, ..., sort_descending, offset)` | Text | `query=None` sorts by date; supports languages/date filters | `List[SecondarySearchResult]` |
 | User Client | `user_client.documents.search(query, extended_search=False)` | Hybrid (user-context) | Permissions-aware; query ≤512 chars | `List[HybridSearchResult]` |
 | User Client | `user_client.documents.topic_search(query, extended_search=False, taxonomy_filters=None, content_types=None)` | Topic | AI topic analysis; query ≤512 chars; optional taxonomy and content type filtering | `List[TopicSearchResult]` |
+| User Client | `user_client.documents.text_search(metadata_query=None, metadata_fields=None, content_query=None, ...)` | Text (user-context) | Permissions-aware; same options as Document Store text search | `List[TextSearchResult]` |
 
 Notes
 - All document/content vector searches require 1536-dimensional embeddings.
 - Content Store search methods support language and date-range filters; vector searches accept optional `recency_weight`.
 - `search_documents(...)` and `search_documents_pages(...)` are deprecated in favor of hybrid search.
+- `text_search(...)` performs plain lexical search without AI relevance judgment — the right instrument for locating documents by name, e.g. a specific or older edition of a named report that semantic search ranks away. `documents.list(...)` additionally accepts `search_term` (phrase match over id/external_id/title/ai_generated_title/file_name/original_file_name), `content_types`, and `external_ids` filters.
 
 ## Getting started
 
