@@ -79,6 +79,13 @@ class ArtifactExternalMetadata(DeepSightsBaseModel):
     import_batch_id: Optional[str] = None
     external_properties: Optional[Dict[str, str]] = None
     external_source_url: Optional[str] = None
+    external_creation_date: Optional[datetime] = Field(
+        default=None,
+        description=(
+            "Creation date in the external source system. Feeds effective_publication_date when "
+            "neither an externally provided nor an AI provided publication date is set."
+        ),
+    )
 
 
 #################################################
@@ -176,7 +183,10 @@ class Document(DeepSightsIdTitleModel):
         file_name (str, optional): The name of the file.
         file_size (int, optional): The size of the file.
         description (str, optional): The description of the document.
-        publication_date (datetime, optional): The publication date of the document.
+        publication_date (datetime, optional): DEPRECATED, prefer effective_publication_date.
+        effective_publication_date (datetime, optional): The publication date to use.
+        externally_provided_publication_date (datetime, optional): Date supplied by an external system.
+        ai_provided_publication_date (datetime, optional): Date extracted from the content by AI.
         creation_date (datetime, optional): The creation date of the document.
         is_binary (bool, optional): Whether the artifact has a binary payload.
         page_ids (List[str], optional): The list of page IDs in the document.
@@ -197,7 +207,26 @@ class Document(DeepSightsIdTitleModel):
     publication_date: Optional[datetime] = Field(
         alias="publication_date",
         default=None,
-        description="The publication date of the document.",
+        description=(
+            "DEPRECATED: prefer effective_publication_date. The raw deprecated publication date, "
+            "which artifact-service leaves unset when the date came from AI extraction."
+        ),
+    )
+    effective_publication_date: Optional[datetime] = Field(
+        default=None,
+        description=(
+            "The publication date to use. Resolved by artifact-service as the externally provided "
+            "date, else the AI provided date, else the external creation date, else the creation "
+            "date, so it is set for any fully processed artifact."
+        ),
+    )
+    externally_provided_publication_date: Optional[datetime] = Field(
+        default=None,
+        description="The publication date supplied by an external system, if any.",
+    )
+    ai_provided_publication_date: Optional[datetime] = Field(
+        default=None,
+        description="The publication date extracted from the document content by AI, if any.",
     )
     creation_date: Optional[datetime] = Field(
         alias="creation_date",
@@ -223,6 +252,12 @@ class Document(DeepSightsIdTitleModel):
         publication_data: Dict[str, Any] = kwargs.get("publication_data") or {}
         kwargs.setdefault("creation_date", origin.get("creation_time"))
         kwargs.setdefault("publication_date", publication_data.get("publication_date"))
+        kwargs.setdefault("effective_publication_date", publication_data.get("effective_publication_date"))
+        kwargs.setdefault(
+            "externally_provided_publication_date",
+            publication_data.get("externally_provided_publication_date"),
+        )
+        kwargs.setdefault("ai_provided_publication_date", publication_data.get("ai_provided_publication_date"))
         # Derive binary status from artifact type (B2B) or gcs_object_id (end-user)
         if "is_binary" not in kwargs:
             artifact_type = kwargs.get("type") or kwargs.get("artifact_type")
@@ -301,9 +336,18 @@ class DocumentSearchResult(DeepSightsIdModel):
 
     @property
     def publication_date(self) -> Optional[datetime]:
-        """Return the document's publication date if available, else None."""
+        """Return the document's deprecated publication date if available, else None.
+
+        DEPRECATED: prefer effective_publication_date.
+        """
         document = self.document
         return document.publication_date if document else None
+
+    @property
+    def effective_publication_date(self) -> Optional[datetime]:
+        """Return the document's effective publication date if available, else None."""
+        document = self.document
+        return document.effective_publication_date if document else None
 
     #############################################
     def __repr__(self) -> str:
