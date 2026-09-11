@@ -80,7 +80,7 @@ def test_publication_dates_default_to_none_without_publication_data():
 
 
 def test_external_metadata_exposes_external_creation_date():
-    """Part of the effective-date chain and present in the artifact-service schema."""
+    """Third rung of the effective-date chain"""
     doc = _document(external_metadata={"external_creation_date": "2022-06-06T00:00:00Z"})
 
     assert doc.external_metadata is not None

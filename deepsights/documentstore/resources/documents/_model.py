@@ -46,6 +46,16 @@ class SortingOrder:
 class SortingField:
     """
     Represents the sorting field for documents.
+
+    Note:
+        PUBLICATION_DATE sorts on the deprecated `publication_date` column, which artifact-service
+        leaves unset whenever the date came from AI extraction. In libraries where that is the norm
+        the column is NULL for most artifacts, so sorting by it yields an arbitrary order beyond the
+        few rows that have a value. Prefer CREATION_DATE for a stable scan.
+
+        There is deliberately no EFFECTIVE_PUBLICATION_DATE member: artifact-service computes that
+        field per response rather than storing it, and only accepts origin.creation_time,
+        origin.modification_time, publication_date, title and total_pages as sort fields.
     """
 
     TITLE = "title"
@@ -83,7 +93,8 @@ class ArtifactExternalMetadata(DeepSightsBaseModel):
         default=None,
         description=(
             "Creation date in the external source system. Feeds effective_publication_date when "
-            "neither an externally provided nor an AI provided publication date is set."
+            "neither an externally provided nor an AI provided publication date is set. "
+            "Added in artifact-service-api 1.22.0 (RT-7639); None against older deployments."
         ),
     )
 
