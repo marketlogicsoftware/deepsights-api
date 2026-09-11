@@ -94,7 +94,6 @@ class ArtifactExternalMetadata(DeepSightsBaseModel):
         description=(
             "Creation date in the external source system. Feeds effective_publication_date when "
             "neither an externally provided nor an AI provided publication date is set. "
-            "Added in artifact-service-api 1.22.0 (RT-7639); None against older deployments."
         ),
     )
 
