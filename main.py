@@ -238,7 +238,9 @@ except ValueError as e:
 print("\n=== User Client Document Management ===")
 
 # list documents with user-specific access
-total_docs, user_documents = uc.documents.documents_list(page_size=10, sort_field="creation_date", sort_order="DESC")
+total_docs, user_documents = uc.documents.list(
+    page_size=10, sort_field=deepsights.SortingField.CREATION_DATE, sort_order=deepsights.SortingOrder.DESCENDING
+)
 print(f"Found {total_docs} documents accessible to user")
 
 # hybrid search through user client
@@ -257,13 +259,13 @@ for result in topic_results[:2]:  # Show first 2
 # load specific documents with pages (if any found)
 if user_documents:
     doc_ids = [doc.id for doc in user_documents[:2]]  # First 2 documents
-    loaded_docs = uc.documents.documents_load(document_ids=doc_ids, load_pages=True)
+    loaded_docs = uc.documents.load(document_ids=doc_ids, load_pages=True)
     print(f"Loaded {len(loaded_docs)} documents with pages")
 
     # load specific document pages
     if loaded_docs and loaded_docs[0].page_ids:
         page_ids = loaded_docs[0].page_ids[:3]  # First 3 pages
-        pages = uc.documents.document_pages_load(page_ids)
+        pages = uc.documents.load_pages(page_ids)
         print(f"Loaded {len(pages)} individual pages")
 
 print("\n=== AI-Generated Answers ===")

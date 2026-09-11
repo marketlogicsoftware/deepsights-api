@@ -164,20 +164,20 @@ uc = UserClient.get_userclient(
 )
 
 # List documents with user-specific access
-total_docs, documents = uc.documents.documents_list(
+total_docs, documents = uc.documents.list(
     page_size=20,
-    sort_field="creation_date",
-    sort_order="DESC"
+    sort_field=deepsights.SortingField.CREATION_DATE,
+    sort_order=deepsights.SortingOrder.DESCENDING
 )
 
 # Load specific documents with pages
-loaded_docs = uc.documents.documents_load(
+loaded_docs = uc.documents.load(
     document_ids=["doc_id_1", "doc_id_2"],
     load_pages=True
 )
 
 # Load specific document pages
-pages = uc.documents.document_pages_load(["page_id_1", "page_id_2"])
+pages = uc.documents.load_pages(["page_id_1", "page_id_2"])
 
 # Hybrid search through user client
 search_results = uc.documents.search(
@@ -185,6 +185,28 @@ search_results = uc.documents.search(
     extended_search=True
 )
 ```
+
+##### Publication dates
+
+Documents expose several publication dates. Read `effective_publication_date` — it is the one
+DeepSights resolves, and it is set for any fully processed artifact:
+
+```python
+doc = uc.documents.load(document_ids=["doc_id_1"])[0]
+
+doc.effective_publication_date            # use this one
+doc.externally_provided_publication_date  # supplied by an external system, if any
+doc.ai_provided_publication_date          # extracted from the content by AI, if any
+doc.publication_date                      # DEPRECATED, frequently None
+```
+
+`publication_date` is deprecated server-side and is left unset whenever the date came from AI
+extraction, so it is `None` for many real documents. `effective_publication_date` resolves to the
+externally provided date, else the AI provided date, else the external creation date, else the
+artifact's creation date.
+
+Sorting is a separate matter: the service can only sort on the stored (deprecated) column, so
+prefer `SortingField.CREATION_DATE` for a stable scan.
 
 #### Topic Search with AI Analysis
 ```python

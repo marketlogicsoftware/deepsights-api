@@ -62,6 +62,8 @@ def test_document_load_basic(ds_client, test_data):
     assert documents[0].is_binary is not None
     assert documents[0].description is not None
     assert documents[0].publication_date is not None
+    # the deprecated field above is unset for AI-dated artifacts; the effective one is always set
+    assert documents[0].effective_publication_date is not None
     assert documents[0].creation_date is not None
     assert documents[0].content_type is not None
     assert documents[0].page_ids == []
@@ -149,6 +151,8 @@ def test_document_load_with_pages(ds_client, test_data):
     assert documents[0].file_size > 0
     assert documents[0].description is not None
     assert documents[0].publication_date is not None
+    # the deprecated field above is unset for AI-dated artifacts; the effective one is always set
+    assert documents[0].effective_publication_date is not None
     assert len(documents[0].page_ids) > 0
     assert documents[0].number_of_pages > 0
 
@@ -384,6 +388,8 @@ def test_document_load(ds_client, test_data):
     assert documents[0].file_size > 0
     assert documents[0].description is not None
     assert documents[0].publication_date is not None
+    # the deprecated field above is unset for AI-dated artifacts; the effective one is always set
+    assert documents[0].effective_publication_date is not None
     assert documents[0].creation_date is not None
     assert documents[0].page_ids == []
     assert documents[0].number_of_pages > 0

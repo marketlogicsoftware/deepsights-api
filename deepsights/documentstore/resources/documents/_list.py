@@ -49,7 +49,8 @@ def documents_list(
         page_size (int): The number of pages to return.
         page_number (int): The page number to return.
         sort_order (str): The sorting order.
-        sort_field (str): The sorting field.
+        sort_field (str): The sorting field; see SortingField. PUBLICATION_DATE sorts on a
+            deprecated column that is unset for AI-dated artifacts.
         status_filter (str): The optional status filter.
         search_term (str, optional): Filter documents by id/external_id/title/ai_generated_title/
             file_name/original_file_name. Phrase match for all fields except 'id' and 'external_id',
