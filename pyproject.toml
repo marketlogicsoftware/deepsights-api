@@ -36,7 +36,9 @@ test = [
 lint = [
     "mypy>=1.10.0",
     "pre-commit>=3.7.0",
-    "ruff>=0.6.9",
+    # keep in step with the pinned ruff rev in .pre-commit-config.yaml; 0.16 started
+    # formatting python code blocks inside markdown, which the docs are not written for
+    "ruff>=0.14.7,<0.15",
     "types-requests>=2.31.0.20240218",
     "types-cachetools>=5.3.0",
 ]
