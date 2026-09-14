@@ -272,6 +272,7 @@ class UnifiedTokenMixin:
 
         return self._execute_with_refresh(f"GET(content) {path}", execute)
 
+    # pylint: disable-next=too-many-arguments, too-many-positional-arguments
     def post(
         self,
         path: str,
@@ -280,15 +281,30 @@ class UnifiedTokenMixin:
         timeout: Optional[int] = None,
         expected_statuscodes: Optional[List[int]] = None,
         headers: Optional[Dict[str, str]] = None,
+        retry_on_timeout: bool = True,
     ) -> Dict[str, Any]:
         """POST request with automatic token refresh on 401."""
         if not getattr(self, "_unified_token_mode", False):
-            return super().post(path, body, params, timeout, expected_statuscodes, headers)  # type: ignore[misc]
+            return super().post(  # type: ignore[misc]
+                path,
+                body,
+                params,
+                timeout,
+                expected_statuscodes,
+                headers,
+                retry_on_timeout=retry_on_timeout,
+            )
 
         def execute() -> Dict[str, Any]:
             auth_headers = self._get_auth_headers()
             return super(UnifiedTokenMixin, self).post(  # type: ignore[misc]
-                path, body, params, timeout, expected_statuscodes, headers=auth_headers
+                path,
+                body,
+                params,
+                timeout,
+                expected_statuscodes,
+                headers=auth_headers,
+                retry_on_timeout=retry_on_timeout,
             )
 
         return self._execute_with_refresh(f"POST {path}", execute)

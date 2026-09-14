@@ -2,6 +2,14 @@
 
 <!--next-version-placeholder-->
 
+## v1.9.0 (14-Sep-2026)
+
+- Content store searches (news and secondary reports) now use a 30 second request timeout instead of the 15 second default, and are no longer retried when they time out; connection errors and retriable status codes are still retried.
+- Fix retry handling that never actually retried: the tenacity predicate was invoked with the retry state rather than the exception, so every request ran exactly once regardless of the failure. Connection errors, 5xx and 429 responses are now retried as documented.
+- Requests make at most two attempts (the initial call plus one retry) instead of three.
+- The original `requests` exception is re-raised after the final attempt instead of tenacity's `RetryError`, so persistent 429s still surface as `RateLimitError`.
+- `API.post()` accepts a `retry_on_timeout` keyword to opt out of retrying timeouts on a per-request basis.
+
 ## v1.8.0 (10-Sep-2026)
 
 - Add `text_search()` to the documentstore and userclient document resources: lexical search over indexed artifacts with metadata queries (title/file_name/source/summary), content queries, include/exclude keywords, content type, taxonomy and publication date filters, RELEVANCY/RECENCY sorting, and per-field match highlights. Unlike topic/hybrid search there is no AI relevance judgment, making it the right instrument for locating documents by name.

@@ -65,6 +65,15 @@ def _validate_embedding(query_embedding: List) -> None:
 
 
 #################################################
+# Content store searches (news and secondary reports alike) hit a slower backend than the
+# rest of the API, so they get a longer timeout than the API default. A timed-out search
+# is not retried: retrying would only multiply the caller's wait on an endpoint that is
+# already struggling. Connection errors and retriable status codes are still retried.
+SEARCH_TIMEOUT = 30
+SEARCH_RETRY_ON_TIMEOUT = False
+
+
+#################################################
 def _get_time_filter(
     search_from_timestamp: Optional[datetime], search_to_timestamp: Optional[datetime]
 ) -> Optional[Dict[str, Optional[str]]]:
@@ -108,6 +117,8 @@ def contentstore_hybrid_search(
     search_to_timestamp: Optional[datetime] = None,
     apply_evidence_filter: bool = False,
     search_only_ai_allowed_content: bool = True,
+    timeout: Optional[int] = SEARCH_TIMEOUT,
+    retry_on_timeout: bool = SEARCH_RETRY_ON_TIMEOUT,
 ) -> List[T]:
     """
     Perform a contentstore hybrid search using the provided query.
@@ -128,6 +139,8 @@ def contentstore_hybrid_search(
         search_to_timestamp (datetime, optional): The end timestamp for the search. Defaults to None.
         apply_evidence_filter (bool, optional): Whether to apply the evidence filter. Defaults to False.
         search_only_ai_allowed_content (bool, optional): Whether to search only AI-allowed content. Defaults to True.
+        timeout (int, optional): The timeout in seconds for the request. Defaults to SEARCH_TIMEOUT.
+        retry_on_timeout (bool, optional): Whether a timeout should be retried. Defaults to False.
 
     Returns:
 
@@ -155,7 +168,12 @@ def contentstore_hybrid_search(
         "content_restrictions": ("ALLOWED_FOR_AI_SUMMARIZATION" if search_only_ai_allowed_content else "NONE"),
         "use_evidence_filtering": apply_evidence_filter,
     }
-    response = api.post("item-service/items/_hybrid-search", body=body)
+    response = api.post(
+        "item-service/items/_hybrid-search",
+        body=body,
+        timeout=timeout,
+        retry_on_timeout=retry_on_timeout,
+    )
 
     # parse
     # a degraded backend may return HTTP 200 with "items": null; treat as empty
@@ -183,6 +201,8 @@ def contentstore_vector_search(
     search_from_timestamp: Optional[datetime] = None,
     search_to_timestamp: Optional[datetime] = None,
     search_only_ai_allowed_content: bool = True,
+    timeout: Optional[int] = SEARCH_TIMEOUT,
+    retry_on_timeout: bool = SEARCH_RETRY_ON_TIMEOUT,
 ) -> List[T]:
     """
     Perform a contentstore vector search using the provided query embedding.
@@ -200,6 +220,8 @@ def contentstore_vector_search(
         search_from_timestamp (datetime, optional): The start timestamp for the search. Defaults to None.
         search_to_timestamp (datetime, optional): The end timestamp for the search. Defaults to None.
         search_only_ai_allowed_content (bool, optional): Whether to search only AI-allowed content. Defaults to True.
+        timeout (int, optional): The timeout in seconds for the request. Defaults to SEARCH_TIMEOUT.
+        retry_on_timeout (bool, optional): Whether a timeout should be retried. Defaults to False.
 
     Returns:
 
@@ -221,7 +243,12 @@ def contentstore_vector_search(
         "published_at": _get_time_filter(search_from_timestamp, search_to_timestamp),
         "content_restrictions": ("ALLOWED_FOR_AI_SUMMARIZATION" if search_only_ai_allowed_content else "NONE"),
     }
-    response = api.post("item-service/items/_vector-search", body=body)
+    response = api.post(
+        "item-service/items/_vector-search",
+        body=body,
+        timeout=timeout,
+        retry_on_timeout=retry_on_timeout,
+    )
 
     # parse
     # a degraded backend may return HTTP 200 with "items": null; treat as empty
@@ -245,6 +272,8 @@ def contentstore_text_search(
     search_from_timestamp: Optional[datetime] = None,
     search_to_timestamp: Optional[datetime] = None,
     search_only_ai_allowed_content: bool = True,
+    timeout: Optional[int] = SEARCH_TIMEOUT,
+    retry_on_timeout: bool = SEARCH_RETRY_ON_TIMEOUT,
 ) -> List[T]:
     """
     Perform a contentstore text search using the specified query and item type. If the query is None,
@@ -263,6 +292,8 @@ def contentstore_text_search(
         search_from_timestamp (datetime, optional): The start timestamp for the search. Defaults to None.
         search_to_timestamp (datetime, optional): The end timestamp for the search. Defaults to None.
         search_only_ai_allowed_content (bool, optional): Whether to search only AI-allowed content. Defaults to True.
+        timeout (int, optional): The timeout in seconds for the request. Defaults to SEARCH_TIMEOUT.
+        retry_on_timeout (bool, optional): Whether a timeout should be retried. Defaults to False.
 
     Returns:
 
@@ -290,7 +321,12 @@ def contentstore_text_search(
         "published_at": _get_time_filter(search_from_timestamp, search_to_timestamp),
         "content_restrictions": ("ALLOWED_FOR_AI_SUMMARIZATION" if search_only_ai_allowed_content else "NONE"),
     }
-    response = api.post("item-service/items/_text-search", body=body)
+    response = api.post(
+        "item-service/items/_text-search",
+        body=body,
+        timeout=timeout,
+        retry_on_timeout=retry_on_timeout,
+    )
 
     # parse
     # a degraded backend may return HTTP 200 with "items": null; treat as empty
