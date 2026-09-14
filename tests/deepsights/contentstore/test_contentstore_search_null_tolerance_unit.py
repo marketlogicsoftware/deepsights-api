@@ -21,7 +21,7 @@ class _DummyAPI:
     def __init__(self, response):
         self._response = response
 
-    def post(self, path, params=None, body=None, timeout=None, expected_statuscodes=None):
+    def post(self, path, params=None, body=None, timeout=None, expected_statuscodes=None, headers=None, retry_on_timeout=True):
         return self._response
 
 

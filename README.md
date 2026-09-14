@@ -423,7 +423,7 @@ The DeepSights API implements **comprehensive rate limiting** to ensure fair usa
 
 #### Behavior
 - **Client-side limits**: Immediate `RateLimitError` with `retry_after` information
-- **Server-side limits**: Automatic retry with exponential backoff (up to 3 attempts)
+- **Server-side limits**: Automatic retry with exponential backoff (one retry after the initial attempt)
 - **Persistent server limits**: Convert to `RateLimitError` after retries for consistent handling
 
 #### Exception Hierarchy

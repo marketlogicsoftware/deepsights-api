@@ -27,6 +27,7 @@ from requests.adapters import HTTPAdapter
 from requests.exceptions import ConnectionError as RequestsConnectionError
 from requests.exceptions import HTTPError, Timeout
 from tenacity import (
+    RetryCallState,
     retry,
     stop_after_attempt,
     wait_random_exponential,
@@ -36,6 +37,12 @@ from deepsights._version import __version__ as _ds_version
 from deepsights.exceptions import AuthenticationError, RateLimitError
 
 logger = logging.getLogger(__name__)
+
+# Total attempts per request, i.e. the initial call plus one retry. Kept deliberately low:
+# a retried request also re-enters the client-side rate limiter and multiplies the caller's
+# worst-case wait, so a second attempt is a cheap hedge against a blip rather than a way to
+# ride out a struggling backend.
+MAX_ATTEMPTS = 2
 
 
 def _should_retry_http_error(exception: Exception) -> bool:
@@ -59,6 +66,39 @@ def _should_retry_http_error(exception: Exception) -> bool:
         return False
     # Always retry connection and timeout errors
     return isinstance(exception, (RequestsConnectionError, Timeout))
+
+
+def _retry_predicate(retry_state: RetryCallState) -> bool:
+    """
+    Tenacity-compatible retry predicate.
+
+    Tenacity calls the ``retry`` callable with the retry state rather than with the
+    exception itself, so unwrap the exception here and delegate to
+    :func:`_should_retry_http_error`.
+
+    Callers that pass ``retry_on_timeout=False`` opt out of retrying timeouts; a slow
+    endpoint is rarely helped by hammering it again, and retrying would multiply the
+    caller's worst-case wait by the number of attempts. Connection errors and retriable
+    status codes are still retried for those callers.
+
+    Args:
+        retry_state: The tenacity retry state of the last attempt.
+
+    Returns:
+        bool: True if the attempt should be retried, False otherwise.
+    """
+    outcome = retry_state.outcome
+    if outcome is None or not outcome.failed:
+        return False
+
+    exception = outcome.exception()
+    if exception is None:
+        return False
+
+    if isinstance(exception, Timeout) and not retry_state.kwargs.get("retry_on_timeout", True):
+        return False
+
+    return _should_retry_http_error(exception)
 
 
 def _handle_http_error(response: Response) -> None:
@@ -208,9 +248,10 @@ class API:
     #######################################
     @_handle_persistent_rate_limit
     @retry(
-        stop=stop_after_attempt(3),
+        stop=stop_after_attempt(MAX_ATTEMPTS),
         wait=wait_random_exponential(max=5),
-        retry=_should_retry_http_error,
+        retry=_retry_predicate,
+        reraise=True,  # surface the original requests exception, not tenacity's RetryError
     )
     @sleep_and_retry
     @limits(calls=1000, period=60)
@@ -256,9 +297,10 @@ class API:
     #######################################
     @_handle_persistent_rate_limit
     @retry(
-        stop=stop_after_attempt(3),
+        stop=stop_after_attempt(MAX_ATTEMPTS),
         wait=wait_random_exponential(max=5),
-        retry=_should_retry_http_error,
+        retry=_retry_predicate,
+        reraise=True,  # surface the original requests exception, not tenacity's RetryError
     )
     @sleep_and_retry
     @limits(calls=1000, period=60)
@@ -307,9 +349,10 @@ class API:
     #######################################
     @_handle_persistent_rate_limit
     @retry(
-        stop=stop_after_attempt(3),
+        stop=stop_after_attempt(MAX_ATTEMPTS),
         wait=wait_random_exponential(max=5),
-        retry=_should_retry_http_error,
+        retry=_retry_predicate,
+        reraise=True,  # surface the original requests exception, not tenacity's RetryError
     )
     @sleep_and_retry
     @limits(calls=100, period=60)
@@ -322,6 +365,7 @@ class API:
         timeout: Optional[int] = None,
         expected_statuscodes: Optional[List[int]] = None,
         headers: Optional[Dict[str, str]] = None,
+        retry_on_timeout: bool = True,
     ) -> Dict[str, Any]:
         """
         Sends a POST request to the specified path with optional parameters.
@@ -333,6 +377,10 @@ class API:
             timeout (int, optional): The timeout in seconds for the request. Defaults to 15.
             expected_statuscodes (List[int], optional): List of expected status codes. Defaults to an empty list.
             headers (Dict[str, str], optional): Additional headers for this request only.
+            retry_on_timeout (bool, optional): Whether a timeout should be retried. Defaults to True;
+                pass False for slow endpoints where retrying only multiplies the caller's wait.
+                Connection errors and retriable status codes are retried either way. Must be passed
+                as a keyword argument for the retry predicate to see it.
 
         Returns:
             Dict: The JSON body of the server's response to the request.
@@ -358,9 +406,10 @@ class API:
     #######################################
     @_handle_persistent_rate_limit
     @retry(
-        stop=stop_after_attempt(3),
+        stop=stop_after_attempt(MAX_ATTEMPTS),
         wait=wait_random_exponential(max=5),
-        retry=_should_retry_http_error,
+        retry=_retry_predicate,
+        reraise=True,  # surface the original requests exception, not tenacity's RetryError
     )
     @sleep_and_retry
     @limits(calls=100, period=60)
@@ -412,9 +461,10 @@ class API:
     #######################################
     @_handle_persistent_rate_limit
     @retry(
-        stop=stop_after_attempt(3),
+        stop=stop_after_attempt(MAX_ATTEMPTS),
         wait=wait_random_exponential(max=5),
-        retry=_should_retry_http_error,
+        retry=_retry_predicate,
+        reraise=True,  # surface the original requests exception, not tenacity's RetryError
     )
     @sleep_and_retry
     @limits(calls=100, period=60)
@@ -466,9 +516,10 @@ class API:
     #######################################
     @_handle_persistent_rate_limit
     @retry(
-        stop=stop_after_attempt(3),
+        stop=stop_after_attempt(MAX_ATTEMPTS),
         wait=wait_random_exponential(max=5),
-        retry=_should_retry_http_error,
+        retry=_retry_predicate,
+        reraise=True,  # surface the original requests exception, not tenacity's RetryError
     )
     @sleep_and_retry
     @limits(calls=1000, period=60)
